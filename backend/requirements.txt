@@ -1,0 +1,4 @@
+dspy==2.6.24
+pydantic==2.11.5
+Flask==3.1.1
+flask-cors==6.0.0
