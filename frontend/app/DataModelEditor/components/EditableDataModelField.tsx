@@ -1,13 +1,13 @@
 import React from "react";
-import type { ModelFieldDefinition } from "../../../lib/interfaces/DataModelInterfaces";
+import type { DataModelField } from "../../../lib/interfaces/DataModelInterfaces";
 import DescriptionDialog from "./DescriptionDialog";
 import { Trash2 } from "lucide-react";
 
 
 interface EditableDataModelField {
     idx: number
-    field: ModelFieldDefinition
-    onFieldChange: (idx: number, key: keyof ModelFieldDefinition, value: string) => void
+    field: DataModelField
+    onFieldChange: (idx: number, key: keyof DataModelField, value: string) => void
     removeDataModelField: (idx: number) => void
 }
 

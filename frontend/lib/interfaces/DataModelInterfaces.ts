@@ -1,10 +1,10 @@
-export interface ModelFieldDefinition {
+export interface DataModelField {
     name: string;
     type: string;
     description: string | null;
 }
 
-export interface ModelDefinition {
+export interface DataModel {
     name: string;
-    fields: ModelFieldDefinition[];
+    fields: DataModelField[];
 }

@@ -1,13 +1,15 @@
 "use client"
 
 import React, { createContext, useContext, useState, type ReactNode } from "react";
-import type { ModelDefinition } from "../../lib/interfaces/DataModelInterfaces";
+import type { DataModel } from "../../lib/interfaces/DataModelInterfaces";
 
-// Context-Typen
+
 export interface DataModelEditorContextType {
-  dataModel: ModelDefinition;
-  setDataModel: React.Dispatch<React.SetStateAction<ModelDefinition>>;
+  data_model_definition: DataModel;
+  set_data_model_definition: React.Dispatch<React.SetStateAction<DataModel>>;
 }
+
+
 
 export const DataModelEditorContext = createContext<DataModelEditorContextType | undefined>(undefined);
 
@@ -17,16 +19,17 @@ export function useDataModelEditorContext() {
   return ctx;
 }
 
+
 export function DataModelEditorProvider({ children }: { children: ReactNode }) {
-  const [dataModel, setDataModel] = useState<ModelDefinition>({
+
+  const [data_model_definition, set_data_model_definition] = useState<DataModel>({
     name: "OverallSentiment",
     fields: [
       { name: "sentiment", type: "str", description: null },
     ],
-  });
+  })
+
   return React.createElement(
-    DataModelEditorContext.Provider,
-    { value: { dataModel, setDataModel } },
-    children
+    DataModelEditorContext.Provider, { value: { data_model_definition, set_data_model_definition } }, children
   );
 }
