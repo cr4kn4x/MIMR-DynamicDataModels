@@ -1,127 +1,75 @@
-import typing, os, uuid
-import logging
+import typing, os, uuid, dotenv, logging, firebase_admin, firebase_admin.auth
+from firebase import FirebaseIdToken, firebase_token_required, init_firebase
+from functools import wraps
 from pydantic import BaseModel
 from flask import Flask, jsonify, request
 from flask_cors import CORS
-from werkzeug.security import generate_password_hash, check_password_hash
 from DAO.psqlDAO import PsqlDAO
-from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
+from InputValidation import InputValidation
 
 
+dotenv.load_dotenv("./secrets/.env")
 
-
-from dotenv import load_dotenv
-load_dotenv(".env")
-
-dao = PsqlDAO(os.getenv("POSTGRES_DSN"))
 
 app = Flask(__name__)
-
-# jwt 
-app.config["JWT_SECRET_KEY"] = os.environ.get("JWT_SECRET_KEY")
-jwt = JWTManager(app)
-
-# cors 
 CORS(app, origins="*")
 
+dao = PsqlDAO(dsn=os.environ.get("POSTGRES_DSN"))
 
-class DataModelField(BaseModel):
-    name: str
-    type: str
-    description: str | None
-    
-class DataModel(BaseModel):
-    name: str
-    fields: typing.List[DataModelField]
-
-
-def CheckDataModelDefinitionValidity(data_model_definition: dict):
-    try:
-        DataModel(data_model_definition)
-        return True
-    except Exception as e: 
-        return False
-    return  
+init_firebase()
 
 
 
 
-@app.post("/register")
-def register_user():
+
+
+
+
+
+@app.post("/api/project/create")
+@firebase_token_required(dao)
+def create_new_project():
+    firebase_token = request.firebase_token
+    assert isinstance(firebase_token, FirebaseIdToken)
+
+    # get json body
     data = request.get_json()
+    project_name = data.get("project_name")
 
+    # validate inputs
+    is_valid_project_name, msg = InputValidation.is_valid_project_name(project_name)
+    if not is_valid_project_name:
+        return jsonify({"msg": msg}), 400
+
+    # check if project already exists
+    if dao.check_project_exists(user_id=firebase_token.user_id, project_name=project_name): 
+        return jsonify({"msg": f"Project {project_name} already exists"}), 400
+
+
+    # insert new project
     try:
-        username = data["username"]
-        password = data["password"]
-    except Exception as e: 
-        return jsonify({"msg": "invalid request structure"}), 400
-
-    try:
-        username_unique = dao.is_username_unique(username)
-    except Exception as e: 
-        logging.exception(e)
-        return jsonify({"msg": "Database error"})
-        
-    # 
-    if not username_unique: 
-        return jsonify({"msg": "username is alredy in use"})
-
-    # TBD: Password strength
-    # TBD: Limit max length of password and max length of username
-
-    password_hash = generate_password_hash(password)
-    user_id = str(uuid.uuid4())
-
-    try:
-        insert_user_ok = dao.insertUser(user_id, username, password_hash)
+        dao.insert_new_project(user_id=firebase_token.user_id, project_name=project_name)
     except Exception as e:
-        logging.exception(e)
-        return jsonify({"msg": "Database error"})
-    
-    
-    if not insert_user_ok: 
-        return jsonify({"msg": "unexpected error occurred. please try again"})
+        return jsonify({"msg", "Failed to create new project"}), 500
 
-    return jsonify({"msg": "registration successful"})
-
-    
-
-@app.post("/login")
-def login_user():
-    data = request.json()
-    
-    try:
-        username = data["username"]
-        password = data["password"]
-    except Exception as e: 
-        return jsonify({"msg": "invalid request structure"}), 400
-    
-    try:
-        auth_valid = dao.check_credentials(username=username, password=password)
-    except Exception as e:
-        return jsonify({"msg": "Database error"})
-
-    if auth_valid: 
-        access_token = create_access_token(identity=username)
-        return jsonify({"access-token": access_token})
-    else: 
-        return jsonify({"msg": "unknown error occured!"})
+    return jsonify({"msg": "Project created successfully"})
 
 
 
-@jwt_required()
-def protected():
-    user_id = get_jwt_identity()
-    return jsonify(logged_in_as=user_id)
+
+@app.get("/api/project/get_all")
+@firebase_token_required(dao)
+def get_all_projects(): 
+    firebase_token = request.firebase_token
+    assert isinstance(firebase_token, FirebaseIdToken)
+
+    projects = dao.get_all_projects(firebase_token.user_id)
+    return jsonify(projects)
 
 
-@app.post("/api/pydantic/validity")
-def f():
-    payload = request.get_json()
-    
-    is_valid = CheckDataModelDefinitionValidity(payload["data_model_definition"])
-
-    return jsonify({"is_valid": is_valid})
 
 
-app.run(debug=True, host="0.0.0.0")
+
+
+# app.run(debug=True, host="0.0.0.0")
+# flask --app app.py run --debug
