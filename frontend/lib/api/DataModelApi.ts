@@ -6,8 +6,11 @@ const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_BASE
 
 
 
+interface getProjectsApiResponse {
+    projects: Project[]
+}
 
-export async function getAllProjects(): Promise<Project[]> {
+export async function getAllProjects(): Promise<getProjectsApiResponse> {
     const url = `${BASE_URL}/api/project/get_all`
 
     const response = await fetch(url, {

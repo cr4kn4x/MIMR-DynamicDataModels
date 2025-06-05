@@ -6,6 +6,7 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 from DAO.psqlDAO import PsqlDAO
 from InputValidation import InputValidation
+from DAO import DataModels
 
 
 dotenv.load_dotenv("./secrets/.env")
@@ -63,8 +64,10 @@ def get_all_projects():
     firebase_token = request.firebase_token
     assert isinstance(firebase_token, FirebaseIdToken)
 
-    projects = dao.get_all_projects(firebase_token.user_id)
-    return jsonify(projects)
+    
+
+    projects = [ DataModels.ProjectApi(**obj.model_dump()).model_dump() for obj in dao.get_all_projects(firebase_token.user_id) ]
+    return jsonify({"projects": projects})
 
 
 

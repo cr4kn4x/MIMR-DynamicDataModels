@@ -43,7 +43,7 @@ export function ProjectSelectorCombobox({ selected_project_id, set_selected_proj
                 <PopoverTrigger asChild>
                     <Button role="combobox" aria-expanded={open} className="w-[200px] justify-between">
                         {
-                            selected_project_id ? projects.find((project) => project.project_id === selected_project_id)?.project_name : "Select project"
+                            selected_project_id ? projects.find((project) => project.id === selected_project_id)?.name : "Select project"
                         }
                         <ChevronsUpDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                     </Button>
@@ -57,20 +57,20 @@ export function ProjectSelectorCombobox({ selected_project_id, set_selected_proj
                             <CommandGroup>
                                 {projects.map((project) => (
                                     <CommandItem
-                                        key={project.project_id}
-                                        value={project.project_id}
+                                        key={project.id}
+                                        value={project.id}
                                         onSelect={() => {
-                                            set_selected_project_id(project.project_id)
+                                            set_selected_project_id(project.id)
                                             setOpen(false)
                                         }}
                                     >
                                         <CheckIcon
                                             className={cn(
                                                 "mr-2 h-4 w-4",
-                                                selected_project_id === project.project_id ? "opacity-100" : "opacity-0"
+                                                selected_project_id === project.id ? "opacity-100" : "opacity-0"
                                             )}
                                         />
-                                        {project.project_name}
+                                        {project.name}
                                     </CommandItem>
                                 ))}
                             </CommandGroup>

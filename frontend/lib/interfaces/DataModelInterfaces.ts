@@ -1,9 +1,10 @@
 
 
 export interface Project {
-    project_id: string 
-    project_name: string
+    id: string 
+    name: string
 }
+
 
 
 export interface DataModelField {

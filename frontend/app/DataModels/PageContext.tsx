@@ -34,7 +34,7 @@ export function DataModelsPageContextProvider({ children }: { children: ReactNod
     // initial fetch
     useEffect(()=>{
         getAllProjects()
-            .then((projects) => {set_projects(projects)})
+            .then((res) => {set_projects(res.projects)})
             .catch((error) => {console.error(error.message)}) // can be shown in toast for example ... 
     }, [])
 
