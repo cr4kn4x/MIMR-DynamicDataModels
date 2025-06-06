@@ -1,4 +1,4 @@
-import typing, os, dotenv, logging
+import typing, os, dotenv, logging, pydantic
 from firebase import FirebaseIdToken, firebase_token_required, init_firebase
 from flask import Flask, jsonify, request
 from flask_cors import CORS
@@ -123,6 +123,42 @@ def get_data_models_by_project():
     return jsonify({"data_models": data_models})
 
 
+@app.post("/api/data_models/create_field")
+@firebase_token_required(dao)
+def create_data_model_field(): 
+
+    firebase_token = request.firebase_token
+    assert isinstance(firebase_token, FirebaseIdToken)
+
+
+     # get json body
+    data = request.get_json()
+    ass_data_model_id = data.get("ass_data_model_id")
+    field = data.get("data_model_field")
+
+    class request_model_field(pydantic.BaseModel):
+        name: str
+        type: typing.Literal["str", "int", "float"]
+        description: typing.Optional[str]
+    
+    field = request_model_field(**field)
+
+
+    try:
+        dao.insert_data_model_field(user_id=firebase_token.user_id, 
+                                    associated_data_model_id=ass_data_model_id,
+                                    field_name=field.name,
+                                    field_type=field.type,
+                                    field_description=field.description, 
+                                    )
+    except DAOException as e: 
+        logging.exception(e)
+        return jsonify({"msg": str(e)}), 400
+    except Exception as e: 
+        return jsonify({"msg": "Failed to create data model field"}), 500 
+
+
+    return jsonify({"msg": "Successfully created new data model field"})
 
 
 # app.run(debug=True, host="0.0.0.0")

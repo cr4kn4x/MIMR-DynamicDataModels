@@ -107,6 +107,14 @@ class DAO:
             
         return res != None 
     
+    def check_data_model_exists_by_id(self, user_id: str, data_model_id: str) -> bool: 
+        with self.__get_connection() as conn: 
+            with conn.cursor() as cur: 
+                cur.execute("SELECT 1 FROM data_models WHERE user_id = %s and id = %s", (user_id, data_model_id))
+                res = cur.fetchone() 
+            
+        return res != None 
+    
 
     def insert_data_model(self, user_id: str, project_id: str, data_model_name: str): 
 
@@ -143,6 +151,18 @@ class DAO:
                 res = cur.fetchall() 
                 
         return res
+    
+    
+    def insert_data_model_field(self, user_id: str, associated_data_model_id: str, field_name: str, field_type: str, field_description: str | None):
+
+        if not self.check_data_model_exists_by_id(user_id=user_id, data_model_id=associated_data_model_id): 
+            raise DAOException("Associated data model does not exist")
+
+        with self.__get_connection() as conn: 
+            with conn.cursor() as cur: 
+                cur.execute("INSERT INTO data_model_fields(user_id, data_model_id, id, name, type, description) VALUES (%s, %s, %s, %s, %s, %s);", (user_id, associated_data_model_id, str(uuid.uuid4(), field_name, field_type, field_description)))
+    
+        return True
 
 
-
+# INSERT INTO public.data_model_fields(user_id, data_model_id, id, name, type, description) VALUES (%s, %s, %s, %s, %s, %s);
