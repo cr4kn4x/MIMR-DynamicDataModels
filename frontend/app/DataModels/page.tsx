@@ -22,7 +22,7 @@ export default function Page() {
 
     return (
         <DataModelsPageContextProvider>
-            <div className="w-screen h-screen font-[family-name:var(--font-geist-sans)]">
+            <div className="w-screen h-screen font-[family-name:var(--font-geist-sans)] bg-gray-50">
                 <DataModelEditor/>
             </div>
         </DataModelsPageContextProvider>

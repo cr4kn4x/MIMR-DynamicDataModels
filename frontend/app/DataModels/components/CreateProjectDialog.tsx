@@ -6,7 +6,7 @@ import { useState } from "react"
 import { createNewProject } from "@/lib/api/DataModelApi"
 
 
-export default function CreateNewProjectDialog() {
+export default function CreateProjectDialog() {
     // initialize component states
     const [dialog_open, set_dialog_open] = useState<boolean>(false)
     const [newProjectName, setNewProjectName] = useState("")
@@ -44,28 +44,47 @@ export default function CreateNewProjectDialog() {
     }
 
     return (
-        <Dialog open={dialog_open}>
+        <Dialog open={dialog_open} onOpenChange={set_dialog_open}>
             <DialogTrigger asChild>
-                <Button variant="default" onClick={()=>{set_dialog_open(true)}}>new project</Button>
+                <Button variant="ghost" size="sm" className="justify-start w-full">
+                    + New Project
+                </Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="sm:max-w-md">
                 <DialogHeader>
-                    <DialogTitle>Create new project</DialogTitle>
+                    <DialogTitle>Create New Project</DialogTitle>
+                    <DialogDescription>
+                        Create a new project to organize your Pydantic data models.
+                    </DialogDescription>
                 </DialogHeader>
-                <DialogDescription> </DialogDescription>
                 <form onSubmit={handleSubmit}>
-                    <div className="grid gap-4">
-                        <div className="grid gap-1">
+                    <div className="grid gap-4 py-4">
+                        <div className="grid gap-2">
                             <Label htmlFor="new-project-name">Project Name</Label>
-                            <Input id="new-project-name" name="project name" value={newProjectName} onChange={e => { setNewProjectName(e.target.value); setError(null); }} />
-                            {error && <span className="text-sm text-red-500 mt-1">{error}</span>}
+                            <Input 
+                                id="new-project-name" 
+                                placeholder="Enter project name..."
+                                value={newProjectName} 
+                                onChange={e => { 
+                                    setNewProjectName(e.target.value); 
+                                    setError(null); 
+                                }} 
+                                className={error ? "border-red-500" : ""}
+                            />
+                            {error && (
+                                <span className="text-sm text-red-500 mt-1 flex items-center">
+                                    {error}
+                                </span>
+                            )}
                         </div>
                     </div>
-                    <DialogFooter className="pt-2">
+                    <DialogFooter>
                         <DialogClose asChild>
-                            <Button variant="destructive" type="button">Cancel</Button>
+                            <Button variant="outline" type="button">Cancel</Button>
                         </DialogClose>
-                        <Button type="submit">Save changes</Button>
+                        <Button type="submit" disabled={!newProjectName.trim()}>
+                            Create Project
+                        </Button>
                     </DialogFooter>
                 </form>
             </DialogContent>

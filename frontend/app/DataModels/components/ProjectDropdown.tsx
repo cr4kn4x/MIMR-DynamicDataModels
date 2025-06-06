@@ -19,7 +19,7 @@ import {
     PopoverTrigger,
 } from "@/components/ui/popover"
 
-import CreateNewProjectDialog from "./CreateNewProjectDialog"
+import CreateProjectDialog from "./CreateProjectDialog"
 import { Project } from "@/lib/interfaces/DataModelInterfaces"
 
 
@@ -77,7 +77,7 @@ export function ProjectSelectorCombobox({ selected_project_id, set_selected_proj
                             
 
                             <CommandGroup>
-                                <CreateNewProjectDialog/>
+                                <CreateProjectDialog/>
                             </CommandGroup>
 
                         </CommandList>

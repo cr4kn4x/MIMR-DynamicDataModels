@@ -5,15 +5,15 @@ export interface Project {
     name: string
 }
 
-
-
 export interface DataModelField {
-    name: string;
-    type: string;
-    description: string | null;
+    id: string
+    name: string
+    type: string
+    description: string | null
 }
 
 export interface DataModel {
-    name: string;
-    fields: DataModelField[];
+    id: string
+    name: string
+    fields: DataModelField[]
 }
