@@ -2,7 +2,7 @@ import typing
 from flask import request, jsonify
 from pydantic import BaseModel
 from functools import wraps
-from DAO.psqlDAO import PsqlDAO
+from DAO.DAO import DAO
 import firebase_admin.auth
 import logging
 
@@ -26,7 +26,7 @@ class FirebaseIdToken(BaseModel):
     uid: str
 
 
-def firebase_token_required(dao: PsqlDAO):
+def firebase_token_required(dao: DAO):
     def decorator(fn):
         @wraps(fn)
         def wrapper(*args, **kwargs):
