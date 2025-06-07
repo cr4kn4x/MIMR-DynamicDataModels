@@ -5,6 +5,14 @@ from pydantic import BaseModel, Field, create_model
 
 
 
+
+
+
+
+import sys
+sys.exit(0)
+
+
 class dspy_signature(dspy.Signature): 
     """
     Prompt... 

@@ -155,11 +155,48 @@ def create_data_model_field():
         logging.exception(e)
         return jsonify({"msg": str(e)}), 400
     except Exception as e: 
+        logging.exception(e)
         return jsonify({"msg": "Failed to create data model field"}), 500 
 
 
     return jsonify({"msg": "Successfully created new data model field"})
 
+
+
+
+
+
+@app.post("/api/data_models/change_field")
+@firebase_token_required(dao)
+def change_data_model(): 
+
+    firebase_token = request.firebase_token
+    assert isinstance(firebase_token, FirebaseIdToken)
+
+    data = request.get_json()
+    ass_data_model_id = data.get("ass_data_model_id")
+    new_field = data.get("new_field")
+
+    try: 
+        new_field = Interfaces.DataModelField(**new_field)
+    except Exception as e:
+        return jsonify({"msg": "new_field is invalid data structure!"}), 400
+    
+    try:
+        dao.change_data_model_field(user_id=firebase_token.user_id, 
+                                    associated_data_model_id=ass_data_model_id, 
+                                    field_id=new_field.id, 
+                                    field_name=new_field.name, 
+                                    field_type=new_field.type, 
+                                    field_description=new_field.description)
+    except DAOException as e: 
+        logging.exception(e)
+        return jsonify({"msg": str(e)}), 400
+    except Exception as e: 
+        logging.exception(e)
+        return jsonify({"msg": "Failed to apply changes to data model field"}), 500
+
+    return jsonify({"msg": "Successfully applied changes to data model field"})
 
 # app.run(debug=True, host="0.0.0.0")
 # flask --app app.py run --debug

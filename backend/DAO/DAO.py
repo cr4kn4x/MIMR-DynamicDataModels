@@ -116,6 +116,15 @@ class DAO:
         return res != None 
     
 
+    def check_data_model_field_exists_by_id(self, user_id: str, data_model_id: str, field_id: str): 
+        with self.__get_connection() as conn: 
+            with conn.cursor() as cur: 
+                cur.execute("SELECT 1 FROM data_model_fields WHERE user_id = %s and data_model_id = %s and id = %s", (user_id, data_model_id, field_id))
+                res = cur.fetchone() 
+
+        return res != None 
+    
+
     def insert_data_model(self, user_id: str, project_id: str, data_model_name: str): 
 
         if not self.check_project_exists_by_id(user_id=user_id, project_id=project_id):
@@ -162,6 +171,24 @@ class DAO:
             with conn.cursor() as cur: 
                 cur.execute("INSERT INTO data_model_fields(user_id, data_model_id, id, name, type, description) VALUES (%s, %s, %s, %s, %s, %s);", (user_id, associated_data_model_id, str(uuid.uuid4(), field_name, field_type, field_description)))
     
+        return True
+    
+
+    def change_data_model_field(self, user_id: str, associated_data_model_id: str, field_id: str, field_name: str, field_type: str, field_description: str | None): 
+        
+        
+        if not self.check_data_model_exists_by_id(user_id, associated_data_model_id):
+            raise DAOException("Associated data model does not exist")
+        
+
+        if not self.check_data_model_field_exists_by_id(user_id, data_model_id=associated_data_model_id, field_id=field_id): 
+            raise DAOException("Field does not exist")
+
+
+        with self.__get_connection() as conn: 
+            with conn.cursor() as cur: 
+                cur.execute("UPDATE data_model_fields SET name=%s, type=%s, description=%s WHERE user_id=%s and data_model_id=%s and id=%s", (field_name, field_type, field_description, user_id, associated_data_model_id, field_id))
+
         return True
 
 
