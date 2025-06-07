@@ -5,7 +5,7 @@ import { Separator } from "@/components/ui/separator"
 import { Badge } from "@/components/ui/badge"
 import { ProjectSelectorCombobox } from "../../components/my_ui/ProjectSelectorCombobox"
 import { useDataModelsPageContext } from "./PageContext"
-import { PlusIcon, FileCodeIcon, DownloadIcon, PlayIcon } from "lucide-react"
+import { FileCodeIcon, DownloadIcon, PlayIcon } from "lucide-react"
 import CreateDataModelDialog from "@/components/my_ui/CreateDataModelDialog"
 import { DataModelCard } from "@/components/my_ui/DataModelCard"
 
@@ -97,6 +97,9 @@ export default function DataModelEditor() {
                                         data_model={model}
                                         is_selected={selected_data_model?.id === model.id}
                                         preview={true}
+
+
+
                                         onSelect={() => {
                                             // toogle --> click selected again leads to unselect
                                             set_selected_data_model(
@@ -133,16 +136,13 @@ export default function DataModelEditor() {
                             <div className="flex-1 overflow-auto p-6">
                                 <div className="max-w-4xl mx-auto space-y-6">
                                     {selected_data_model ? (
-                                        // Editierbare DataModelCard in der Main Area
                                         <DataModelCard
                                             data_model={selected_data_model}
                                             is_selected={true}
                                             preview={false}
-                                            onAddField={(field) => addFieldToModel(selected_data_model.id, field)}
-                                            onDeleteField={(fieldId) => deleteFieldFromModel(selected_data_model.id, fieldId)}
                                         />
                                     ) : (
-                                        // Placeholder wenn kein Model ausgewählt
+                                        // Placeholder wenn kein Data Model ausgewählt
                                         <Card className="border-dashed border-2 border-gray-300">
                                             <CardHeader className="text-center pb-4">
                                                 <div className="mx-auto w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center mb-4">

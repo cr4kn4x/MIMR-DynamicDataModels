@@ -24,15 +24,12 @@ import {
 } from "@/components/ui/select"
 import { CheckIcon, XIcon, Trash2Icon, Edit3Icon, UndoIcon, RedoIcon, RotateCcwIcon } from "lucide-react"
 import { DataModelField } from "@/lib/interfaces/DataModelInterfaces"
+import { applyChangesToDataModelField } from "@/lib/api/DataModelApi"
 
 
 interface EditableFieldProps {
     field: DataModelField
-
-    isNew?: boolean
-    onSave: (field: Omit<DataModelField, 'id'>) => void
-    onCancel: () => void
-    onDelete?: (fieldId: string) => void
+    data_model_id: string
 }
 
 
@@ -51,13 +48,12 @@ const FIELD_TYPES = [
 ]
 
 
-export function EditableDataModelField({ field, isNew = false, onSave, onCancel, onDelete }: EditableFieldProps) {
+export function EditableDataModelField({ field, data_model_id }: EditableFieldProps) {
 
     // 
     const [name, set_name] = useState<string>(field.name)
     const [type, set_type] = useState<string>(field.type)
     const [description, set_description] = useState<string | null>(field.description)
-
     
 
     // ui states
@@ -70,9 +66,24 @@ export function EditableDataModelField({ field, isNew = false, onSave, onCancel,
     const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
     const isUndoRedoAction = useRef<boolean>(false)
 
+    // 
+    const [error, set_error] = useState("")
 
-    function handle_save_changes() {
-        // show toast if failed 
+
+    async function handle_save_changes() {
+        // show toast if failed
+        try {
+            const new_field: DataModelField = {id: field.id, description: description, name: name, type: type}
+            await applyChangesToDataModelField(data_model_id, new_field)
+            
+            cancelEditMode()
+            return
+        }
+        catch (e) {
+            const error_msg = e instanceof Error ? e.message : String(e)
+            set_error(error_msg)
+            return
+        }
     }
 
 
@@ -85,6 +96,8 @@ export function EditableDataModelField({ field, isNew = false, onSave, onCancel,
         const hasNameChanged = name !== field.name
         const hasTypeChanged = type !== field.type
         const hasDescriptionChanged = description !== field.description
+
+        set_error("")
         
         set_active_changes(hasNameChanged || hasTypeChanged || hasDescriptionChanged)
 
@@ -161,6 +174,7 @@ export function EditableDataModelField({ field, isNew = false, onSave, onCancel,
             clearTimeout(saveTimeoutRef.current)
         }
 
+        set_error("")
         set_active_changes(false)
     }
 
@@ -401,7 +415,7 @@ export function EditableDataModelField({ field, isNew = false, onSave, onCancel,
                                 <Button size="icon" variant="ghost" className="hover:text-red-500" onClick={(e)=>{e.stopPropagation(); cancelEditMode()}}>
                                     <XIcon />
                                 </Button>
-                                <Button size="icon" variant="ghost" className="hover:text-green-500" disabled={!name.trim() || !type} onClick={(e)=>{e.stopPropagation(); }}>
+                                <Button size="icon" variant="ghost" className="hover:text-green-500" disabled={!name.trim() || !type} onClick={(e)=>{e.stopPropagation(); cancelEditMode()}}>
                                     <CheckIcon />
                                 </Button>
                             </>
@@ -409,7 +423,7 @@ export function EditableDataModelField({ field, isNew = false, onSave, onCancel,
                         }
                         </div>
                     </div>
-
+                    {error && <div className="text-red-500 text-xs">{error}</div>}
                     
                     {active_changes && (
                         <div className="text-xs text-gray-500 italic mt-1">

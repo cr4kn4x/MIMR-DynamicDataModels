@@ -1,4 +1,4 @@
-import { DataModel } from "@/lib/interfaces/DataModelInterfaces"
+import { DataModel, DataModelField } from "@/lib/interfaces/DataModelInterfaces"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -7,24 +7,17 @@ import {
     FileCodeIcon,
     Edit3Icon,
     Trash2Icon,
-    PlusIcon,
-    ChevronRightIcon,
 } from "lucide-react"
 import { EditableDataModelField } from "./EditableDataModelField"
-import { useState } from "react"
 import { ReadOnlyDataModelField } from "./DataModelField"
 
 
 
 interface DataModelCardProps {
     data_model: DataModel
-
-
     is_selected: boolean
     onSelect?: () => void
-    preview?: boolean // true = nur preview, false = vollständige card mit edit-optionen
-    onAddField?: (field: { name: string; type: string; description: string | null }) => void
-    onDeleteField?: (fieldId: string) => void
+    preview: boolean
 }
 
 
@@ -32,8 +25,7 @@ interface DataModelCardProps {
 
 
 
-export function DataModelCard({ is_selected, data_model, onSelect, preview = false, onAddField, onDeleteField }: DataModelCardProps) {
-
+export function DataModelCard({ is_selected, data_model, onSelect, preview}: DataModelCardProps) {
 
 
     return (
@@ -78,11 +70,7 @@ export function DataModelCard({ is_selected, data_model, onSelect, preview = fal
                             <div key={field.id} className="group">
                                 <EditableDataModelField
                                     field={field}
-                                    onSave={(updatedField) => {
-                                        console.log("Update field:", field.id, updatedField)
-                                    }}
-                                    onCancel={() => { }}
-                                    onDelete={onDeleteField}
+                                    data_model_id={data_model.id}
                                 />
                             </div>
                         ))}

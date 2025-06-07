@@ -1,11 +1,10 @@
-import { Truck } from "lucide-react";
-import { DataModel, Project } from "../interfaces/DataModelInterfaces";
+import { DataModel, DataModelField, Project } from "../interfaces/DataModelInterfaces";
 import { getFirebaseBearer, raiseErrorFromResponse } from "./utils";
 
 
 const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_BASE
 
-
+// TO-DO: 1.) Auch bei erfolg msg durchreichen und potenziell als toast oder zumindest in der Konsole ausgeben. 
 
 interface getAllProjectsResponse {
     projects: Project[]
@@ -98,3 +97,29 @@ export async function getDataModelsByProjectId(project_id: string): Promise<getD
     const res_json = await response.json()
     return res_json
 }
+
+
+
+
+export async function applyChangesToDataModelField(ass_data_model_id: string, new_field: DataModelField) {
+    const url = `${BASE_URL}/api/data_models/change_field`
+
+    const response = await fetch(url, {
+        method: "POST", 
+        headers: {
+            "Authorization": await getFirebaseBearer(),
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            ass_data_model_id: ass_data_model_id, 
+            new_field: new_field
+        })
+    })
+
+    if(!response.ok) {
+        await raiseErrorFromResponse(response)
+    }
+
+    return true
+}
+
