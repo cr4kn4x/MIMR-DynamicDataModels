@@ -84,9 +84,6 @@ export function ProjectSelectorCombobox({ selected_project_id, set_selected_proj
                     </Command>
                 </PopoverContent>
             </Popover>
-
-            
-            
         </>
     )
 }

@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogC
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useState } from "react"
-import { createNewDataModel, createNewProject } from "@/lib/api/DataModelApi"
+import { createNewDataModel } from "@/lib/api/DataModelApi"
 import { PlusIcon } from "lucide-react"
 
 
@@ -46,7 +46,7 @@ export default function CreateDataModelDialog({selected_project_id}: CreateDataM
         setError(null)
 
         if (await handle_create_new_data_model(selected_project_id, data_model_name)) {
-            set_data_model_name("");
+            set_data_model_name("")
             set_dialog_open(false)
         }
     }
@@ -55,8 +55,8 @@ export default function CreateDataModelDialog({selected_project_id}: CreateDataM
         <Dialog open={dialog_open} onOpenChange={set_dialog_open}>
             <DialogTrigger asChild>
                 <Button size="sm" variant="outline">
-                        <PlusIcon className="w-4 h-4 mr-2" />
-                        Create Data Model
+                        <PlusIcon/>
+                        Data Model
                 </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-md">
