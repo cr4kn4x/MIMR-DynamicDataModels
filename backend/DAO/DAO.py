@@ -24,46 +24,27 @@ class DAO:
         self.dsn = dsn
 
 
-    def __get_current_function_name(self) -> str:
-        return inspect.currentframe().f_back.f_code.co_name
-
     def __get_connection(self):
         return psycopg.connect(self.dsn, row_factory=psycopg.rows.dict_row)
-    
-    def __check_data_model_exists_by_name_in_project(self, user_id: str, project_id: str, data_model_name: str) -> bool: 
-        with self.__get_connection() as conn: 
-            with conn.cursor() as cur: 
-                cur.execute("SELECT 1 FROM data_models WHERE user_id = %s AND project_id = %s AND name = %s", (user_id, project_id, data_model_name))
-                res = cur.fetchone()
-        return res is not None 
+      
 
     def __check_project_exists_by_id(self, user_id: str, project_id: str) -> bool:
+        # Only used for user-friendly error messages, not for data integrity. Race conditions are handled by DB constraints.
         with self.__get_connection() as conn: 
             with conn.cursor() as cur: 
                 cur.execute("SELECT 1 FROM projects WHERE user_id = %s and id = %s;", (user_id, project_id))
                 res = cur.fetchone()
         return res is not None
-    
-    def __check_project_exists_by_name(self, user_id: str, project_name: str) -> bool:
-        with self.__get_connection() as conn: 
-            with conn.cursor() as cur: 
-                cur.execute("SELECT 1 FROM projects WHERE user_id = %s and name = %s;", (user_id, project_name))
-                res = cur.fetchone() 
-        return res is not None
+
 
     def __check_data_model_exists_by_id(self, user_id: str, data_model_id: str) -> bool: 
+        # Only used for user-friendly error messages, not for data integrity. Race conditions are handled by DB constraints.
         with self.__get_connection() as conn: 
             with conn.cursor() as cur: 
                 cur.execute("SELECT 1 FROM data_models WHERE user_id = %s and id = %s", (user_id, data_model_id))
                 res = cur.fetchone() 
         return res is not None 
 
-    def __check_data_model_field_exists_by_id(self, user_id: str, field_id: str) -> bool: 
-        with self.__get_connection() as conn: 
-            with conn.cursor() as cur: 
-                cur.execute("SELECT 1 FROM data_model_fields WHERE user_id = %s and id = %s", (user_id, field_id))
-                res = cur.fetchone() 
-        return res is not None 
 
     def __get_data_model_fields_by_data_model_id(self, user_id: str, data_model_id: str):
         with self.__get_connection() as conn:
@@ -71,6 +52,7 @@ class DAO:
                 cur.execute("SELECT id, name, type, description FROM data_model_fields WHERE user_id = %s and data_model_id = %s ORDER BY name", (user_id, data_model_id))
                 res = cur.fetchall()     
         return res
+
 
     def __add_fields_to_data_model(self, user_id: str, data_models: typing.List[dict]): 
         res = []
@@ -90,14 +72,9 @@ class DAO:
                 )
         return True
 
+
     @dao_exception_handler
     def insert_project(self, user_id: str, project_name: str):
-        self.__validate_user_id(user_id)
-        self.__validate_name(project_name, "project_name")
-        
-        if self.__check_project_exists_by_name(user_id=user_id, project_name=project_name):
-            raise DAODuplicateResourceException(f"Project with name '{project_name}' already exists")
-        
         with self.__get_connection() as conn:
             with conn.cursor() as cur:
                 cur.execute("INSERT INTO projects(user_id, id, name) VALUES (%s, %s, %s);", (user_id, str(uuid.uuid4()), project_name))
@@ -118,17 +95,16 @@ class DAO:
         if not self.__check_project_exists_by_id(user_id=user_id, project_id=project_id):
             raise DAOValidationException(f"Associated project does not exist")
         
-        if self.__check_data_model_exists_by_name_in_project(user_id=user_id, project_id=project_id, data_model_name=data_model_name):
-            raise DAODuplicateResourceException(f"Data Model with name {data_model_name} already exists in this project")
-
         with self.__get_connection() as conn:
             with conn.cursor() as cur: 
                 cur.execute("INSERT INTO data_models(user_id, project_id, id, name) VALUES (%s, %s, %s, %s);", 
                             (user_id, project_id, str(uuid.uuid4()), data_model_name))
         return True
 
+
     @dao_exception_handler
     def get_data_models_by_project_id(self, user_id: str, project_id: str):
+        # The existence check below is only for user-friendly error messages. Data integrity and race conditions are handled by DB constraints.
         if not self.__check_project_exists_by_id(user_id=user_id, project_id=project_id): 
             raise DAOValidationException("Associated project does not exist")
         
@@ -140,8 +116,10 @@ class DAO:
         data_models = self.__add_fields_to_data_model(user_id, data_models=data_models)
         return data_models
 
+
     @dao_exception_handler
     def get_data_model_by_id(self, user_id: str, data_model_id: str) -> dict:
+        # The existence check below is only for user-friendly error messages. Data integrity and race conditions are handled by DB constraints.
         if not self.__check_data_model_exists_by_id(user_id=user_id, data_model_id=data_model_id):
             raise DAOValidationException("Data model does not exist")
         
@@ -152,10 +130,13 @@ class DAO:
         data_model = self.__add_fields_to_data_model(user_id=user_id, data_models=[res])[0]
         return data_model
 
+
     @dao_exception_handler
     def insert_data_model_field(self, user_id: str, data_model_id: str, field_name: str, field_type: str, field_description: str | None) -> bool:
+        # The existence check below is only for user-friendly error messages. Data integrity and race conditions are handled by DB constraints.
         if not self.__check_data_model_exists_by_id(user_id=user_id, data_model_id=data_model_id):
             raise DAOValidationException("Associated data model does not exist")
+        
         with self.__get_connection() as conn:
             with conn.cursor() as cur:
                 cur.execute(
@@ -163,6 +144,7 @@ class DAO:
                     (user_id, data_model_id, str(uuid.uuid4()), field_name, field_type, field_description)
                 )
         return True
+
 
     @dao_exception_handler
     def change_data_model_field(self, user_id: str, field_id: str, field_name: str, field_type: str, field_description: str | None): 
@@ -175,6 +157,7 @@ class DAO:
 
         return True
 
+
     @dao_exception_handler
     def delete_data_model_field(self, user_id: str, field_id: str) -> bool:
         with self.__get_connection() as conn:
@@ -184,6 +167,7 @@ class DAO:
                     raise DAOValidationException(f"Data model field with id '{field_id}' does not exist")
         return True
 
+
     @dao_exception_handler
     def delete_data_model(self, user_id: str, data_model_id: str) -> bool:
         with self.__get_connection() as conn:
@@ -192,6 +176,7 @@ class DAO:
                 if cur.rowcount == 0:
                     raise DAOValidationException(f"Data model with id '{data_model_id}' does not exist")
         return True
+
 
     @dao_exception_handler 
     def delete_project(self, user_id: str, project_id: str) -> bool:
