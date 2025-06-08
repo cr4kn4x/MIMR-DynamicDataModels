@@ -141,7 +141,7 @@ class DAO:
         return True
     
 
-    def get_data_models_by_project_id(self, user_id: str, project_id: str):
+    def get_data_models_by_project_id(self, user_id: str, project_id: str) -> typing.List[dict]:
         if not self.check_project_exists_by_id(user_id=user_id, project_id=project_id): 
             raise DAOException("Associated project does not exist")
         
@@ -150,8 +150,33 @@ class DAO:
                 cur.execute("SELECT project_id, id, name FROM data_models WHERE user_id = %s and project_id = %s", (user_id, project_id))
                 res = cur.fetchall()
 
+        res = self.__add_data_model_fields(user_id, data_models_base=res)
         return res
+    
 
+    def get_data_model_by_id(self, user_id: str, project_id: str, data_model_id: str) -> typing.Dict: 
+        if not self.check_project_exists_by_id(user_id=user_id, project_id=project_id): 
+            raise DAOException("Associated project does not exist")
+        
+        if not self.check_data_model_exists_by_id(user_id=user_id, data_model_id=data_model_id):
+            raise DAOException("Data model does not exist")
+        
+        with self.__get_connection() as conn: 
+            with conn.cursor() as cur:
+                cur.execute("SELECT project_id, id, name FROM data_models WHERE user_id=%s and project_id=%s and id=%s", (user_id, project_id, data_model_id))
+                res = cur.fetchone() 
+
+        data_model = self.__add_data_model_fields(user_id=user_id, data_models_base=[res])[0]
+        return data_model
+
+    
+    def __add_data_model_fields(self, user_id: str, data_models_base: typing.List[dict]): 
+        res = []
+        for data_model in data_models_base:
+            data_model["fields"] = self.get_data_model_fields_by_id(user_id=user_id, data_model_id=data_model["id"])
+            res.append(data_model)
+        
+        return res
 
     def get_data_model_fields_by_id(self, user_id: str, data_model_id: str) -> typing.List:
         with self.__get_connection() as conn:

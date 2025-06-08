@@ -11,10 +11,12 @@ import { PlusIcon } from "lucide-react"
 
 interface CreateDataModelDialogProps {
     selected_project_id: string
+    // refresh_data_models_list?(project_id: string): void
+    refresh_data_models_list(project_id: string): void
 }
 
 
-export default function CreateDataModelDialog({selected_project_id}: CreateDataModelDialogProps) {
+export default function CreateDataModelDialog({selected_project_id, refresh_data_models_list}: CreateDataModelDialogProps) {
     // initialize component states
     const [dialog_open, set_dialog_open] = useState<boolean>(false)
     const [data_model_name, set_data_model_name] = useState("")
@@ -29,6 +31,7 @@ export default function CreateDataModelDialog({selected_project_id}: CreateDataM
 
         try {
             await createNewDataModel(selected_project_id, data_model_name)
+            refresh_data_models_list(selected_project_id)
         }
         catch (e) {
             const error_msg = e instanceof Error ? e.message : String(e)

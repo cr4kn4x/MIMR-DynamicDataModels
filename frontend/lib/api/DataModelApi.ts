@@ -123,3 +123,29 @@ export async function applyChangesToDataModelField(ass_data_model_id: string, ne
     return true
 }
 
+
+interface getDataModelByIdResponse {
+    data_model: DataModel
+}
+export async function getDataModelById(project_id: string, data_model_id: string): Promise<getDataModelByIdResponse> {
+    const url = `${BASE_URL}/api/data_models/get_by_id`
+
+    const response = await fetch(url, {
+        method: "POST", 
+        headers: {
+            "Authorization": await getFirebaseBearer(),
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            project_id: project_id,
+            data_model_id: data_model_id
+        })
+    })
+
+    if(!response.ok) {
+        await raiseErrorFromResponse(response)
+    }
+    
+    const res_json = await response.json()
+    return res_json
+}

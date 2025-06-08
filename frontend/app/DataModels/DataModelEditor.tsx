@@ -18,10 +18,12 @@ export default function DataModelEditor() {
         projects,
         selected_project_id, set_selected_project_id,
         selected_project,
-        selected_data_model, set_selected_data_model,
+        selected_data_model_id, set_selected_data_model_id,
+        selected_data_model,
         project_data_models,
-        addFieldToModel,
-        deleteFieldFromModel
+
+        get_and_set_project_data_models,
+        get_and_set_data_model,
     } = useDataModelsPageContext()
 
 
@@ -64,7 +66,10 @@ export default function DataModelEditor() {
                             {selected_project_id ?
                                 (
                                     <div>
-                                        <CreateDataModelDialog selected_project_id={selected_project_id} />
+                                        <CreateDataModelDialog 
+                                            selected_project_id={selected_project_id} 
+                                            refresh_data_models_list={get_and_set_project_data_models}
+                                        />
                                     </div>
                                 ) : (<></>)
                             }
@@ -88,22 +93,25 @@ export default function DataModelEditor() {
                                     <FileCodeIcon className="w-12 h-12 text-gray-300 mx-auto mb-3" />
                                     <p className="text-sm text-gray-500 mb-4">No data models yet</p>
 
-                                    <CreateDataModelDialog selected_project_id={selected_project_id} />
+                                    <CreateDataModelDialog 
+                                        selected_project_id={selected_project_id} 
+                                        refresh_data_models_list={get_and_set_project_data_models}
+                                    />
                                 </div>
                             ) : (
                                 project_data_models.map((model, index) => (
                                     <DataModelCard 
                                         key={model.name}
                                         data_model={model}
-                                        is_selected={selected_data_model?.id === model.id}
+                                        is_selected={selected_data_model_id === model.id}
                                         preview={true}
 
 
 
                                         onSelect={() => {
-                                            // toogle --> click selected again leads to unselect
-                                            set_selected_data_model(
-                                                selected_data_model?.id === model.id ? null : model
+                                            // toggle --> click selected again leads to unselect
+                                            set_selected_data_model_id(
+                                                selected_data_model_id === model.id ? null : model.id
                                             )
                                         }}
                                     />
