@@ -5,6 +5,13 @@ from flask_cors import CORS
 from DAO.DAO import DAO, DAOException
 from InputValidation import InputValidation
 import DAO.ApiInterfaces as Interfaces
+from DAO.Exceptions import (
+    DAOException,
+    DAOValidationException,
+    DAODuplicateResourceException,
+    DAOConnectionException,
+    DAOIntegrityException
+)
 
 
 ############################################################
@@ -25,8 +32,41 @@ init_firebase()                                         ####
 ############################################################
 
 
+############################################################
+############################################################
+def log_exception(e: DAOException): 
+    if e.original_exception == None:
+        logging.exception(e)
+    else: 
+        logging.exception(e.original_exception)
+    
 
+@app.errorhandler(DAOValidationException)
+def handle_validation_error(e: DAOValidationException):
+    log_exception(e)
+    return jsonify({"error": e.message}), 400
 
+@app.errorhandler(DAODuplicateResourceException)
+def handle_duplicate_error(e: DAODuplicateResourceException):
+    log_exception(e)
+    return jsonify({"error": e.message}), 409
+
+@app.errorhandler(DAOIntegrityException)
+def handle_integrity_error(e: DAOIntegrityException):
+    log_exception(e)
+    return jsonify({"error": e.message}), 400
+
+@app.errorhandler(DAOConnectionException)
+def handle_connection_error(e: DAOConnectionException):
+    log_exception(e)
+    return jsonify({"error": "Database temporarily unavailable."}), 503
+
+@app.errorhandler(DAOException)
+def handle_generic_dao_error(e: DAOException):
+    log_exception(e)
+    return jsonify({"error": "Internal database error."}), 500
+############################################################
+############################################################
 
 
 
@@ -150,14 +190,13 @@ def get_data_models_by_project():
 @app.post("/api/data_models/create_field")
 @firebase_token_required(dao)
 def create_data_model_field(): 
-
     firebase_token = request.firebase_token
     assert isinstance(firebase_token, FirebaseIdToken)
 
 
-     # get json body
+    # get json body
     data = request.get_json()
-    ass_data_model_id = data.get("ass_data_model_id")
+    data_model_id = data.get("data_model_id")
     field = data.get("data_model_field")
 
     class request_model_field(pydantic.BaseModel):
@@ -170,7 +209,7 @@ def create_data_model_field():
 
     try:
         dao.insert_data_model_field(user_id=firebase_token.user_id, 
-                                    associated_data_model_id=ass_data_model_id,
+                                    data_model_id=data_model_id,
                                     field_name=field.name,
                                     field_type=field.type,
                                     field_description=field.description, 
@@ -198,7 +237,6 @@ def change_data_model():
     assert isinstance(firebase_token, FirebaseIdToken)
 
     data = request.get_json()
-    ass_data_model_id = data.get("ass_data_model_id")
     new_field = data.get("new_field")
 
     try: 
@@ -208,7 +246,6 @@ def change_data_model():
     
     try:
         dao.change_data_model_field(user_id=firebase_token.user_id, 
-                                    associated_data_model_id=ass_data_model_id, 
                                     field_id=new_field.id, 
                                     field_name=new_field.name, 
                                     field_type=new_field.type, 
