@@ -101,7 +101,7 @@ export async function getDataModelsByProjectId(project_id: string): Promise<getD
 
 
 
-export async function applyChangesToDataModelField(ass_data_model_id: string, new_field: DataModelField) {
+export async function applyChangesToDataModelField(data_model_id: string, new_field: DataModelField) {
     const url = `${BASE_URL}/api/data_models/change_field`
 
     const response = await fetch(url, {
@@ -111,7 +111,7 @@ export async function applyChangesToDataModelField(ass_data_model_id: string, ne
             "Content-Type": "application/json"
         },
         body: JSON.stringify({
-            ass_data_model_id: ass_data_model_id, 
+            data_model_id: data_model_id, 
             new_field: new_field
         })
     })
@@ -127,7 +127,8 @@ export async function applyChangesToDataModelField(ass_data_model_id: string, ne
 interface getDataModelByIdResponse {
     data_model: DataModel
 }
-export async function getDataModelById(project_id: string, data_model_id: string): Promise<getDataModelByIdResponse> {
+
+export async function getDataModelById(data_model_id: string): Promise<getDataModelByIdResponse> {
     const url = `${BASE_URL}/api/data_models/get_by_id`
 
     const response = await fetch(url, {
@@ -137,7 +138,6 @@ export async function getDataModelById(project_id: string, data_model_id: string
             "Content-Type": "application/json"
         },
         body: JSON.stringify({
-            project_id: project_id,
             data_model_id: data_model_id
         })
     })

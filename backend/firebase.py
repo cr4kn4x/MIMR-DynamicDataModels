@@ -44,8 +44,7 @@ def firebase_token_required(dao: DAO):
                 if id_token.email_verified: 
                     request.firebase_token = id_token        
 
-                    if not dao.check_user_exists(id_token.user_id): 
-                        dao.insert_user(id_token.user_id)
+                    dao.insert_user_if_not_exists(id_token.user_id)
                 else:
                     return jsonify({"msg": "E-Mail not verified"}), 403 # forbidden
 
