@@ -149,3 +149,74 @@ export async function getDataModelById(data_model_id: string): Promise<getDataMo
     const res_json = await response.json()
     return res_json
 }
+
+
+
+export async function createNewDataModelField(data_model_id: string, new_field: DataModelField) {
+    const url = `${BASE_URL}/api/data_models/create_field`
+
+    const response = await fetch(url, {
+        method: "POST", 
+        headers: {
+            "Authorization": await getFirebaseBearer(),
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            data_model_id: data_model_id, 
+            new_field: new_field
+        })
+    })
+
+    if(!response.ok) {
+        await raiseErrorFromResponse(response)
+    }
+
+    return true
+}
+
+
+
+export async function deleteDataModelField(field_id: string) {
+    const url = `${BASE_URL}/api/data_models/delete_field`
+
+    const response = await fetch(url, {
+        method: "POST", 
+        headers: {
+            "Authorization": await getFirebaseBearer(),
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            field_id: field_id
+        })
+    })
+
+    if(!response.ok) {
+        await raiseErrorFromResponse(response)
+    }
+
+    return true
+}
+
+
+
+
+export async function deleteDataModel(data_model_id: string) {
+    const url = `${BASE_URL}/api/data_models/delete`
+
+    const response = await fetch(url, {
+        method: "POST", 
+        headers: {
+            "Authorization": await getFirebaseBearer(),
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            data_model_id: data_model_id
+        })
+    })
+
+    if(!response.ok) {
+        await raiseErrorFromResponse(response)
+    }
+
+    return true
+}

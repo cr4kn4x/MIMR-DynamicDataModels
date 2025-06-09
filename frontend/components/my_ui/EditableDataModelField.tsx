@@ -24,13 +24,17 @@ import {
 } from "@/components/ui/select"
 import { CheckIcon, XIcon, Trash2Icon, Edit3Icon, UndoIcon, RedoIcon, RotateCcwIcon } from "lucide-react"
 import { DataModelField } from "@/lib/interfaces/DataModelInterfaces"
-import { applyChangesToDataModelField } from "@/lib/api/DataModelApi"
+import { applyChangesToDataModelField, createNewDataModelField, deleteDataModelField } from "@/lib/api/DataModelApi"
+
 
 
 interface EditableFieldProps {
     field: DataModelField
     data_model_id: string
     refresh_data_model(data_model_id: string): void
+
+    create_new: boolean
+    create_new_state(state: boolean): void
 }
 
 
@@ -49,7 +53,7 @@ const FIELD_TYPES = [
 ]
 
 
-export function EditableDataModelField({ field, data_model_id, refresh_data_model}: EditableFieldProps) {
+export function EditableDataModelField({ field, data_model_id, refresh_data_model, create_new, create_new_state}: EditableFieldProps) {
 
     // 
     const [name, set_name] = useState<string>(field.name)
@@ -58,7 +62,7 @@ export function EditableDataModelField({ field, data_model_id, refresh_data_mode
     
 
     // ui states
-    const [is_edit, set_is_edit] = useState<boolean>(false)
+    const [is_edit, set_is_edit] = useState<boolean>(create_new)
     const [active_changes, set_active_changes] = useState<boolean>(false)
 
     // history for undo/redo
@@ -71,10 +75,31 @@ export function EditableDataModelField({ field, data_model_id, refresh_data_mode
     const [error, set_error] = useState("")
 
 
+
+    useEffect(()=>{
+        if(!is_edit){
+            create_new_state(false)
+        }
+    }, [is_edit])
+    
+
+
     async function handle_save_changes() {
-        // show toast if failed
+        const new_field: DataModelField = {id: field.id, description: description, name: name, type: type}
+
+
+        if(create_new){
+            // ... 
+            await createNewDataModelField(data_model_id, new_field)
+
+            create_new_state(false)
+            refresh_data_model(data_model_id)
+            cancelEditMode()
+            return
+        }
+
+
         try {
-            const new_field: DataModelField = {id: field.id, description: description, name: name, type: type}
             await applyChangesToDataModelField(data_model_id, new_field)
             
             refresh_data_model(data_model_id)
@@ -89,8 +114,19 @@ export function EditableDataModelField({ field, data_model_id, refresh_data_mode
     }
 
 
-    function handle_delete_field() {
-        // show toast if failed / success
+    async function handle_delete_field() {
+        try {
+            await deleteDataModelField(field.id)
+
+            refresh_data_model(data_model_id)
+            cancelEditMode()
+            return
+        }
+        catch (e) {
+            const error_msg = e instanceof Error ? e.message : String(e)
+            set_error(error_msg)
+            return
+        }
     }
 
 

@@ -7,26 +7,44 @@ import {
     FileCodeIcon,
     Edit3Icon,
     Trash2Icon,
+    Plus,
 } from "lucide-react"
 import { EditableDataModelField } from "./EditableDataModelField"
 import { ReadOnlyDataModelField } from "./DataModelField"
-
+import { useState } from "react"
+import { deleteDataModel } from "@/lib/api/DataModelApi"
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "../ui/alert-dialog"
 
 
 interface DataModelCardProps {
+    project_id: string
     data_model: DataModel
     is_selected: boolean
     onSelect?: () => void
-    refresh_data_model(data_model_id: string): void 
+    refresh_data_model(data_model_id: string): void
+    refresh_data_model_list(project_id: string): void
     preview: boolean
 }
 
 
+export function DataModelCard({ is_selected, data_model, onSelect, preview, refresh_data_model, refresh_data_model_list, project_id }: DataModelCardProps) {
+
+    const [add_new_field, set_add_new_field] = useState(false)
+    const [error, set_error] = useState("")
 
 
-
-
-export function DataModelCard({ is_selected, data_model, onSelect, preview, refresh_data_model}: DataModelCardProps) {
+    async function handle_delete_data_model() {
+        try {
+            await deleteDataModel(data_model.id)
+            refresh_data_model_list(project_id)
+            return
+        }
+        catch (e) {
+            const error_msg = e instanceof Error ? e.message : String(e)
+            set_error(error_msg)
+            return
+        }
+    }
 
 
     return (
@@ -40,11 +58,32 @@ export function DataModelCard({ is_selected, data_model, onSelect, preview, refr
 
                         {!preview &&
                             <div className="flex space-x-1">
+
+                                <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                        <Button size="sm" variant="ghost" className="h-6 w-6 p-0">
+                                            <Trash2Icon className="w-3 h-3" />
+                                        </Button>
+                                    </AlertDialogTrigger>
+
+                                    <AlertDialogContent>
+                                        <AlertDialogHeader>
+                                            <AlertDialogTitle>
+                                                Delete Data Model "{data_model.name}"?
+                                            </AlertDialogTitle>
+                                            <AlertDialogDescription>
+                                                This action cannot be undone. The data model and all associated definitions will be permanently deleted.
+                                            </AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                            <AlertDialogCancel onClick={(e) => { e.stopPropagation(); }}>Cancel</AlertDialogCancel>
+                                            <AlertDialogAction onClick={(e) => { e.stopPropagation(); handle_delete_data_model(); }} className="bg-red-500">Delete Data Model</AlertDialogAction>
+                                        </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                </AlertDialog>
+
                                 <Button size="sm" variant="ghost" className="h-6 w-6 p-0">
                                     <Edit3Icon className="w-3 h-3" />
-                                </Button>
-                                <Button size="sm" variant="ghost" className="h-6 w-6 p-0">
-                                    <Trash2Icon className="w-3 h-3" />
                                 </Button>
                             </div>
                         }
@@ -73,9 +112,29 @@ export function DataModelCard({ is_selected, data_model, onSelect, preview, refr
                                     refresh_data_model={refresh_data_model}
                                     field={field}
                                     data_model_id={data_model.id}
+                                    create_new={false}
+                                    create_new_state={set_add_new_field}
                                 />
+                            </div>)
+                        )}
+
+                        {!preview && !add_new_field &&
+                            <div className="flex justify-center">
+                                <Button size={"sm"} variant={"outline"} onClick={() => { set_add_new_field(true) }}>
+                                    <Plus /> Add Field
+                                </Button>
                             </div>
-                        ))}
+                        }
+
+                        {add_new_field &&
+                            <EditableDataModelField
+                                refresh_data_model={refresh_data_model}
+                                field={{ name: "", type: "", description: null, id: "" }}
+                                create_new={true}
+                                data_model_id={data_model.id}
+                                create_new_state={set_add_new_field}
+                            />
+                        }
 
                         {preview && data_model.fields.map((field, fieldIndex) => (
                             <div key={field.id} className="group">
@@ -88,149 +147,3 @@ export function DataModelCard({ is_selected, data_model, onSelect, preview, refr
         </Card>
     )
 }
-
-
-
-
-
-{ /* 
-
-
-
-interface DataModelCardProps {
-    data_model: DataModel
-    is_selected: Boolean
-    onSelect?: () => void
-    preview?: boolean // true = nur preview, false = vollständige card mit edit-optionen
-    onAddField?: (field: { name: string; type: string; description: string | null }) => void
-    onDeleteField?: (fieldId: string) => void
-}
-
-
-
-
-
-export function DataModelCard({ is_selected, data_model, onSelect, preview = false, onAddField, onDeleteField }: DataModelCardProps) {
-
-    const DataModelCardHeader = () => {
-        return(
-            <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
-                        <FileCodeIcon className="w-4 h-4 text-gray-600" />
-                        <CardTitle className="text-sm font-medium">{data_model.name}</CardTitle>
-                    </div>
-                    <div className="flex items-center space-x-1">
-                        <Badge variant="secondary" className="text-xs">
-                            {data_model.fields.length} fields
-                        </Badge>
-                        {!preview && (
-                            <ChevronRightIcon
-                                className={`w-4 h-4 text-gray-400 transition-transform ${is_selected ? "rotate-90" : ""}`}
-                            />
-                        )}
-                    </div>
-                </div>
-            </CardHeader>
-        )
-    }
-
-
-    
-
-
-
-    const [isAddingField, setIsAddingField] = useState(false)
-
-    return (
-        <Card key={data_model.name}
-            className={`transition-all hover:shadow-md ${
-                preview ? (is_selected ? "ring-2 ring-blue-500 bg-blue-50 cursor-pointer" : "cursor-pointer"): "border-2 border-gray-200"}`}
-            onClick={preview ? onSelect : undefined}>
-            
-            <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
-                        <FileCodeIcon className="w-4 h-4 text-gray-600" />
-                        <CardTitle className="text-sm font-medium">{data_model.name}</CardTitle>
-                    </div>
-                    <div className="flex items-center space-x-1">
-                        <Badge variant="secondary" className="text-xs">
-                            {data_model.fields.length} fields
-                        </Badge>
-                        {!preview && (
-                            <ChevronRightIcon
-                                className={`w-4 h-4 text-gray-400 transition-transform ${is_selected ? "rotate-90" : ""}`}
-                            />
-                        )}
-                    </div>
-                </div>
-            </CardHeader>
-
-            {is_selected && !preview ? (
-                <CardContent className="pt-0">
-                    <Separator className="mb-3" />
-                    <div className="space-y-2">
-                        <div className="flex items-center justify-between mb-2">
-                            <span className="text-xs font-medium text-gray-600 uppercase tracking-wide">
-                                Fields
-                            </span>
-                            <div className="flex space-x-1">
-                                <Button size="sm" variant="ghost" className="h-6 w-6 p-0">
-                                    <Edit3Icon className="w-3 h-3" />
-                                </Button>
-                                <Button size="sm" variant="ghost" className="h-6 w-6 p-0">
-                                    <Trash2Icon className="w-3 h-3" />
-                                </Button>
-                            </div>
-                        </div>
-
-                        {data_model.fields.map((field, fieldIndex) => (
-                            <div key={field.id} className="group">
-                                <EditableField
-                                    field={field}
-                                    onSave={(updatedField) => {
-                                        // TODO: Update existing field
-                                        console.log("Update field:", field.id, updatedField)
-                                    }}
-                                    onCancel={() => {}}
-                                    onDelete={onDeleteField}
-                                />
-                            </div>
-                        ))}
-
-           
-                        {isAddingField && (
-                            <EditableField
-                                isNew={true}
-                                onSave={(newField) => {
-                                    if (onAddField) {
-                                        onAddField(newField)
-                                    }
-                                    setIsAddingField(false)
-                                }}
-                                onCancel={() => setIsAddingField(false)}
-                            />
-                        )}
-
-                        
-                        {!isAddingField && (
-                            <Button 
-                                size="sm" 
-                                variant="ghost" 
-                                className="w-full mt-2 h-7 text-xs"
-                                onClick={() => setIsAddingField(true)}
-                            >
-                                <PlusIcon className="w-3 h-3 mr-1" />
-                                Add Field
-                            </Button>
-                        )}
-                        
-                    </div>
-                </CardContent>
-            ) : (<></>)
-            }
-        </Card>
-    )
-}
-*/}

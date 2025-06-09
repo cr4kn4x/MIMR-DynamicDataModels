@@ -197,7 +197,7 @@ def create_data_model_field():
     # get json body
     data = request.get_json()
     data_model_id = data.get("data_model_id")
-    field = data.get("data_model_field")
+    field = data.get("new_field")
 
     class request_model_field(pydantic.BaseModel):
         name: str
@@ -258,6 +258,45 @@ def change_data_model():
         return jsonify({"msg": "Failed to apply changes to data model field"}), 500
 
     return jsonify({"msg": "Successfully applied changes to data model field"})
+
+
+
+
+
+@app.post("/api/data_models/delete_field")
+@firebase_token_required(dao)
+def delete_data_model_field(): 
+
+    firebase_token = request.firebase_token
+    assert isinstance(firebase_token, FirebaseIdToken)
+
+    data = request.get_json()
+    field_id = data.get("field_id")
+
+    
+    dao.delete_data_model_field(firebase_token.user_id, field_id)
+
+    return jsonify({"msg": "Successfully deleted data model field"})
+
+
+
+@app.post("/api/data_models/delete")
+@firebase_token_required(dao)
+def delete_data_model():
+    firebase_token = request.firebase_token
+    assert isinstance(firebase_token, FirebaseIdToken)
+
+    data = request.get_json()
+    data_model_id = data.get("data_model_id")
+
+    dao.delete_data_model(user_id=firebase_token.user_id, data_model_id=data_model_id)
+
+    return jsonify({"msg": "Successfully deleted data model"})
+
+
+
+
+
 
 # app.run(debug=True, host="0.0.0.0")
 # flask --app app.py run --debug

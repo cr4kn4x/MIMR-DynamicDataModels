@@ -99,16 +99,16 @@ export default function DataModelEditor() {
                                     />
                                 </div>
                             ) : (
+                                selected_project_id && 
                                 project_data_models.map((model, index) => (
                                     <DataModelCard 
                                         refresh_data_model={get_and_set_data_model}
-
+                                        refresh_data_model_list={get_and_set_project_data_models}
+                                        project_id={selected_project_id}
                                         key={model.name}
                                         data_model={model}
                                         is_selected={selected_data_model_id === model.id}
                                         preview={true}
-
-
 
                                         onSelect={() => {
                                             // toggle --> click selected again leads to unselect
@@ -145,8 +145,10 @@ export default function DataModelEditor() {
                             {/* Editor Content */}
                             <div className="flex-1 overflow-auto p-6">
                                 <div className="max-w-4xl mx-auto space-y-6">
-                                    {selected_data_model ? (
+                                    {selected_data_model && selected_project_id ? (
                                         <DataModelCard
+                                            project_id={selected_project_id}
+                                            refresh_data_model_list={get_and_set_project_data_models}
                                             refresh_data_model={get_and_set_data_model}
                                             data_model={selected_data_model}
                                             is_selected={true}
