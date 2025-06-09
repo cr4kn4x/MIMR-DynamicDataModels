@@ -66,7 +66,7 @@ export default function DataModelEditor() {
                             {selected_project_id ?
                                 (
                                     <div>
-                                        <CreateDataModelDialog 
+                                        <CreateDataModelDialog
                                             selected_project_id={selected_project_id} 
                                             refresh_data_models_list={get_and_set_project_data_models}
                                         />
@@ -101,6 +101,8 @@ export default function DataModelEditor() {
                             ) : (
                                 project_data_models.map((model, index) => (
                                     <DataModelCard 
+                                        refresh_data_model={get_and_set_data_model}
+
                                         key={model.name}
                                         data_model={model}
                                         is_selected={selected_data_model_id === model.id}
@@ -145,6 +147,7 @@ export default function DataModelEditor() {
                                 <div className="max-w-4xl mx-auto space-y-6">
                                     {selected_data_model ? (
                                         <DataModelCard
+                                            refresh_data_model={get_and_set_data_model}
                                             data_model={selected_data_model}
                                             is_selected={true}
                                             preview={false}

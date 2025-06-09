@@ -17,6 +17,7 @@ interface DataModelCardProps {
     data_model: DataModel
     is_selected: boolean
     onSelect?: () => void
+    refresh_data_model(data_model_id: string): void 
     preview: boolean
 }
 
@@ -25,7 +26,7 @@ interface DataModelCardProps {
 
 
 
-export function DataModelCard({ is_selected, data_model, onSelect, preview}: DataModelCardProps) {
+export function DataModelCard({ is_selected, data_model, onSelect, preview, refresh_data_model}: DataModelCardProps) {
 
 
     return (
@@ -69,6 +70,7 @@ export function DataModelCard({ is_selected, data_model, onSelect, preview}: Dat
                         {!preview && data_model.fields.map((field, fieldIndex) => (
                             <div key={field.id} className="group">
                                 <EditableDataModelField
+                                    refresh_data_model={refresh_data_model}
                                     field={field}
                                     data_model_id={data_model.id}
                                 />

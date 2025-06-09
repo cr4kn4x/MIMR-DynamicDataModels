@@ -30,6 +30,7 @@ import { applyChangesToDataModelField } from "@/lib/api/DataModelApi"
 interface EditableFieldProps {
     field: DataModelField
     data_model_id: string
+    refresh_data_model(data_model_id: string): void
 }
 
 
@@ -48,7 +49,7 @@ const FIELD_TYPES = [
 ]
 
 
-export function EditableDataModelField({ field, data_model_id }: EditableFieldProps) {
+export function EditableDataModelField({ field, data_model_id, refresh_data_model}: EditableFieldProps) {
 
     // 
     const [name, set_name] = useState<string>(field.name)
@@ -76,6 +77,7 @@ export function EditableDataModelField({ field, data_model_id }: EditableFieldPr
             const new_field: DataModelField = {id: field.id, description: description, name: name, type: type}
             await applyChangesToDataModelField(data_model_id, new_field)
             
+            refresh_data_model(data_model_id)
             cancelEditMode()
             return
         }

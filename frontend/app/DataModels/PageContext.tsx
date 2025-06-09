@@ -26,7 +26,7 @@ export interface DataModelsContextType {
 
     get_and_set_projects(): void
     get_and_set_project_data_models(project_id: string): void
-    get_and_set_data_model(project_id: string, data_model_id: string): void
+    get_and_set_data_model(data_model_id: string): void
 }
 
 
@@ -72,8 +72,8 @@ export function DataModelsPageContextProvider({ children }: { children: ReactNod
     }
 
 
-    async function get_and_set_data_model(project_id: string, data_model_id: string) {
-        getDataModelById(project_id, data_model_id)
+    async function get_and_set_data_model(data_model_id: string) {
+        getDataModelById(data_model_id)
             .then((res) => {
                 const updated_data_model = res.data_model;
                 
