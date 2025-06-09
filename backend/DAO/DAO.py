@@ -62,13 +62,13 @@ class DAO:
         return res
 
     @dao_exception_handler
-    def insert_user_if_not_exists(self, user_id: str):        
+    def insert_user_if_not_exists(self, user_id: str, email: str):        
         with self.__get_connection() as conn:
             with conn.cursor() as cur:
                 # 
                 cur.execute(
-                    "INSERT INTO users (id) VALUES (%s) ON CONFLICT (id) DO NOTHING;",
-                    (user_id,)
+                    "INSERT INTO users (id, email) VALUES (%s) ON CONFLICT (id) DO NOTHING;",
+                    (user_id, email)
                 )
         return True
 
