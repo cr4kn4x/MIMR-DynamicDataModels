@@ -18,16 +18,23 @@ interface CreateDialogProps {
 
 
 export default function CreateProjectDialog({ projects, refresh_projects_list }: CreateDialogProps) {
-    // Component states
+    //
     const [dialog_open, set_dialog_open] = useState<boolean>(false)
-    const [newProjectName, setNewProjectName] = useState("")
-    const [isLoading, setIsLoading] = useState<boolean>(false)
+    const [project_name, set_project_name] = useState<string>("")
+    const [is_loading, set_is_loading] = useState<boolean>(false)
     const [server_error, set_server_error] = useState<string | null>(null)
 
+    const reset_all_states = () => {
+        set_dialog_open(false)
+        set_project_name("")
+        set_is_loading(false)
+        set_server_error(null)
+    }
 
     async function handle_create_new_project(project_name: string) {
-        setIsLoading(true)
+        set_is_loading(true)
         
+        // validateProjectName(project_name, projects.map((project) => {return project.name}))
         try {
             await createNewProject(project_name.trim())
             toast.success("Project created successfully", {
@@ -35,8 +42,7 @@ export default function CreateProjectDialog({ projects, refresh_projects_list }:
             })
 
             // reset and close
-            set_dialog_open(false)
-            setNewProjectName("")
+            reset_all_states()
 
             // refresh projects list
             refresh_projects_list()
@@ -48,28 +54,34 @@ export default function CreateProjectDialog({ projects, refresh_projects_list }:
             return false
         }
         finally {
-            setIsLoading(false)
+            set_is_loading(false)
         }
     }
 
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault()
         set_server_error(null)
-        await handle_create_new_project(newProjectName)
+
+        await handle_create_new_project(project_name)
     }
 
 
 
     // computed variable
-    const validation = validateProjectName(newProjectName, projects.map((project) => {return project.name}))
+    const validation = validateProjectName(project_name, projects.map((project) => {return project.name}))
 
     useEffect(() => {
         if(server_error){set_server_error(null)}      
-    }, [newProjectName])
+    }, [project_name])
 
 
     return (
-        <Dialog open={dialog_open} onOpenChange={set_dialog_open}>
+        <Dialog open={dialog_open} onOpenChange={(open) => {
+            set_dialog_open(open)
+            if(!open){
+                reset_all_states()
+            }
+        }}>
             <DialogTrigger asChild>
                 <Button variant="ghost" size="sm" className="justify-start w-full gap-2 hover:bg-accent">
                     <FolderPlus className="h-4 w-4" />
@@ -96,14 +108,14 @@ export default function CreateProjectDialog({ projects, refresh_projects_list }:
                             <Input 
                                 id="new-project-name" 
                                 placeholder="Enter a descriptive project name..."
-                                value={newProjectName} 
-                                onChange={(e)=>{setNewProjectName(e.target.value)}}
+                                value={project_name} 
+                                onChange={(e)=>{set_project_name(e.target.value)}}
                                 className={
                                     !validation.is_valid ? "border-yellow-500 focus-visible:ring-yellow-500" 
-                                    : validation.is_valid && !server_error && newProjectName.trim() ? "border-green-500" 
+                                    : validation.is_valid && !server_error && project_name.trim() ? "border-green-500" 
                                     : server_error ? "border-red-500" : ""
                                 }   
-                                disabled={isLoading}
+                                disabled={is_loading}
                                 autoFocus
                                 maxLength={50}
                             />
@@ -118,7 +130,7 @@ export default function CreateProjectDialog({ projects, refresh_projects_list }:
                                 </div>
                             )}
 
-                            {validation.is_valid && !server_error && newProjectName.trim() && (
+                            {validation.is_valid && !server_error && project_name.trim() && (
                                 <div className="text-sm text-green-600 flex items-center gap-1">
                                     <CheckCircle className="h-3 w-3" />
                                     {validation.msg}
@@ -127,20 +139,20 @@ export default function CreateProjectDialog({ projects, refresh_projects_list }:
                             
                             {/* Character Counter */}
                             <div className="flex justify-between items-center text-xs text-muted-foreground">
-                                <span>{newProjectName.length}/{MAX_LENGTH_PROJECT_NAME} characters</span>
+                                <span>{project_name.length}/{MAX_LENGTH_PROJECT_NAME} characters</span>
                             </div>
                         </div>
                     </div>
                     
                     <DialogFooter>
                         <DialogClose>
-                            <Button variant="outline" type="button" disabled={isLoading}>
+                            <Button variant="outline" type="button" disabled={is_loading}>
                                 Cancel
                             </Button>
                         </DialogClose>
                         
-                        <Button type="submit" disabled={isLoading || !validation.is_valid}>
-                            {isLoading ? (
+                        <Button type="submit" disabled={is_loading || !validation.is_valid}>
+                            {is_loading ? (
                                 <>
                                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                                     Creating...

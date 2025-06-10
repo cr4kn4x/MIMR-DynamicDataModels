@@ -68,6 +68,7 @@ export default function DataModelEditor() {
                                 (
                                     <div>
                                         <CreateDataModelDialog
+                                            data_models={project_data_models}
                                             selected_project_id={selected_project_id} 
                                             refresh_data_models_list={get_and_set_project_data_models}
                                         />
@@ -95,6 +96,7 @@ export default function DataModelEditor() {
                                     <p className="text-sm text-gray-500 mb-4">No data models yet</p>
 
                                     <CreateDataModelDialog 
+                                        data_models={project_data_models}
                                         selected_project_id={selected_project_id} 
                                         refresh_data_models_list={get_and_set_project_data_models}
                                     />
