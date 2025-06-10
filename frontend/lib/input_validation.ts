@@ -1,5 +1,6 @@
 export const MAX_LENGTH_PROJECT_NAME = 64
 export const MAX_LENGTH_DATA_MODEL_NAME = 64
+export const MAX_LENGTH_DATA_MODEL_FIELD_NAME= 64
 
 
 interface ValidationResult {
@@ -69,4 +70,27 @@ export function validateDataModelName(name: string, existing_data_models: string
 
     // seems valid
     return {is_valid: true, msg: "Data model name looks good!", severity: "none"}
+}
+
+
+
+export function validateDataModelFieldName(name: string, data_model_fields: string[]): ValidationResult{   
+
+    // TBD
+
+    return { is_valid: true, msg: "Name is valid", severity: "none"}
+}
+
+
+export function validateDataModelFieldType(type: string): ValidationResult {
+
+    // TBD
+
+    return { is_valid: true, msg: "Type is valid", severity: "none"}
+}
+
+
+export function validateDataModelFieldDescription(description: string | null): ValidationResult {
+    //
+    return { is_valid: true, msg: "Type is valid", severity: "none"}
 }
