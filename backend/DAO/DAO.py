@@ -67,7 +67,7 @@ class DAO:
             with conn.cursor() as cur:
                 # 
                 cur.execute(
-                    "INSERT INTO users (id, email) VALUES (%s) ON CONFLICT (id) DO NOTHING;",
+                    "INSERT INTO users (id, email) VALUES (%s, %s) ON CONFLICT (id) DO NOTHING;",
                     (user_id, email)
                 )
         return True
