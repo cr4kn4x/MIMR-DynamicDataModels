@@ -21,7 +21,7 @@ export default function DataModelEditor() {
         selected_data_model_id, set_selected_data_model_id,
         selected_data_model,
         project_data_models,
-
+        get_and_set_projects,
         get_and_set_project_data_models,
         get_and_set_data_model,
     } = useDataModelsPageContext()
@@ -39,6 +39,7 @@ export default function DataModelEditor() {
 
                     <div className="flex items-center space-x-3">
                         <ProjectSelectorCombobox
+                            refresh_projects_list={get_and_set_projects}
                             projects={projects}
                             selected_project_id={selected_project_id}
                             set_selected_project_id={set_selected_project_id}
@@ -189,6 +190,7 @@ export default function DataModelEditor() {
                                         Don't have a project yet?
                                     </p>
                                     <ProjectSelectorCombobox
+                                        refresh_projects_list={get_and_set_projects}
                                         projects={projects}
                                         selected_project_id={selected_project_id}
                                         set_selected_project_id={set_selected_project_id}

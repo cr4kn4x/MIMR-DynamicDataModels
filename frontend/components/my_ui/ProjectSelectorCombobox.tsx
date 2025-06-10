@@ -19,8 +19,8 @@ import {
     PopoverTrigger,
 } from "@/components/ui/popover"
 
-import CreateProjectDialog from "./CreateProjectDialog"
 import { Project } from "@/lib/interfaces/DataModelInterfaces"
+import CreateProjectDialog from "./CreateProjectDialog"
 
 
 
@@ -31,10 +31,11 @@ interface ProjectSelectorComboboxProps {
     projects: Project[]
     selected_project_id: string | null
     set_selected_project_id(id: string | null): void
+    refresh_projects_list(): void
 }
 
 
-export function ProjectSelectorCombobox({ selected_project_id, set_selected_project_id, projects}: ProjectSelectorComboboxProps) {
+export function ProjectSelectorCombobox({ selected_project_id, set_selected_project_id, projects, refresh_projects_list}: ProjectSelectorComboboxProps) {
     const [open, setOpen] = React.useState(false)
 
     return (
@@ -77,7 +78,7 @@ export function ProjectSelectorCombobox({ selected_project_id, set_selected_proj
                             
 
                             <CommandGroup>
-                                <CreateProjectDialog/>
+                                <CreateProjectDialog projects={projects} refresh_projects_list={refresh_projects_list}/>
                             </CommandGroup>
 
                         </CommandList>
