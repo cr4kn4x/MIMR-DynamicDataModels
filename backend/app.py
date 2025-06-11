@@ -18,7 +18,7 @@ from DAO.Exceptions import (
 ############################################################
 # load secrets                                          ####
 dotenv.load_dotenv("./secrets/.env")                    ####
-app = Flask(__name__)                                   #### 
+app = Flask(__name__)                                   ####
 #                                                       ####
 # CORS                                                  ####
 CORS(app, origins="*")                                  ####
@@ -37,8 +37,8 @@ init_firebase()                                         ####
 def log_exception(e: DAOException): 
     if e.original_exception == None:
         logging.exception(e)
-    else: 
-        logging.exception(e.original_exception)
+        return
+    logging.exception(e.original_exception)
     
 
 @app.errorhandler(DAOValidationException)

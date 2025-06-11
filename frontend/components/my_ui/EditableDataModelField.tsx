@@ -1,5 +1,5 @@
 "use client"
-import { useState, useEffect, useRef } from "react"
+import React, { useState, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -22,9 +22,10 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
-import { CheckIcon, XIcon, Trash2Icon, Edit3Icon, UndoIcon, RedoIcon, RotateCcwIcon } from "lucide-react"
+import { CheckIcon, XIcon, Trash2Icon, Edit3Icon, UndoIcon, RedoIcon, RotateCcwIcon, Loader2, AlertCircle, CheckCircle } from "lucide-react"
 import { DataModelField } from "@/lib/interfaces/DataModelInterfaces"
 import { applyChangesToDataModelField, createNewDataModelField, deleteDataModelField } from "@/lib/api/DataModelApi"
+import { validateDataModelFieldDescription, validateDataModelFieldName, validateDataModelFieldType } from "@/lib/input_validation"
 
 
 
@@ -64,16 +65,28 @@ export function EditableDataModelField({ field, data_model_id, refresh_data_mode
     // ui states
     const [is_edit, set_is_edit] = useState<boolean>(create_new)
     const [active_changes, set_active_changes] = useState<boolean>(false)
-
-    // history for undo/redo
-    const [history, setHistory] = useState<Array<{name: string, type: string, description: string | null}>>([])
-    const [historyIndex, setHistoryIndex] = useState<number>(-1)
-    const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
-    const isUndoRedoAction = useRef<boolean>(false)
+    const [is_loading, set_is_loading] = useState<boolean>(false)
 
     // 
-    const [error, set_error] = useState("")
+    const [server_error, set_server_error] = useState<string | null>(null)
 
+
+    const reset_field_states = () => {
+        set_name(field.name)
+        set_type(field.type)
+        set_description(field.description)
+
+        set_active_changes(false)
+    }
+
+
+    // computed states 
+    const name_validation = validateDataModelFieldName(name, []) // list will be set later.. 
+    const type_validation = validateDataModelFieldType(type) 
+    const description_validation = validateDataModelFieldDescription(description)
+
+    // 
+    const is_field_valid = name_validation.is_valid && type_validation.is_valid && description_validation.is_valid
 
 
     useEffect(()=>{
@@ -83,160 +96,112 @@ export function EditableDataModelField({ field, data_model_id, refresh_data_mode
     }, [is_edit])
     
 
-
-    async function handle_save_changes() {
-        const new_field: DataModelField = {id: field.id, description: description, name: name, type: type}
-
-
-        if(create_new){
-            // ... 
-            await createNewDataModelField(data_model_id, new_field)
-
-            create_new_state(false)
-            refresh_data_model(data_model_id)
-            cancelEditMode()
-            return
-        }
-
-
-        try {
-            await applyChangesToDataModelField(data_model_id, new_field)
-            
-            refresh_data_model(data_model_id)
-            cancelEditMode()
-            return
-        }
-        catch (e) {
-            const error_msg = e instanceof Error ? e.message : String(e)
-            set_error(error_msg)
-            return
-        }
-    }
-
-
-    async function handle_delete_field() {
-        try {
-            await deleteDataModelField(field.id)
-
-            refresh_data_model(data_model_id)
-            cancelEditMode()
-            return
-        }
-        catch (e) {
-            const error_msg = e instanceof Error ? e.message : String(e)
-            set_error(error_msg)
-            return
-        }
-    }
-
-
     useEffect(() => {
-        const hasNameChanged = name !== field.name
-        const hasTypeChanged = type !== field.type
-        const hasDescriptionChanged = description !== field.description
+        // 
+        if(name != field.name || type != field.type || description != field.description){
+            set_active_changes(true)
+        }
+        else {
+            set_active_changes(false)
+        }
 
-        set_error("")
-        
-        set_active_changes(hasNameChanged || hasTypeChanged || hasDescriptionChanged)
-
-        // Schedule history save - but only if NOT an undo/redo action
-        if (!isUndoRedoAction.current) {
-            // Debounced history saving
-            if (saveTimeoutRef.current) {
-                clearTimeout(saveTimeoutRef.current)
-            }
-            saveTimeoutRef.current = setTimeout(() => {
-                saveToHistory()
-            }, 1000) // Save to history after 1 second of no changes
+        // reset server error on change
+        if(server_error){
+            set_server_error(null)
         }
     }, [name, type, description])
 
-    function saveToHistory() {
-        const currentState = { name, type, description }
-        const newHistory = history.slice(0, historyIndex + 1)
-        newHistory.push(currentState)
-        setHistory(newHistory)
-        setHistoryIndex(newHistory.length - 1)
-    }
-
-    function undo() {
-        if (historyIndex > 0) {
-            isUndoRedoAction.current = true
-            
-            const prevState = history[historyIndex - 1]
-            set_name(prevState.name)
-            set_type(prevState.type)
-            set_description(prevState.description)
-            setHistoryIndex(historyIndex - 1)
-            
-            // Reset the flag after state updates
-            setTimeout(() => {
-                isUndoRedoAction.current = false
-            }, 0)
-        }
-    }
-
-    function redo() {
-        if (historyIndex < history.length - 1) {
-            isUndoRedoAction.current = true
-            
-            const nextState = history[historyIndex + 1]
-            set_name(nextState.name)
-            set_type(nextState.type)
-            set_description(nextState.description)
-            setHistoryIndex(historyIndex + 1)
-            
-            // Reset the flag after state updates
-            setTimeout(() => {
-                isUndoRedoAction.current = false
-            }, 0)
-        }
-    }
-
-    const canUndo = historyIndex > 0
-    const canRedo = historyIndex < history.length - 1
     
-    function resetToOriginal() {
-        // Reset to original field values
-        set_name(field.name)
-        set_type(field.type)
-        set_description(field.description)
 
-        // Clear history and start fresh
-        const initialState = { name: field.name, type: field.type, description: field.description }
-        setHistory([initialState])
-        setHistoryIndex(0)
+    async function save_changes() {
+        set_is_loading(true)
+        const new_field: DataModelField = {id: field.id, description: description, name: name, type: type}
 
-        // Clear any pending save timeout
-        if (saveTimeoutRef.current) {
-            clearTimeout(saveTimeoutRef.current)
+        if(create_new){
+            try {
+                await createNewDataModelField(data_model_id, new_field)
+                create_new_state(false)
+                refresh_data_model(data_model_id)
+                cancel_edit_mode()
+                return
+            } catch (e) {
+                const error_msg = e instanceof Error ? e.message : String(e)
+                set_server_error(error_msg)
+                return
+            } finally {
+                set_is_loading(false)
+            }
         }
 
-        set_error("")
-        set_active_changes(false)
+        try {
+            await applyChangesToDataModelField(data_model_id, new_field)
+            refresh_data_model(data_model_id)
+            cancel_edit_mode()
+            return
+        }
+        catch (e) {
+            const error_msg = e instanceof Error ? e.message : String(e)
+            set_server_error(error_msg)
+            return
+        }
+        finally {
+            set_is_loading(false)
+        }
     }
+
+    async function delete_field() {
+        set_is_loading(true)
+        try {
+            await deleteDataModelField(field.id)
+            refresh_data_model(data_model_id)
+            cancel_edit_mode()
+            return
+        }
+        catch (e) {
+            const error_msg = e instanceof Error ? e.message : String(e)
+            set_server_error(error_msg)
+            return
+        }
+        finally {
+            set_is_loading(false)
+        }
+    }
+
 
     
 
-
-    function enterEditMode() {
-        resetToOriginal()
-
-        // Initialize history with current field state
-        const initialState = { name: field.name, type: field.type, description: field.description }
-        setHistory([initialState])
-        setHistoryIndex(0)
-
-        set_active_changes(false)
+    
+    function enter_edit_mode(){
+        reset_field_states()
         set_is_edit(true)
-    }
-
-    function cancelEditMode(){
+    }    
+    
+    function cancel_edit_mode(){
+        reset_field_states() 
         set_is_edit(false)
     }
 
 
+    function handle_enter_edit_mode(e: React.MouseEvent) {
+        e.stopPropagation() 
+        enter_edit_mode()
+    }
 
+    function handle_cancel_edit_mode(e: React.MouseEvent){
+        e.stopPropagation()
+        cancel_edit_mode()
+    }
+
+
+    function handle_delete_field(e: React.MouseEvent) {
+        e.stopPropagation()
+        delete_field()
+    }
+
+    function handle_save_changes(e: React.MouseEvent) {
+        e.stopPropagation()
+        save_changes()
+    }
 
     return (
         <div className="group">
@@ -281,15 +246,15 @@ export function EditableDataModelField({ field, data_model_id, refresh_data_mode
                                     </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
-                                    <AlertDialogCancel onClick={(e) => { e.stopPropagation(); }}>Cancel</AlertDialogCancel>
-                                    <AlertDialogAction onClick={(e) => { e.stopPropagation(); handle_delete_field(); }} className="bg-red-500">Delete Field</AlertDialogAction>
+                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                    <AlertDialogAction onClick={ handle_delete_field } className="bg-red-500">Delete Field</AlertDialogAction>
                                 </AlertDialogFooter>
                             </AlertDialogContent>
                         </AlertDialog>
 
 
                         <Button size="icon" variant="ghost" className="h-6 w-6 opacity-0 group-hover:opacity-100 hover:text-green-800"
-                            onClick={(e) => { e.stopPropagation(); enterEditMode(); }}>
+                            onClick={ handle_enter_edit_mode }>
                             <Edit3Icon />
                         </Button>
                     </div>
@@ -298,111 +263,97 @@ export function EditableDataModelField({ field, data_model_id, refresh_data_mode
 
             {is_edit &&
                 <div className="space-y-2 p-2 bg-white rounded border border-blue-200 shadow">
-
                     <div className="flex gap-1">
-                        <Input 
-                            placeholder="Field name" 
-                            value={name} 
-                            onChange={(e) => set_name(e.target.value)} 
-                            className={name !== field.name ? "ring-1 ring-blue-200 border-blue-200" : ""}
-                        />
-
-                        <Select value={type} onValueChange={(value) => set_type(value)}>
-                            <SelectTrigger className={`h-7 w-44 ${type !== field.type ? "ring-1 ring-blue-200 border-blue-200" : ""}`}>
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {FIELD_TYPES.map((fieldType) => (
-                                    <SelectItem key={fieldType.value} value={fieldType.value}>
-                                        {fieldType.label}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    </div>
-
-                    <Textarea
-                        placeholder="Description (optional)"
-                        value={description ? (description) : ("")}
-                        onChange={(e) => set_description(e.target.value)}
-                        className={`text-xs overflow-hidden h-fit ${description !== field.description ? "ring-1 ring-blue-200 border-blue-200" : ""}`}
-                    />
-
-                    <div className="flex justify-between gap-1">
-                        {/* Undo/Redo buttons on the left */}
-                        <div className="flex gap-1">
-                            <Button 
-                                size="icon" 
-                                variant="ghost" 
-                                className="hover:text-blue-500 h-6 w-6" 
-                                disabled={!canUndo}
-                                onClick={(e) => { e.stopPropagation(); undo(); }}
-                                title="Undo"
-                            >
-                                <UndoIcon />
-                            </Button>
-                            <Button 
-                                size="icon" 
-                                variant="ghost" 
-                                className="hover:text-blue-500 h-6 w-6" 
-                                disabled={!canRedo}
-                                onClick={(e) => { e.stopPropagation(); redo(); }}
-                                title="Redo"
-                            >
-                                <RedoIcon />
-                            </Button>
-                    
-                            {active_changes ? (
-                                <div className="px-5">
-                                <AlertDialog>
-                                    <AlertDialogTrigger asChild>
-                                        <Button
-                                            size="icon" 
-                                            variant="ghost" 
-                                            className="hover:text-orange-500 h-6 w-6" 
-                                            title="Reset to original"
-                                        >
-                                            <RotateCcwIcon />
-                                        </Button>
-                                    </AlertDialogTrigger>
-                                    <AlertDialogContent>
-                                        <AlertDialogHeader>
-                                            <AlertDialogTitle>
-                                                Reset to original values?
-                                            </AlertDialogTitle>
-                                            <AlertDialogDescription>
-                                                This action will discard all changes and reset the field to its original state. The editor will remain open.
-                                            </AlertDialogDescription>
-                                        </AlertDialogHeader>
-                                        <AlertDialogFooter>
-                                            <AlertDialogCancel onClick={(e) => { e.stopPropagation(); }}>Cancel</AlertDialogCancel>
-                                            <AlertDialogAction onClick={(e) => { e.stopPropagation(); resetToOriginal(); }} className="bg-orange-500">Reset</AlertDialogAction>
-                                        </AlertDialogFooter>
-                                    </AlertDialogContent>
-                                </AlertDialog>
-                                </div>
-                            ) : (
-                                <div className="px-5">
-                                <Button 
-                                    size="icon" 
-                                    variant="ghost" 
-                                    className="hover:text-orange-500 h-6 w-6" 
-                                    disabled={true}
-                                    title="Reset to original"
-                                >
-                                    <RotateCcwIcon />
-                                </Button>
-                                </div>
+                        <div className="flex flex-col w-full">
+                            <Input 
+                                placeholder="Field name" 
+                                value={name} 
+                                onChange={(e) => set_name(e.target.value)} 
+                                className={
+                                    !name_validation.is_valid
+                                        ? "border-red-500 ring-1 ring-red-300"
+                                        : name !== field.name
+                                            ? "ring-1 ring-blue-200 border-blue-200"
+                                            : ""
+                                }
+                                disabled={is_loading}
+                            />
+                            {!name_validation.is_valid && (
+                                <span className="text-xs text-red-500 mt-0.5 ml-1 flex items-center gap-1">
+                                    <AlertCircle className="h-3 w-3" />
+                                    {name_validation.msg}
+                                </span>
                             )}
                         </div>
 
+                        <div className="flex flex-col w-44">
+                            <Select value={type} onValueChange={(value) => set_type(value)} disabled={is_loading}>
+                                <SelectTrigger className={`h-7 w-44 ${
+                                    !type_validation.is_valid
+                                        ? "border-red-500 ring-1 ring-red-300"
+                                        : type !== field.type
+                                            ? "ring-1 ring-blue-200 border-blue-200"
+                                            : ""
+                                }`}>
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {FIELD_TYPES.map((fieldType) => (
+                                        <SelectItem key={fieldType.value} value={fieldType.value}>
+                                            {fieldType.label}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            {!type_validation.is_valid && (
+                                <span className="text-xs text-red-500 mt-0.5 ml-1 flex items-center gap-1">
+                                    <AlertCircle className="h-3 w-3" />
+                                    {type_validation.msg}
+                                </span>
+                            )}
+                        </div>
+                    </div>
+
+                    <div className="flex flex-col">
+                        <Textarea
+                            placeholder="Description (optional)"
+                            value={description ? (description) : ("")}
+                            onChange={(e) => set_description(e.target.value)}
+                            className={`text-xs overflow-hidden h-fit ${
+                                !description_validation.is_valid
+                                    ? "border-red-500 ring-1 ring-red-300"
+                                    : description !== field.description
+                                        ? "ring-1 ring-blue-200 border-blue-200"
+                                        : ""
+                            }`}
+                            disabled={is_loading}
+                        />
+                        {!description_validation.is_valid && (
+                            <span className="text-xs text-red-500 mt-0.5 ml-1 flex items-center gap-1">
+                                <AlertCircle className="h-3 w-3" />
+                                {description_validation.msg}
+                            </span>
+                        )}
+                    </div>
+
+                    {/* Validation/Error/Success messages */}
+                    <div className="min-h-[22px]">
+                        {(server_error) && (
+                            <div className="text-sm text-red-500 flex items-center gap-1">
+                                <AlertCircle className="h-3 w-3" />
+                                {server_error}
+                            </div>
+                        )}
+                    </div>
+
+                    <div>
                         {/* Save/Cancel buttons on the right */}
                         <div className="flex gap-1">
                         {active_changes ? (
                             <>
                                 <AlertDialog>
                                     <AlertDialogTrigger asChild>
-                                        <Button size="icon" variant="ghost" className="hover:text-red-500">
+                                        <Button size="icon" variant="ghost" className="hover:text-red-500" disabled={is_loading}>
                                             <XIcon />
                                         </Button>
                                     </AlertDialogTrigger>
@@ -417,18 +368,16 @@ export function EditableDataModelField({ field, data_model_id, refresh_data_mode
                                             </AlertDialogDescription>
                                         </AlertDialogHeader>
                                         <AlertDialogFooter>
-                                            <AlertDialogCancel onClick={(e) => { e.stopPropagation(); }}>Cancel</AlertDialogCancel>
-                                            <AlertDialogAction onClick={(e) => { e.stopPropagation(); cancelEditMode() }} className="bg-red-500">Discard changes</AlertDialogAction>
+                                            <AlertDialogCancel disabled={is_loading}>Cancel</AlertDialogCancel>
+                                            <AlertDialogAction onClick={handle_cancel_edit_mode} className="bg-red-500" disabled={is_loading}>Discard changes</AlertDialogAction>
                                         </AlertDialogFooter>
                                     </AlertDialogContent>
                                 </AlertDialog>
 
-
-
                                 <AlertDialog>
                                     <AlertDialogTrigger asChild>
-                                        <Button size="icon" variant="ghost" className="hover:text-green-500" disabled={!name.trim() || !type}>
-                                            <CheckIcon />
+                                        <Button size="icon" variant="ghost" className="hover:text-green-500" disabled={!is_field_valid || is_loading}>
+                                            {is_loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckIcon />}
                                         </Button>
                                     </AlertDialogTrigger>
 
@@ -442,27 +391,26 @@ export function EditableDataModelField({ field, data_model_id, refresh_data_mode
                                             </AlertDialogDescription>
                                         </AlertDialogHeader>
                                         <AlertDialogFooter>
-                                            <AlertDialogAction onClick={(e) => { e.stopPropagation(); }} className="bg-red-500">Cancel</AlertDialogAction>
-                                            <AlertDialogCancel onClick={(e) => { e.stopPropagation(); handle_save_changes() }} className="">Save</AlertDialogCancel>
+                                            <AlertDialogAction className="bg-red-500" disabled={is_loading}>Cancel</AlertDialogAction>
+                                            <AlertDialogCancel onClick={ handle_save_changes } className="" disabled={is_loading}>Save</AlertDialogCancel>
                                         </AlertDialogFooter>
                                     </AlertDialogContent>
                                 </AlertDialog>
                             </>
                         ) : (
                             <>
-                                <Button size="icon" variant="ghost" className="hover:text-red-500" onClick={(e)=>{e.stopPropagation(); cancelEditMode()}}>
+                                <Button size="icon" variant="ghost" className="hover:text-red-500" onClick={ handle_cancel_edit_mode } disabled={is_loading}>
                                     <XIcon />
                                 </Button>
-                                <Button size="icon" variant="ghost" className="hover:text-green-500" disabled={!name.trim() || !type} onClick={(e)=>{e.stopPropagation(); cancelEditMode()}}>
-                                    <CheckIcon />
+                                <Button size="icon" variant="ghost" className="hover:text-green-500" disabled={!is_field_valid || is_loading} onClick={handle_cancel_edit_mode}>
+                                    {is_loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckIcon />}
                                 </Button>
                             </>
                         )
                         }
                         </div>
                     </div>
-                    {error && <div className="text-red-500 text-xs">{error}</div>}
-                    
+                    {/* Fehleranzeige bleibt oben, daher hier entfernt */}
                     {active_changes && (
                         <div className="text-xs text-gray-500 italic mt-1">
                             Unsaved changes
