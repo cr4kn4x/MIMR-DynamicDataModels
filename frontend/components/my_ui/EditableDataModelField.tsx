@@ -32,6 +32,7 @@ import { validateDataModelFieldDescription, validateDataModelFieldName, validate
 interface EditableFieldProps {
     field: DataModelField
     data_model_id: string
+    data_model_fields: DataModelField[]
     refresh_data_model(data_model_id: string): void
 
     create_new: boolean
@@ -54,7 +55,7 @@ const FIELD_TYPES = [
 ]
 
 
-export function EditableDataModelField({ field, data_model_id, refresh_data_model, create_new, create_new_state}: EditableFieldProps) {
+export function EditableDataModelField({ field, data_model_id, data_model_fields, refresh_data_model, create_new, create_new_state}: EditableFieldProps) {
 
     // 
     const [name, set_name] = useState<string>(field.name)
@@ -81,8 +82,8 @@ export function EditableDataModelField({ field, data_model_id, refresh_data_mode
 
 
     // computed states 
-    const name_validation = validateDataModelFieldName(name, []) // list will be set later.. 
-    const type_validation = validateDataModelFieldType(type) 
+    const name_validation = validateDataModelFieldName(name, data_model_fields.map((field) => {return field.name}))
+    const type_validation = validateDataModelFieldType(type)
     const description_validation = validateDataModelFieldDescription(description)
 
     // 
@@ -115,38 +116,30 @@ export function EditableDataModelField({ field, data_model_id, refresh_data_mode
 
     async function save_changes() {
         set_is_loading(true)
-        const new_field: DataModelField = {id: field.id, description: description, name: name, type: type}
-
-        if(create_new){
-            try {
-                await createNewDataModelField(data_model_id, new_field)
-                create_new_state(false)
-                refresh_data_model(data_model_id)
-                cancel_edit_mode()
-                return
-            } catch (e) {
-                const error_msg = e instanceof Error ? e.message : String(e)
-                set_server_error(error_msg)
-                return
-            } finally {
-                set_is_loading(false)
-            }
-        }
-
+        
         try {
-            await applyChangesToDataModelField(data_model_id, new_field)
+            const new_field: DataModelField = {id: field.id, description: description, name: name, type: type}
+            
+            if(create_new){
+                await createNewDataModelField(data_model_id, new_field)
+            }
+            else{
+                await applyChangesToDataModelField(data_model_id, new_field) 
+            }
+
+            //  refresh and close editor
+            create_new_state(false)
             refresh_data_model(data_model_id)
-            cancel_edit_mode()
-            return
+            cancel_edit_mode()       
         }
         catch (e) {
             const error_msg = e instanceof Error ? e.message : String(e)
             set_server_error(error_msg)
             return
-        }
+        } 
         finally {
             set_is_loading(false)
-        }
+        }            
     }
 
     async function delete_field() {

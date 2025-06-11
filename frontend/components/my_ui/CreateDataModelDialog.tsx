@@ -26,9 +26,9 @@ export default function CreateDataModelDialog({selected_project_id, data_models,
 
     const reset_all_states = () => {
         set_dialog_open(false)
-        set_data_model_name("")
         set_is_loading(false)
         set_server_error(null)
+        set_data_model_name("")
     }
 
 

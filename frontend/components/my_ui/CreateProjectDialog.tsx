@@ -26,9 +26,9 @@ export default function CreateProjectDialog({ projects, refresh_projects_list }:
 
     const reset_all_states = () => {
         set_dialog_open(false)
-        set_project_name("")
         set_is_loading(false)
         set_server_error(null)
+        set_project_name("")
     }
 
     async function handle_create_new_project(project_name: string) {
