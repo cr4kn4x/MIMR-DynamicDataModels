@@ -297,6 +297,21 @@ def delete_data_model():
 
 
 
+@app.post("/api/workflows/get_by_project_id")
+@firebase_token_required(dao)
+def get_workflows_by_project():
+    firebase_token = request.firebase_token
+    assert isinstance(firebase_token, FirebaseIdToken)
+
+    data = request.get_json()
+    project_id = data.get("project_id")
+
+    # dao.delete_data_model(user_id=firebase_token.user_id, data_model_id=data_model_id)
+    res = dao.get_workflows_by_project_id(user_id=firebase_token.user_id, project_id=project_id)
+
+    return jsonify({"workflows": res})
+
+
 
 # app.run(debug=True, host="0.0.0.0")
 # flask --app app.py run --debug

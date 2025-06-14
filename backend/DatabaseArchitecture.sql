@@ -43,3 +43,19 @@ CREATE TABLE data_model_fields (
     -- CONSTRAINTs
     CONSTRAINT unique_data_model_field_name UNIQUE (data_model_id, name)
 );
+
+
+
+CREATE TABLE workflows (
+    user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+    -- workflow id 
+    id UUID PRIMARY KEY,
+    -- workflow attributes
+    name TEXT NOT NULL,
+    input_data_model UUID NOT NULL REFERENCES data_models(id),
+    output_data_model UUID NOT NULL REFERENCES data_models(id),
+
+    -- CONSTRAINTs
+    CONSTRAINT unique_project_workflow_name UNIQUE (project_id, name)
+);

@@ -2,6 +2,7 @@
 import { getAllProjects, getDataModelById, getDataModelsByProjectId } from "@/lib/api/DataModelApi"
 import { DataModel, Project, DataModelField } from "@/lib/interfaces/DataModelInterfaces"
 import React, { createContext, useContext, useEffect, useState, type ReactNode } from "react"
+import { toast } from "sonner"
 
 
 
@@ -61,14 +62,14 @@ export function DataModelsPageContextProvider({ children }: { children: ReactNod
     async function get_and_set_projects() {
         getAllProjects()
             .then((res) => {set_projects(res.projects)})
-            .catch((error) => {console.error(error.message)})
+            .catch((error) => {toast.error("Error in get_and_set_projects", {description: error.message})}) 
     }
 
 
     async function get_and_set_project_data_models(project_id: string){
         getDataModelsByProjectId(project_id)
             .then((res) => {set_project_data_models(res.data_models)})
-            .catch((error) => {console.error(error.message)})
+            .catch((error) => {toast.error("Error in get_and_set_project_data_models", {description: error.message})}) 
     }
 
 
@@ -82,7 +83,7 @@ export function DataModelsPageContextProvider({ children }: { children: ReactNod
                     prev.map(dm => dm.id === data_model_id ? updated_data_model : dm)
                 )
             })
-            .catch((error) => {console.error(error.message)})   
+            .catch((error) => {toast.error("Error in get_and_set_data_model", {description: error.message})})   
     }
 
 

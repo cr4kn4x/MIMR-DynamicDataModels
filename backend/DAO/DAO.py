@@ -186,3 +186,18 @@ class DAO:
                 if cur.rowcount == 0:
                     raise DAOValidationException(f"Project with id '{project_id}' does not exist")
         return True
+    
+
+    @dao_exception_handler
+    def get_workflows_by_project_id(self, user_id: str, project_id: str):
+        # The existence check below is only for user-friendly error messages. Data integrity and race conditions are handled by DB constraints.
+        if not self.__check_project_exists_by_id(user_id=user_id, project_id=project_id): 
+            raise DAOValidationException("Associated project does not exist")
+        
+        with self.__get_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT project_id, id, name, input_data_model, output_data_model FROM workflows WHERE user_id = %s and project_id = %s ORDER BY name", (user_id, project_id))
+                workflows = cur.fetchall()
+
+        
+        return workflows
