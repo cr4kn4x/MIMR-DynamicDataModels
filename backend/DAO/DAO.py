@@ -201,3 +201,24 @@ class DAO:
 
         
         return workflows
+    
+
+    @dao_exception_handler
+    def insert_llm(self, user_id: str, alias: str, model_name: str, base_url: str, api_key: str): 
+        with self.__get_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    "INSERT INTO llms(user_id, id, alias, model_name, base_url, api_key) VALUES (%s, %s, %s, %s, %s, %s);",
+                    (user_id, str(uuid.uuid4()), alias, model_name, base_url, api_key)
+                )
+        return True
+    
+    @dao_exception_handler
+    def get_llms(self, user_id: str):
+
+        with self.__get_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT id, alias, model_name, base_url FROM llms WHERE user_id = %s ORDER BY alias", (user_id, ))
+                llms = cur.fetchall()
+
+        return llms

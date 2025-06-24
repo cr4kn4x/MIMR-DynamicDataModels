@@ -1,5 +1,5 @@
 import { DataModel, DataModelField, Project } from "../interfaces/DataModelInterfaces";
-import { getFirebaseBearer, raiseErrorFromResponse } from "./utils";
+import { getFirebaseBearer, raiseErrorFromApiResponse } from "./utils";
 
 
 const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_BASE
@@ -18,7 +18,7 @@ export async function getAllProjects(): Promise<getAllProjectsResponse> {
         headers: {"Authorization": await getFirebaseBearer()}
     })
 
-    if (!response.ok) { await raiseErrorFromResponse(response) }
+    if (!response.ok) { await raiseErrorFromApiResponse(response) }
 
     const res_json = await response.json()
     return res_json
@@ -40,7 +40,7 @@ export async function createNewProject(project_name: string) {
     })
 
     if (!response.ok) { 
-        await raiseErrorFromResponse(response)
+        await raiseErrorFromApiResponse(response)
     }
     
     return true
@@ -63,7 +63,7 @@ export async function createNewDataModel(project_id: string, data_model_name: st
     })
 
     if(!response.ok) {
-        await raiseErrorFromResponse(response)
+        await raiseErrorFromApiResponse(response)
     }
     
     return true
@@ -91,7 +91,7 @@ export async function getDataModelsByProjectId(project_id: string): Promise<getD
     })
 
     if(!response.ok) {
-        await raiseErrorFromResponse(response)
+        await raiseErrorFromApiResponse(response)
     }
     
     const res_json = await response.json()
@@ -117,7 +117,7 @@ export async function applyChangesToDataModelField(data_model_id: string, new_fi
     })
 
     if(!response.ok) {
-        await raiseErrorFromResponse(response)
+        await raiseErrorFromApiResponse(response)
     }
 
     return true
@@ -143,7 +143,7 @@ export async function getDataModelById(data_model_id: string): Promise<getDataMo
     })
 
     if(!response.ok) {
-        await raiseErrorFromResponse(response)
+        await raiseErrorFromApiResponse(response)
     }
     
     const res_json = await response.json()
@@ -168,7 +168,7 @@ export async function createNewDataModelField(data_model_id: string, new_field: 
     })
 
     if(!response.ok) {
-        await raiseErrorFromResponse(response)
+        await raiseErrorFromApiResponse(response)
     }
 
     return true
@@ -191,7 +191,7 @@ export async function deleteDataModelField(field_id: string) {
     })
 
     if(!response.ok) {
-        await raiseErrorFromResponse(response)
+        await raiseErrorFromApiResponse(response)
     }
 
     return true
@@ -215,7 +215,7 @@ export async function deleteDataModel(data_model_id: string) {
     })
 
     if(!response.ok) {
-        await raiseErrorFromResponse(response)
+        await raiseErrorFromApiResponse(response)
     }
 
     return true

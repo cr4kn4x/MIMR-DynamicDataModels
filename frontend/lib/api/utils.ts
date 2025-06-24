@@ -10,7 +10,7 @@ export async function getFirebaseBearer() {
 }
 
 
-export async function raiseErrorFromResponse(response: Response): Promise<never> {
+export async function raiseErrorFromApiResponse(response: Response): Promise<never> {
     let error_msg = "Request failed (ERROR)"
 
     try{
@@ -27,4 +27,12 @@ export async function raiseErrorFromResponse(response: Response): Promise<never>
     }
 
     throw new Error(error_msg)
+}
+
+
+
+export function generateErrorText(e: any){
+    const error_msg = e instanceof Error ? e.message : String(e)
+
+    return error_msg
 }

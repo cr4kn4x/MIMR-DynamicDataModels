@@ -65,6 +65,9 @@ def handle_connection_error(e: DAOConnectionException):
 def handle_generic_dao_error(e: DAOException):
     log_exception(e)
     return jsonify({"error": "Internal database error."}), 500
+
+
+
 ############################################################
 ############################################################
 
@@ -312,6 +315,37 @@ def get_workflows_by_project():
     return jsonify({"workflows": res})
 
 
+
+@app.post("/api/llms/add")
+@firebase_token_required(dao)
+def add_llm(): 
+    firebase_token = request.firebase_token
+    assert isinstance(firebase_token, FirebaseIdToken)
+
+    data = request.get_json() 
+
+    alias = data.get("alias")
+    model_name = data.get("model_name")
+    base_url = data.get("base_url")
+    api_key = data.get("api_key")
+
+    dao.insert_llm(firebase_token.user_id, alias, model_name, base_url, api_key)
+
+    return jsonify({"msg": "LLM added"})
+
+
+
+
+
+@app.post("/api/llms/get")
+@firebase_token_required(dao)
+def get_llms():
+    firebase_token = request.firebase_token
+    assert isinstance(firebase_token, FirebaseIdToken)
+
+    res = dao.get_llms(user_id=firebase_token.user_id)
+
+    return jsonify({"llms": res})
 
 # app.run(debug=True, host="0.0.0.0")
 # flask --app app.py run --debug

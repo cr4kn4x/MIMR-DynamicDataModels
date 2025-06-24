@@ -59,3 +59,22 @@ CREATE TABLE workflows (
     -- CONSTRAINTs
     CONSTRAINT unique_project_workflow_name UNIQUE (project_id, name)
 );
+
+
+
+-- This table is weakly validated! It is questionable if this feature makes it into production as it exposes high risk for us (saas provider)
+-- A hack of this table causes the leak of critical api-keys, that can only be locked by the uses. Unauthorized access to this will likely cause a huge fincial damge!
+CREATE TABLE llms (
+    user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+
+    id UUID PRIMARY KEY,
+    alias TEXT NOT NULL, 
+
+    api_key TEXT NOT NULL,
+    base_url TEXT NOT NULL,
+    model_name TEXT NOT NULL
+);
+
+
+
+
