@@ -1,33 +1,69 @@
 "use client"
 
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
-import { Switch } from "@/components/ui/switch"
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table"
-import { useState } from "react"
-import { ConfigurationTab } from "./ConfigurationTab"
+import { Card, CardContent } from "@/components/ui/card"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { ConfigureNewWorkflowTab } from "./ConfigurationTab"
 import { useSearchParams } from "next/navigation"
-import { WorkflowViewerPageContextProvider } from "./PageContext"
-import { WorkflowView } from "./WorkflowView"
-import { useRouter } from 'next/navigation'
+import { useEffect, useState } from "react"
+import { toast } from "sonner"
+import { getWorkflowsByProjectId } from "@/lib/api/WorkflowApi"
+import { getDataModelsByProjectId } from "@/lib/api/DataModelApi"
+import { DataModel } from "@/lib/interfaces/DataModelInterfaces"
 
-export default function WorkflowViewPage() {
+export default function NewWorkflowPage() {
 
 
+  const searchParams = useSearchParams()
+  const project_id = searchParams.get("project_id")
 
+  // 
+  const [data_models, set_data_models] = useState<DataModel[]>([])
+
+  const [] = useState<string>("")
+
+
+  
+  useEffect(() => {
+    if(!project_id){
+      toast.error("Invalid project id", {richColors: true})
+      return
+    }
+
+    
+    getDataModelsByProjectId(project_id).then((res) => {set_data_models(res.data_models)})
+    .catch((e) => {toast.error("Failed to load data models", {richColors: true, description: e.message})})
+
+  }, [project_id])
 
 
 
   return (
-    <WorkflowViewerPageContextProvider>
-      <>
-        <WorkflowView />
-      </>
-    </WorkflowViewerPageContextProvider>
+    <div className="h-screen flex flex-col bg-gray-50">
+      <header className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+        <div className="flex items-center space-x-4">
+          <h1 className="text-2xl font-bold text-gray-900">{"Workflow-Editor"}</h1>
+          <Badge variant="secondary">Beta</Badge>
+          <h3 className="">Person-Extractor</h3>
+        </div>
+        
+      </header>
+      <main className="flex-1 flex flex-col items-stretch">
+        <Card className="w-full h-full rounded-none">
+          <CardContent className="h-full">
+            <Tabs defaultValue="config" className="w-full h-full">
+              <TabsList className="mb-4">
+                <TabsTrigger value="config">Konfiguration</TabsTrigger>
+
+              </TabsList>
+              <TabsContent value="config">
+                <ConfigureNewWorkflowTab />
+              </TabsContent>
+            </Tabs>
+          </CardContent>
+        </Card>
+      </main>
+    </div>
   )
 }
 

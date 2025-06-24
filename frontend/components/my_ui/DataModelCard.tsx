@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
+import { cn } from "@/lib/utils"
 import {
     FileCodeIcon,
     Edit3Icon,
@@ -26,10 +27,11 @@ interface DataModelCardProps {
     refresh_data_model(data_model_id: string): void
     refresh_data_model_list(project_id: string): void
     preview: boolean
+    className?: string
 }
 
 
-export function DataModelCard({ is_selected, data_model, onSelect, preview, refresh_data_model, refresh_data_model_list, project_id }: DataModelCardProps) {
+export function DataModelCard({ is_selected, data_model, onSelect, preview, refresh_data_model, refresh_data_model_list, project_id, className }: DataModelCardProps) {
 
     const [add_new_field, set_add_new_field] = useState(false)
     const [is_loading, set_is_loading] = useState(false)
@@ -66,7 +68,7 @@ export function DataModelCard({ is_selected, data_model, onSelect, preview, refr
 
 
     return (
-        <div className="relative">
+        <div className={cn("relative", className)}>
             {is_loading && (
                 <div className="absolute inset-0 z-20 flex items-center justify-center bg-white/70 backdrop-blur-sm rounded shadow-inner cursor-not-allowed">
                     <Loader2 className="h-7 w-7 text-blue-500 animate-spin" />
@@ -74,7 +76,16 @@ export function DataModelCard({ is_selected, data_model, onSelect, preview, refr
             )}
             <Card
                 onClick={is_loading ? undefined : (preview ? onSelect : undefined)}
-                className={`transition-all hover:shadow-md ${preview ? (is_selected ? "ring-2 ring-blue-500 bg-blue-50 cursor-pointer" : "cursor-pointer") : "border-1 border-gray-100"} ${is_loading ? "pointer-events-none select-none opacity-80" : ""}`}
+                className={cn(
+                    "transition-all hover:shadow-md",
+                    preview 
+                        ? (is_selected 
+                            ? "ring-2 ring-blue-500 bg-blue-50 cursor-pointer" 
+                            : "cursor-pointer"
+                          ) 
+                        : "border-1 border-gray-100",
+                    is_loading && "pointer-events-none select-none opacity-80"
+                )}
             >
                 <CardHeader>
                     <div className="flex items-center justify-between">

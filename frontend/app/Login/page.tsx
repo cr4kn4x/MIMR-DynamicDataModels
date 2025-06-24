@@ -54,7 +54,7 @@ export default function LoginPage() {
             await signInWithEmailAndPassword(auth, email_, password_)
 
             // redirect after successful login
-            router.push("/DataModels")
+            router.push("/Workflows")
         }
         catch(err: any){
             set_error(err.message)
