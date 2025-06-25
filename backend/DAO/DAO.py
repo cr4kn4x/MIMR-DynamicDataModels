@@ -222,3 +222,13 @@ class DAO:
                 llms = cur.fetchall()
 
         return llms
+    
+
+    @dao_exception_handler
+    def create_workflow(self, user_id: str, project_id: str, llm: str, input_data_model: str, output_data_model: str, active: bool, name: str):
+
+        with self.__get_connection() as conn: 
+            with conn.cursor() as cur: 
+                cur.execute("INSERT INTO public.workflows(user_id, project_id, id, name, input_data_model, output_data_model, active, llm) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)", (user_id, project_id, str(uuid.uuid4()), name, input_data_model, output_data_model, active, llm))
+
+        return True

@@ -347,5 +347,28 @@ def get_llms():
 
     return jsonify({"llms": res})
 
+
+
+@app.post("/api/workflows/create")
+@firebase_token_required(dao)
+def create_workflow():
+    firebase_token = request.firebase_token
+    assert isinstance(firebase_token, FirebaseIdToken)
+
+    data = request.get_json() 
+
+    # get data 
+    llm = data.get("llm")
+    input_data_model = data.get("input_data_model")
+    output_data_model = data.get("output_data_model")
+    active = data.get("active")
+    name = data.get("name")
+    project_id = data.get("project_id")
+
+
+    res = dao.create_workflow(firebase_token.user_id, project_id, llm, input_data_model, output_data_model, active, name)
+    
+    return jsonify({"msg": "Workflow created"})
+
 # app.run(debug=True, host="0.0.0.0")
 # flask --app app.py run --debug

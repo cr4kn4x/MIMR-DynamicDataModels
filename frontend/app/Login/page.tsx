@@ -55,6 +55,7 @@ export default function LoginPage() {
 
             // redirect after successful login
             router.push("/Workflows")
+            // router.push("/DataModels")
         }
         catch(err: any){
             set_error(err.message)

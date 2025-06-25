@@ -11,8 +11,10 @@ import { DataModel } from "@/lib/interfaces/DataModelInterfaces"
 import { useSearchParams } from "next/navigation"
 import { DataModelCard } from "@/components/my_ui/DataModelCard"
 import CreateLLMDialog from "@/components/my_ui/CreateLLMDialog"
-import { getLlms } from "@/lib/api/WorkflowApi"
+import { createWorkflow, getLlms } from "@/lib/api/WorkflowApi"
 import { LLM } from "@/lib/interfaces/LlmInterfaces"
+import { ActivitySquare } from "lucide-react"
+import { toast } from "sonner"
 
 
 interface ConfigureNewWorkflowTabProps {
@@ -52,9 +54,51 @@ export function ConfigureNewWorkflowTab({ }: ConfigureNewWorkflowTabProps) {
     const inputDataModel = data_models.find((m) => m.id === input_data_model)
     const outputDataModel = data_models.find((m) => m.id === output_data_model)
 
+   
+
+    function generateExampleFromDataModel(dataModel: any) {
+        if (!dataModel || !dataModel.fields) return {};
+        return dataModel.fields.reduce((acc: any, field: any) => ({
+            ...acc,
+            [field.name]: field.type
+        }), {});
+    }
+
+
+    function renderTypedJsonSimple(obj: Record<string, string>, indent = 2, level = 0) {
+        const entries = Object.entries(obj);
+        let result = '{\n';
+        entries.forEach(([key, value], idx) => {
+            result += ' '.repeat((level + 1) * indent) + `"${key}": ${value}`;
+            if (idx < entries.length - 1) result += ',';
+            result += '\n';
+        });
+        result += ' '.repeat(level * indent) + '}';
+        return result;
+    }
+
+    async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+            e.preventDefault()
+
+            // try to login
+            try {
+                if(!project_id || !inputDataModel  || !outputDataModel ){toast.error("Inputs not valid!"); return;}
+                createWorkflow(project_id, selected_llm, inputDataModel.id, outputDataModel.id, is_active, name)
+
+                toast.success("Workflow created")
+            }
+            catch(err: any){
+                toast.error("Error occured", {description: err.message})
+            }
+            finally {
+                // set_loading(false)
+            }
+        }
+
+
     return (
         <div>
-            <form className="space-y-4" onSubmit={e => { }}>
+            <form className="space-y-4" onSubmit={e => { handleSubmit(e) }}>
 
                 <div className="flex items-center space-x-4">
                     <Label className="font-semibold">Active</Label>
@@ -105,7 +149,7 @@ export function ConfigureNewWorkflowTab({ }: ConfigureNewWorkflowTabProps) {
                                 ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white'
                                 : 'bg-gray-100 text-gray-500'
                             }`}>
-                            {selected_llm || 'LLM wählen'}
+                            {selected_llm || 'Select LLM'}
                         </div>
 
                         <div className="flex items-center">
@@ -117,7 +161,7 @@ export function ConfigureNewWorkflowTab({ }: ConfigureNewWorkflowTabProps) {
                                 </defs>
                                 <line x1="8" y1="12" x2="88" y2="12" stroke="#6b7280" strokeWidth="2" markerEnd="url(#simpleArrow)" />
                             </svg>
-                            <div className="text-xs text-gray-500 absolute left-1/2 transform -translate-x-1/2 mt-6">AI Transformation</div>
+                            <div className="text-xs text-gray-500 absolute left-1/2 transform -translate-x-1/2 mt-6">✨AI Transformation✨</div>
                         </div>
                     </div>
 
@@ -131,6 +175,39 @@ export function ConfigureNewWorkflowTab({ }: ConfigureNewWorkflowTabProps) {
                             ) : (
                                 <div className="text-gray-400 text-sm italic">Not selected</div>
                             )}
+                        </div>
+                    </div>
+                </div>
+
+
+                <div className="my-2">
+                    {/* API Preview Section */}
+                    <div className="flex flex-col md:flex-row gap-6 bg-gray-50 rounded-lg p-4 border border-gray-200">
+                        {/* Request Preview */}
+                        <div className="flex-1 min-w-0">
+                            <div className="font-semibold mb-1 text-blue-700">Request</div>
+                            <div className="text-xs text-gray-500 mb-1">POST /api/predict</div>
+                            <div className="mb-1">
+                                <span className="font-semibold text-xs">Headers:</span>
+                                <pre className="bg-white rounded p-2 text-xs overflow-x-auto border border-gray-100 mt-1 mb-2"><code>{`api-key: xyz\nContent-Type: application/json`}</code></pre>
+                            </div>
+                            <div>
+                                <span className="font-semibold text-xs">Body:</span>
+                                <pre className="bg-white rounded p-2 text-xs overflow-x-auto border border-gray-100 mt-1">
+                                    data: {renderTypedJsonSimple(generateExampleFromDataModel(inputDataModel))}
+                                </pre>
+                            </div>
+                        </div>
+                        {/* Response Preview */}
+                        <div className="flex-1 min-w-0">
+                            <div className="font-semibold mb-1 text-green-700">Response</div>
+                            <div className="text-xs text-gray-500 mb-1">200 OK</div>
+                            <div>
+                                <span className="font-semibold text-xs">Body:</span>
+                                <pre className="bg-white rounded p-2 text-xs overflow-x-auto border border-gray-100 mt-1">
+                                    pred: {renderTypedJsonSimple(generateExampleFromDataModel(outputDataModel))}
+                                </pre>
+                            </div>
                         </div>
                     </div>
                 </div>

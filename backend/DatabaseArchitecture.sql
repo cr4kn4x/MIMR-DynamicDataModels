@@ -53,8 +53,10 @@ CREATE TABLE workflows (
     id UUID PRIMARY KEY,
     -- workflow attributes
     name TEXT NOT NULL,
+    llm UUID NOT NULL REFERENCES llms(id), -- TO-DO (SECURITY): IT MAY BE POSSIBLE TO REF A LLM BY ID THAT IS ASSOCIATED WITH ANOTHER USER! THIS NEEDS TO BE CHECKED IN DETAIL!
     input_data_model UUID NOT NULL REFERENCES data_models(id),
     output_data_model UUID NOT NULL REFERENCES data_models(id),
+    active BOOLEAN NOT NULL,
 
     -- CONSTRAINTs
     CONSTRAINT unique_project_workflow_name UNIQUE (project_id, name)

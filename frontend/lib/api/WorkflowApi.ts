@@ -91,3 +91,32 @@ export async function getLlms(): Promise<getLlmsResponse> {
     const res_json = await response.json()
     return res_json
 }
+
+
+
+export async function createWorkflow(project_id: string, llm: string, input_data_model: string, output_data_model: string, active: boolean, name: string) {
+
+    const url = `${BASE_URL}/api/workflows/create`
+
+    const response = await fetch(url, {
+        method: "POST",
+        headers: {
+            "Authorization": await getFirebaseBearer(),
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            project_id: project_id,
+            llm: llm, 
+            input_data_model: input_data_model, 
+            output_data_model: output_data_model, 
+            active: active, 
+            name: name
+        })
+    })
+    
+    if(!response.ok) {
+        await raiseErrorFromApiResponse(response)
+    }
+    
+    return true
+}
