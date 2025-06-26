@@ -1,0 +1,89 @@
+"use client"
+
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { Separator } from "@/components/ui/separator"
+import Link from "next/link"
+import { useRouter, usePathname } from "next/navigation"
+import { LogOutIcon, WorkflowIcon, DatabaseIcon } from "lucide-react"
+import { getAuth, signOut } from "firebase/auth"
+import firebaseApp from "@/lib/firebase"
+import { cn } from "@/lib/utils"
+
+interface AppNavigationProps {
+  title: string
+  badge?: string
+  children?: React.ReactNode
+}
+
+export function AppNavigation({ title, badge, children }: AppNavigationProps) {
+  const router = useRouter()
+  const pathname = usePathname()
+
+  const handleLogout = async () => {
+    try {
+      const auth = getAuth(firebaseApp)
+      await signOut(auth)
+      router.push("/Login")
+    } catch (error) {
+      console.error("Logout error:", error)
+    }
+  }
+
+  const isWorkflowsActive = pathname.startsWith("/Workflows")
+  const isDataModelsActive = pathname.startsWith("/DataModels")
+
+  return (
+    <header className="bg-white border-b border-gray-200 px-6 py-4">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-4">
+          <h1 className="text-2xl font-bold text-gray-900">{title}</h1>
+          {badge && <Badge variant="secondary">{badge}</Badge>}
+        </div>
+
+        <div className="flex items-center space-x-3">
+          {/* Navigation Links */}
+          <nav className="flex items-center space-x-2">
+            <Button
+              variant={isWorkflowsActive ? "default" : "ghost"}
+              size="sm"
+              asChild
+            >
+              <Link href="/Workflows">
+                <WorkflowIcon className="w-4 h-4 mr-2" />
+                Workflows
+              </Link>
+            </Button>
+            <Button
+              variant={isDataModelsActive ? "default" : "ghost"}
+              size="sm"
+              asChild
+            >
+              <Link href="/DataModels">
+                <DatabaseIcon className="w-4 h-4 mr-2" />
+                Data Models
+              </Link>
+            </Button>
+          </nav>
+
+          <Separator orientation="vertical" className="h-6" />
+
+          {/* Page-specific controls */}
+          {children}
+
+          <Separator orientation="vertical" className="h-6" />
+
+          {/* Logout Button */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleLogout}
+          >
+            <LogOutIcon className="w-4 h-4 mr-2" />
+            Logout
+          </Button>
+        </div>
+      </div>
+    </header>
+  )
+}

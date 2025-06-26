@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
 import { WorkflowCard } from "@/components/my_ui/WorkflowCard"
 import { ProjectSelectorCombobox } from "@/components/my_ui/ProjectSelectorCombobox"
+import { AppNavigation } from "@/components/my_ui/AppNavigation"
 import { useWorkflowPageContext, WorkflowPageContext } from "./PageContext"
 import { FileCodeIcon, PlusCircleIcon } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -24,16 +25,14 @@ export default function WorkflowsOverviewPage() {
 
     return (
         <div className="h-screen flex flex-col bg-gray-50">
-            <header className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                    <h1 className="text-2xl font-bold text-gray-900">Workflows</h1>
-                    <Badge variant="secondary">Prototyp</Badge>
-                </div>
-
-                <ProjectSelectorCombobox projects={projects} refresh_projects_list={get_and_set_projects} selected_project_id={selected_project_id} set_selected_project_id={set_selected_project_id} />
-
-
-            </header>
+            <AppNavigation title="Workflows" badge="Prototyp">
+                <ProjectSelectorCombobox 
+                    projects={projects} 
+                    refresh_projects_list={get_and_set_projects} 
+                    selected_project_id={selected_project_id} 
+                    set_selected_project_id={set_selected_project_id} 
+                />
+            </AppNavigation>
             <main>
                 {selected_project_id ?
                     (

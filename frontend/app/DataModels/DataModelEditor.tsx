@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Separator } from "@/components/ui/separator"
 import { Badge } from "@/components/ui/badge"
 import { ProjectSelectorCombobox } from "../../components/my_ui/ProjectSelectorCombobox"
+import { AppNavigation } from "@/components/my_ui/AppNavigation"
 import { useDataModelsPageContext } from "./PageContext"
 import { FileCodeIcon, DownloadIcon, PlayIcon } from "lucide-react"
 import CreateDataModelDialog from "@/components/my_ui/CreateDataModelDialog"
@@ -30,32 +31,22 @@ export default function DataModelEditor() {
     return (
         <div className="h-screen flex flex-col bg-gray-50">
             {/* Page Header */}
-            <header className="bg-white border-b border-gray-200 px-6 py-4">
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
-                        <h1 className="text-2xl font-bold text-gray-900">Pydantic Model Builder</h1>
-                        <Badge variant="secondary">Beta</Badge>
-                    </div>
-
-                    <div className="flex items-center space-x-3">
-                        <ProjectSelectorCombobox
-                            refresh_projects_list={get_and_set_projects}
-                            projects={projects}
-                            selected_project_id={selected_project_id}
-                            set_selected_project_id={set_selected_project_id}
-                        />
-                        <Separator orientation="vertical" className="h-6" />
-                        <Button variant="outline" size="sm">
-                            <DownloadIcon className="w-4 h-4 mr-2" />
-                            Export
-                        </Button>
-                        <Button variant="outline" size="sm">
-                            <PlayIcon className="w-4 h-4 mr-2" />
-                            Preview
-                        </Button>
-                    </div>
+            <AppNavigation title="Pydantic Model Builder" badge="Beta">
+                <div className="flex items-center space-x-3">
+                    <ProjectSelectorCombobox
+                        refresh_projects_list={get_and_set_projects}
+                        projects={projects}
+                        selected_project_id={selected_project_id}
+                        set_selected_project_id={set_selected_project_id}
+                    />
+                    <Separator orientation="vertical" className="h-6" />
+                    
+                    <Button variant="outline" size="sm">
+                        <PlayIcon className="w-4 h-4 mr-2" />
+                        Preview
+                    </Button>
                 </div>
-            </header>
+            </AppNavigation>
 
             {/* Main Content */}
             <div className="flex-1 flex overflow-hidden">

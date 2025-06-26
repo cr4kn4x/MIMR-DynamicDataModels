@@ -3,6 +3,7 @@
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { AppNavigation } from "@/components/my_ui/AppNavigation"
 import { ConfigureNewWorkflowTab } from "./ConfigurationTab"
 import { useSearchParams } from "next/navigation"
 import { useEffect, useState } from "react"
@@ -40,14 +41,10 @@ export default function NewWorkflowPage() {
 
   return (
     <div className="h-screen flex flex-col bg-gray-50">
-      <header className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <h1 className="text-2xl font-bold text-gray-900">{"Workflow-Editor"}</h1>
-          <Badge variant="secondary">Beta</Badge>
-          <h3 className="">Person-Extractor</h3>
-        </div>
+      <AppNavigation title="Workflow-Editor" badge="Beta">
         
-      </header>
+      </AppNavigation>
+      
       <main className="flex-1 flex flex-col items-stretch">
         <Card className="w-full h-full rounded-none">
           <CardContent className="h-full">

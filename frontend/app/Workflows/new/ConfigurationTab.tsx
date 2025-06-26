@@ -189,7 +189,7 @@ export function ConfigureNewWorkflowTab({ }: ConfigureNewWorkflowTabProps) {
                             <div className="text-xs text-gray-500 mb-1">POST /api/predict</div>
                             <div className="mb-1">
                                 <span className="font-semibold text-xs">Headers:</span>
-                                <pre className="bg-white rounded p-2 text-xs overflow-x-auto border border-gray-100 mt-1 mb-2"><code>{`api-key: xyz\nContent-Type: application/json`}</code></pre>
+                                <pre className="bg-white rounded p-2 text-xs overflow-x-auto border border-gray-100 mt-1 mb-2"><code>{`Authorization: Bearer xyz\nContent-Type: application/json`}</code></pre>
                             </div>
                             <div>
                                 <span className="font-semibold text-xs">Body:</span>
