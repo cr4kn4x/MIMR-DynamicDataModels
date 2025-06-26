@@ -30,12 +30,16 @@ export default function RegisterPage() {
         
         const [error, set_error] = useState("")
         const [loading, set_loading] = useState(false)
+        const [showVerifyNotice, setShowVerifyNotice] = useState(false)
+        const [resent, setResent] = useState(false)
       
         
         async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
             e.preventDefault()
             set_loading(true)
             set_error("")
+            setShowVerifyNotice(false)
+            setResent(false)
     
             // Prevent auto-fill error
             const form = e.currentTarget
@@ -60,20 +64,37 @@ export default function RegisterPage() {
                 set_loading(false)
                 return
             }
-
-            
             try {
                 const auth = getAuth(firebaseApp)
                 const userCredential = await createUserWithEmailAndPassword(auth, email_safe, passsword_1_safe)
                 await sendEmailVerification(userCredential.user)
-
-                // redirect after successful login
-                // router.push("/DataModels")
+                setShowVerifyNotice(true)
+                // No redirect, show notice instead
             }
             catch(err: any){
                 set_error(err.message)
             }
             finally {
+                set_loading(false)
+            }
+        }
+
+        async function handleResendVerification() {
+            set_loading(true)
+            set_error("")
+            setResent(false)
+            try {
+                const auth = getAuth(firebaseApp)
+                const user = auth.currentUser
+                if (user && !user.emailVerified) {
+                    await sendEmailVerification(user)
+                    setResent(true)
+                } else {
+                    set_error("Error sending verification email.")
+                }
+            } catch (err: any) {
+                set_error("Error sending verification email.")
+            } finally {
                 set_loading(false)
             }
         }
@@ -105,6 +126,15 @@ export default function RegisterPage() {
                                 <Input id="password_2" type="password" onChange={(e)=>{set_password_2(e.target.value)}} required disabled={loading} />
 
                                 {error && <div className="text-red-500 text-sm">{error}</div>}
+                                {showVerifyNotice && (
+                                    <div className="text-yellow-600 text-sm mt-2">
+                                        Please verify your email address. We have sent you an email.<br />
+                                        <Button type="button" variant="outline" size="sm" className="mt-2" onClick={handleResendVerification} disabled={loading || resent}>
+                                            Resend verification email
+                                        </Button>
+                                        {resent && <div className="text-green-600 text-xs mt-1">Verification email sent again.</div>}
+                                    </div>
+                                )}
                             </div>
 
                             <div>
