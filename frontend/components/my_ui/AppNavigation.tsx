@@ -9,6 +9,7 @@ import { LogOutIcon, WorkflowIcon, DatabaseIcon } from "lucide-react"
 import { getAuth, signOut } from "firebase/auth"
 import firebaseApp from "@/lib/firebase"
 import { cn } from "@/lib/utils"
+import {ProjectSelectorNavbar} from "@/components/my_ui/ProjectSelectorNavbar"
 
 interface AppNavigationProps {
   title: string
@@ -38,6 +39,7 @@ export function AppNavigation({ title, badge, children }: AppNavigationProps) {
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
           <h1 className="text-2xl font-bold text-gray-900">{title}</h1>
+          <ProjectSelectorNavbar />
           {badge && <Badge variant="secondary">{badge}</Badge>}
         </div>
 

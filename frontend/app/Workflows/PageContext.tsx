@@ -5,6 +5,7 @@ import { Project } from "@/lib/interfaces/DataModelInterfaces"
 import { Workflow } from "@/lib/interfaces/WorkflowInteraces"
 import React, { createContext, useContext, useEffect, useState, type ReactNode } from "react"
 import { toast } from "sonner"
+import { useProject } from "@/context/ProjectContext"
 
 
 
@@ -32,10 +33,16 @@ export function useWorkflowPageContext() {
 
 
 export function WorkflowPageContextProvider({ children }: { children: ReactNode }) {
-   
+    const { project } = useProject()
     const [projects, set_projects] = useState<Project[]>([])
     const [selected_project_id, set_selected_project_id] = useState<string|null>(null)
     const [workflows, set_workflows] = useState<Workflow[]>([])
+
+    useEffect(() => {
+        if (project) {
+            set_selected_project_id(project.id)
+        }
+    }, [project])
 
     async function get_and_set_projects() {
         getAllProjects()

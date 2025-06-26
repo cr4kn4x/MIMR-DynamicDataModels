@@ -3,6 +3,7 @@ import { getAllProjects, getDataModelById, getDataModelsByProjectId } from "@/li
 import { DataModel, Project, DataModelField } from "@/lib/interfaces/DataModelInterfaces"
 import React, { createContext, useContext, useEffect, useState, type ReactNode } from "react"
 import { toast } from "sonner"
+import { useProject } from "@/context/ProjectContext"
 
 
 
@@ -42,10 +43,11 @@ export function useDataModelsPageContext() {
 
 
 export function DataModelsPageContextProvider({ children }: { children: ReactNode }) {
-    const [selected_data_model_id, set_selected_data_model_id] = useState<string | null>(null)
-    const [selected_project_id, set_selected_project_id] = useState<string | null>(null)
+    const { project } = useProject()
     const [projects, set_projects] = useState<Project[]>([])
+    const [selected_project_id, set_selected_project_id] = useState<string|null>(null)
     const [project_data_models, set_project_data_models] = useState<DataModel[]>([])
+    const [selected_data_model_id, set_selected_data_model_id] = useState<string | null>(null)
 
     // Computed properties
     const selected_data_model = selected_data_model_id 
@@ -56,6 +58,11 @@ export function DataModelsPageContextProvider({ children }: { children: ReactNod
         ? projects.find(project => project.id === selected_project_id) || null
         : null
 
+    useEffect(() => {
+        if (project) {
+            set_selected_project_id(project.id)
+        }
+    }, [project])
     
 
     

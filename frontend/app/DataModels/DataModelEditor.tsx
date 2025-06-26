@@ -31,14 +31,9 @@ export default function DataModelEditor() {
     return (
         <div className="h-screen flex flex-col bg-gray-50">
             {/* Page Header */}
-            <AppNavigation title="Pydantic Model Builder" badge="Beta">
+            <AppNavigation title="" badge="Beta">
                 <div className="flex items-center space-x-3">
-                    <ProjectSelectorCombobox
-                        refresh_projects_list={get_and_set_projects}
-                        projects={projects}
-                        selected_project_id={selected_project_id}
-                        set_selected_project_id={set_selected_project_id}
-                    />
+                    
                     <Separator orientation="vertical" className="h-6" />
                     
                     <Button variant="outline" size="sm">
