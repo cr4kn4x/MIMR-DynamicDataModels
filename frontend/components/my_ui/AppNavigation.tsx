@@ -12,11 +12,10 @@ import { cn } from "@/lib/utils"
 import {ProjectSelectorNavbar} from "@/components/my_ui/ProjectSelectorNavbar"
 
 interface AppNavigationProps {
-  badge?: string
   children?: React.ReactNode
 }
 
-export function AppNavigation({badge, children }: AppNavigationProps) {
+export function AppNavigation({children }: AppNavigationProps) {
   const router = useRouter()
   const pathname = usePathname()
 
@@ -37,9 +36,7 @@ export function AppNavigation({badge, children }: AppNavigationProps) {
     <header className="bg-white border-b border-gray-200 px-6 py-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
-          
           <ProjectSelectorNavbar />
-          {badge && <Badge variant="secondary">{badge}</Badge>}
         </div>
 
         <div className="flex items-center space-x-3">

@@ -20,9 +20,9 @@ export default function WorkflowsPage() {
 
 	return (
 		<WorkflowPageContextProvider>
-			<>
+			<div>
 				<WorkflowsOverviewPage />
-			</>
+			</div>
 		</WorkflowPageContextProvider>
 	)
 

@@ -24,7 +24,7 @@ export default function Page() {
   return (
     <DataModelsPageContextProvider>
       <div className="h-screen w-screen flex flex-col">
-        <AppNavigation badge="Beta" />
+        <AppNavigation/>
         <div className="flex-1 flex overflow-hidden min-h-0">
           <DataModelsSidebar />
           <DataModelEditor className="flex-1 h-full" />
