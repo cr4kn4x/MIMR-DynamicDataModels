@@ -33,6 +33,5 @@ export async function raiseErrorFromApiResponse(response: Response): Promise<nev
 
 export function generateErrorText(e: any){
     const error_msg = e instanceof Error ? e.message : String(e)
-
     return error_msg
 }

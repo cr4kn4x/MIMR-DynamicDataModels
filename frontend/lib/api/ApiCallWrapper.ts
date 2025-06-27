@@ -3,19 +3,16 @@ import { generateErrorText } from "./utils";
 
 
 
-export async function apiWrapper<T>(
-  apiCall: () => Promise<T>,
-  onSuccess: (result: T) => void,
+export async function apiCallWrapper<T>(
+  promise: Promise<T>,
   toaster: typeof toast,
-  errorMsg = "API call failed"
+  error_title: string,
 ) {
   try {
-    const result = await apiCall();
-    onSuccess(result);
-    return result;
-  } catch (e) {
-    const msg = generateErrorText(e);
-    toaster.error(errorMsg, { description: msg });
-    throw e;
+    const res = await promise
+    return res
+  }
+  catch(e: any) {
+    toaster.error(error_title, {richColors: true, description: generateErrorText(e)})
   }
 }

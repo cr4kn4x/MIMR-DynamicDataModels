@@ -1,9 +1,10 @@
 "use client"
 import { getAllProjects, getDataModelById, getDataModelsByProjectId } from "@/lib/api/DataModelApi"
-import { DataModel, Project, DataModelField } from "@/lib/interfaces/DataModelInterfaces"
-import React, { createContext, useContext, useEffect, useState, type ReactNode } from "react"
+import { DataModel, Project } from "@/lib/interfaces/DataModelInterfaces"
+import React, { createContext, useContext, useEffect, useState, useMemo, type ReactNode } from "react"
 import { toast } from "sonner"
 import { useProject } from "@/context/ProjectContext"
+import { apiCallWrapper } from "@/lib/api/ApiCallWrapper"
 
 
 
@@ -49,14 +50,18 @@ export function DataModelsPageContextProvider({ children }: { children: ReactNod
     const [project_data_models, set_project_data_models] = useState<DataModel[]>([])
     const [selected_data_model_id, set_selected_data_model_id] = useState<string | null>(null)
 
-    // Computed properties
-    const selected_data_model = selected_data_model_id 
-        ? project_data_models.find(dm => dm.id === selected_data_model_id) || null
-        : null
+   
+    const selected_data_model = useMemo(() => {
+        if (!selected_data_model_id) return null;
+        const found = project_data_models.find(dm => dm.id === selected_data_model_id);
+        return found || null;
+    }, [selected_data_model_id, project_data_models])
     
-    const selected_project = selected_project_id
-        ? projects.find(project => project.id === selected_project_id) || null
-        : null
+    const selected_project = useMemo(() => {
+        if (!selected_project_id) return null;
+        const found = projects.find(project => project.id === selected_project_id);
+        return found || null;
+    }, [selected_project_id, projects])
 
     useEffect(() => {
         if (project) {
@@ -67,30 +72,29 @@ export function DataModelsPageContextProvider({ children }: { children: ReactNod
 
     
     async function get_and_set_projects() {
-        getAllProjects()
-            .then((res) => {set_projects(res.projects)})
-            .catch((error) => {toast.error("Error in get_and_set_projects", {description: error.message})}) 
+        const res = await apiCallWrapper(getAllProjects(), toast, "Error in get_and_set_projects")
+
+        if (res) set_projects(res.projects)
     }
 
 
     async function get_and_set_project_data_models(project_id: string){
-        getDataModelsByProjectId(project_id)
-            .then((res) => {set_project_data_models(res.data_models)})
-            .catch((error) => {toast.error("Error in get_and_set_project_data_models", {description: error.message})}) 
+        const res = await apiCallWrapper(getDataModelsByProjectId(project_id), toast, "Error in get_and_set_project_data_models")
+    
+        if (res) set_project_data_models(res.data_models)
     }
 
 
     async function get_and_set_data_model(data_model_id: string) {
-        getDataModelById(data_model_id)
-            .then((res) => {
-                const updated_data_model = res.data_model;
-                
-                // Update the project_data_models list
-                set_project_data_models(prev => 
-                    prev.map(dm => dm.id === data_model_id ? updated_data_model : dm)
-                )
-            })
-            .catch((error) => {toast.error("Error in get_and_set_data_model", {description: error.message})})   
+        const res = await apiCallWrapper(getDataModelById(data_model_id), toast, "Error in get_and_set_data_model")
+
+        if(res){
+            const updated_data_model = res.data_model;
+            // Update the project_data_models list
+            set_project_data_models(prev => 
+                prev.map(dm => dm.id === data_model_id ? updated_data_model : dm)
+            )
+        }
     }
 
 
@@ -118,7 +122,7 @@ export function DataModelsPageContextProvider({ children }: { children: ReactNod
         selected_project_id,
         set_selected_project_id,
         
-        selected_project, // computed property
+        selected_project,
 
         projects, 
         set_projects,
@@ -129,7 +133,7 @@ export function DataModelsPageContextProvider({ children }: { children: ReactNod
         selected_data_model_id,
         set_selected_data_model_id,
         
-        selected_data_model, // computed property
+        selected_data_model,
 
         get_and_set_projects,
         get_and_set_project_data_models,
