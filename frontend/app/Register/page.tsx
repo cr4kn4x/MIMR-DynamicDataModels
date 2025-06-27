@@ -20,86 +20,126 @@ import { useState } from "react"
 import firebaseApp from "@/lib/firebase"
 import { getAuth, createUserWithEmailAndPassword, sendEmailVerification } from "firebase/auth"
 
+// Extrahiere RegisterForm-Komponente
+function RegisterForm({
+    email,
+    setEmail,
+    password1,
+    setPassword1,
+    password2,
+    setPassword2,
+    error,
+    loading,
+    showVerifyNotice,
+    resent,
+    onSubmit,
+    onResendVerification
+}: {
+    email: string,
+    setEmail: (v: string) => void,
+    password1: string,
+    setPassword1: (v: string) => void,
+    password2: string,
+    setPassword2: (v: string) => void,
+    error: string,
+    loading: boolean,
+    showVerifyNotice: boolean,
+    resent: boolean,
+    onSubmit: (e: React.FormEvent<HTMLFormElement>) => void,
+    onResendVerification: () => void
+}) {
+    return (
+        <form onSubmit={onSubmit}>
+            <div className="flex flex-col gap-6">
+                <div className="grid gap-2">
+                    <Label htmlFor="email">E-Mail</Label>
+                    <Input id="email" type="text" placeholder="E-Mail" value={email} onChange={e => setEmail(e.target.value)} required disabled={loading} />
+                </div>
+                <div className="grid gap-2">
+                    <Label htmlFor="password_1">Password</Label>
+                    <Input id="password_1" type="password" value={password1} onChange={e => setPassword1(e.target.value)} required disabled={loading} />
+
+                    <Label htmlFor="password_2">Confirm Password</Label>
+                    <Input id="password_2" type="password" value={password2} onChange={e => setPassword2(e.target.value)} required disabled={loading} />
+
+                    {error && <div className="text-red-500 text-sm">{error}</div>}
+                    {showVerifyNotice && (
+                        <div className="text-yellow-600 text-sm mt-2">
+                            Please verify your email address. We have sent you an email.<br />
+                            <Button type="button" variant="outline" size="sm" className="mt-2" onClick={onResendVerification} disabled={loading || resent}>
+                                Resend verification email
+                            </Button>
+                            {resent && <div className="text-green-600 text-xs mt-1">Verification email sent again.</div>}
+                        </div>
+                    )}
+                </div>
+                <div>
+                    <Button type="submit" className="w-full" disabled={loading}>
+                        Register
+                    </Button>
+                </div>
+            </div>
+        </form>
+    )
+}
+
 export default function RegisterPage() {
-
     const router = useRouter()
-    
-        const [email, set_email] = useState("")
-        const [password_1, set_password_1] = useState("")
-        const [password_2, set_password_2] = useState("")
-        
-        const [error, set_error] = useState("")
-        const [loading, set_loading] = useState(false)
-        const [showVerifyNotice, setShowVerifyNotice] = useState(false)
-        const [resent, setResent] = useState(false)
-      
-        
-        async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-            e.preventDefault()
-            set_loading(true)
-            set_error("")
-            setShowVerifyNotice(false)
-            setResent(false)
-    
-            // Prevent auto-fill error
-            const form = e.currentTarget
-            let email_safe = email 
-            let passsword_1_safe = password_1
-            let passsword_2_safe = password_2
-        
-            if(email_safe == ""){
-                email_safe = (form.elements.namedItem("email") as HTMLInputElement)?.value
-            }
-            
-            if(password_1 == ""){
-                passsword_1_safe = (form.elements.namedItem("password_1") as HTMLInputElement)?.value
-            }
 
-            if(password_2 == ""){
-                passsword_2_safe = (form.elements.namedItem("password_2") as HTMLInputElement)?.value
-            }
+    // State-Namen vereinheitlichen
+    const [email, setEmail] = useState("")
+    const [password1, setPassword1] = useState("")
+    const [password2, setPassword2] = useState("")
+    const [error, setError] = useState("")
+    const [loading, setLoading] = useState(false)
+    const [showVerifyNotice, setShowVerifyNotice] = useState(false)
+    const [resent, setResent] = useState(false)
 
-            if(passsword_1_safe != passsword_2_safe){
-                set_error("Passwords don't match!")
-                set_loading(false)
-                return
-            }
-            try {
-                const auth = getAuth(firebaseApp)
-                const userCredential = await createUserWithEmailAndPassword(auth, email_safe, passsword_1_safe)
-                await sendEmailVerification(userCredential.user)
-                setShowVerifyNotice(true)
-                // No redirect, show notice instead
-            }
-            catch(err: any){
-                set_error(err.message)
-            }
-            finally {
-                set_loading(false)
-            }
+    async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+        e.preventDefault()
+        setLoading(true)
+        setError("")
+        setShowVerifyNotice(false)
+        setResent(false)
+
+        if (password1 !== password2) {
+            setError("Passwords don't match!")
+            setLoading(false)
+            return
         }
-
-        async function handleResendVerification() {
-            set_loading(true)
-            set_error("")
-            setResent(false)
-            try {
-                const auth = getAuth(firebaseApp)
-                const user = auth.currentUser
-                if (user && !user.emailVerified) {
-                    await sendEmailVerification(user)
-                    setResent(true)
-                } else {
-                    set_error("Error sending verification email.")
-                }
-            } catch (err: any) {
-                set_error("Error sending verification email.")
-            } finally {
-                set_loading(false)
-            }
+        try {
+            const auth = getAuth(firebaseApp)
+            const userCredential = await createUserWithEmailAndPassword(auth, email, password1)
+            await sendEmailVerification(userCredential.user)
+            setShowVerifyNotice(true)
+        } catch (err: any) {
+            setError(err.message)
+        } finally {
+            setLoading(false)
         }
+    }
 
-    return(
+    async function handleResendVerification() {
+        setLoading(true)
+        setError("")
+        setResent(false)
+        try {
+            const auth = getAuth(firebaseApp)
+            const user = auth.currentUser
+            if (user && !user.emailVerified) {
+                await sendEmailVerification(user)
+                setResent(true)
+            } else {
+                setError("Error sending verification email.")
+            }
+        } catch {
+            setError("Error sending verification email.")
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    return (
         <div className="w-screen h-screen flex items-center justify-center">
             <Card className="w-full max-w-sm">
                 <CardHeader>
@@ -112,38 +152,20 @@ export default function RegisterPage() {
                     </CardAction>
                 </CardHeader>
                 <CardContent>
-                    <form onSubmit={(e) => {handleSubmit(e)}}>
-                        <div className="flex flex-col gap-6">
-                            <div className="grid gap-2">
-                                <Label htmlFor="email">E-Mail</Label>
-                                <Input id="email" type="text" placeholder="E-Mail" onChange={(e) => {set_email(e.target.value)}} required disabled={loading} />
-                            </div>
-                            <div className="grid gap-2">
-                                <Label htmlFor="password_1">Password</Label>
-                                <Input id="password_1" type="password" onChange={(e)=>{set_password_1(e.target.value)}} required disabled={loading} />
-
-                                <Label htmlFor="password_2">Confirm Password</Label>
-                                <Input id="password_2" type="password" onChange={(e)=>{set_password_2(e.target.value)}} required disabled={loading} />
-
-                                {error && <div className="text-red-500 text-sm">{error}</div>}
-                                {showVerifyNotice && (
-                                    <div className="text-yellow-600 text-sm mt-2">
-                                        Please verify your email address. We have sent you an email.<br />
-                                        <Button type="button" variant="outline" size="sm" className="mt-2" onClick={handleResendVerification} disabled={loading || resent}>
-                                            Resend verification email
-                                        </Button>
-                                        {resent && <div className="text-green-600 text-xs mt-1">Verification email sent again.</div>}
-                                    </div>
-                                )}
-                            </div>
-
-                            <div>
-                                <Button type="submit" className="w-full" disabled={loading}>
-                                    Register
-                                </Button>
-                            </div>
-                        </div>
-                    </form>
+                    <RegisterForm
+                        email={email}
+                        setEmail={setEmail}
+                        password1={password1}
+                        setPassword1={setPassword1}
+                        password2={password2}
+                        setPassword2={setPassword2}
+                        error={error}
+                        loading={loading}
+                        showVerifyNotice={showVerifyNotice}
+                        resent={resent}
+                        onSubmit={handleSubmit}
+                        onResendVerification={handleResendVerification}
+                    />
                 </CardContent>
             </Card>
         </div>
