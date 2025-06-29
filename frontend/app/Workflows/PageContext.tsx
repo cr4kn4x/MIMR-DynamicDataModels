@@ -5,10 +5,7 @@ import { Project } from "@/lib/interfaces/DataModelInterfaces"
 import { Workflow } from "@/lib/interfaces/WorkflowInteraces"
 import React, { createContext, useContext, useEffect, useState, type ReactNode } from "react"
 import { toast } from "sonner"
-import { useProject } from "@/context/ProjectContext"
-
-
-
+import { useSearchParams } from "next/navigation"
 
 export interface WorkflowPageContextType {
     selected_project_id: string | null
@@ -33,16 +30,17 @@ export function useWorkflowPageContext() {
 
 
 export function WorkflowPageContextProvider({ children }: { children: ReactNode }) {
-    const { project } = useProject()
+    const searchParams = useSearchParams();
     const [projects, set_projects] = useState<Project[]>([])
     const [selected_project_id, set_selected_project_id] = useState<string|null>(null)
     const [workflows, set_workflows] = useState<Workflow[]>([])
 
+    // Setze projectId aus URL beim ersten Render
     useEffect(() => {
-        if (project) {
-            set_selected_project_id(project.id)
-        }
-    }, [project])
+        const urlProjectId = searchParams.get("projectId")
+        if (urlProjectId) set_selected_project_id(urlProjectId)
+    }, [searchParams])
+
 
     async function get_and_set_projects() {
         getAllProjects()

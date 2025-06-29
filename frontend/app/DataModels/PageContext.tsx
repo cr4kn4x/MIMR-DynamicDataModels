@@ -3,11 +3,8 @@ import { getAllProjects, getDataModelById, getDataModelsByProjectId } from "@/li
 import { DataModel, Project } from "@/lib/interfaces/DataModelInterfaces"
 import React, { createContext, useContext, useEffect, useState, useMemo, type ReactNode } from "react"
 import { toast } from "sonner"
-import { useProject } from "@/context/ProjectContext"
 import { apiCallWrapper } from "@/lib/api/ApiCallWrapper"
-
-
-
+import { useSearchParams } from "next/navigation"
 
 export interface DataModelsContextType {
     selected_project_id: string | null
@@ -44,13 +41,18 @@ export function useDataModelsPageContext() {
 
 
 export function DataModelsPageContextProvider({ children }: { children: ReactNode }) {
-    const { project } = useProject()
+    const searchParams = useSearchParams();
     const [projects, set_projects] = useState<Project[]>([])
     const [selected_project_id, set_selected_project_id] = useState<string|null>(null)
     const [project_data_models, set_project_data_models] = useState<DataModel[]>([])
     const [selected_data_model_id, set_selected_data_model_id] = useState<string | null>(null)
 
-   
+    // Setze projectId aus URL beim ersten Render
+    useEffect(() => {
+        const urlProjectId = searchParams.get("projectId")
+        if (urlProjectId) set_selected_project_id(urlProjectId)
+    }, [searchParams])
+
     const selected_data_model = useMemo(() => {
         if (!selected_data_model_id) return null;
         const found = project_data_models.find(dm => dm.id === selected_data_model_id);
@@ -63,11 +65,7 @@ export function DataModelsPageContextProvider({ children }: { children: ReactNod
         return found || null;
     }, [selected_project_id, projects])
 
-    useEffect(() => {
-        if (project) {
-            set_selected_project_id(project.id)
-        }
-    }, [project])
+    
     
 
     

@@ -6,6 +6,9 @@ import { useRouter } from "next/navigation";
 import { redirect_based_on_login } from "@/lib/redirect";
 import { AppNavigation } from "@/components/my_ui/AppNavigation";
 import { DataModelsSidebar } from "./Sidebar";
+import { ProjectSelectorCombobox } from "@/components/my_ui/ProjectSelectorCombobox";
+import { Button } from "@/components/ui/button";
+import PageContextualized from "./page-contextualized";
 
 
 
@@ -17,19 +20,9 @@ export default function Page() {
     redirect_based_on_login(router)
   }, [])
 
-
-
-
-
   return (
     <DataModelsPageContextProvider>
-      <div className="h-screen w-screen flex flex-col">
-        <AppNavigation/>
-        <div className="flex-1 flex overflow-hidden min-h-0">
-          <DataModelsSidebar />
-          <DataModelEditor className="flex-1 h-full" />
-        </div>
-      </div>
+      <PageContextualized/>
     </DataModelsPageContextProvider>
   )
 }

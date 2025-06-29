@@ -9,13 +9,20 @@ import { LogOutIcon, WorkflowIcon, DatabaseIcon } from "lucide-react"
 import { getAuth, signOut } from "firebase/auth"
 import firebaseApp from "@/lib/firebase"
 import { cn } from "@/lib/utils"
-import {ProjectSelectorNavbar} from "@/components/my_ui/ProjectSelectorNavbar"
+import { ProjectSelectorCombobox } from "./ProjectSelectorCombobox"
+import { Project } from "@/lib/interfaces/DataModelInterfaces"
+
 
 interface AppNavigationProps {
-  children?: React.ReactNode
+  children?: React.ReactNode,
+
+  selected_project_id: string | null, 
+  projects: Project[],
+  refresh_projects_list: () => void, 
+  set_selected_project_id: (id: string | null) => void
 }
 
-export function AppNavigation({children }: AppNavigationProps) {
+export function AppNavigation({children, selected_project_id, projects, refresh_projects_list, set_selected_project_id}: AppNavigationProps) {
   const router = useRouter()
   const pathname = usePathname()
 
@@ -36,7 +43,13 @@ export function AppNavigation({children }: AppNavigationProps) {
     <header className="bg-white border-b border-gray-200 px-6 py-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
-          <ProjectSelectorNavbar />
+
+          <ProjectSelectorCombobox 
+            selected_project_id={selected_project_id}
+            projects={projects}
+            refresh_projects_list={refresh_projects_list}
+            set_selected_project_id={set_selected_project_id}
+            /> 
         </div>
 
         <div className="flex items-center space-x-3">
@@ -47,7 +60,7 @@ export function AppNavigation({children }: AppNavigationProps) {
               size="sm"
               asChild
             >
-              <Link href="/Workflows">
+              <Link href={selected_project_id ? `/Workflows?projectId=${selected_project_id}` : "/Workflows"}>
                 <WorkflowIcon className="w-4 h-4 mr-2" />
                 Workflows
               </Link>
@@ -57,7 +70,7 @@ export function AppNavigation({children }: AppNavigationProps) {
               size="sm"
               asChild
             >
-              <Link href="/DataModels">
+              <Link href={selected_project_id ? `/DataModels?projectId=${selected_project_id}` : "/DataModels"}>
                 <DatabaseIcon className="w-4 h-4 mr-2" />
                 Data Models
               </Link>
