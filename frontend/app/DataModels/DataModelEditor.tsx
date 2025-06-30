@@ -1,5 +1,4 @@
 "use client"
-import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { ProjectSelectorCombobox } from "../../components/my_ui/ProjectSelectorCombobox"
 import { useDataModelsPageContext } from "./PageContext"
@@ -10,11 +9,11 @@ import { cn } from "@/lib/utils"
 
 
 type DataModelEditorProps = {
-  className?: string;
+    className?: string;
 }
 
 
-export default function DataModelEditor({className}: DataModelEditorProps) {
+export default function DataModelEditor({ className }: DataModelEditorProps) {
 
     const {
         projects,
@@ -32,21 +31,6 @@ export default function DataModelEditor({className}: DataModelEditorProps) {
             <main className="flex-1 flex flex-col min-h-0">
                 {selected_project_id ? (
                     <>
-                        {/* Editor Header */}
-                        <div className="bg-white border-b border-gray-200 px-6 py-4">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <h3 className="text-lg font-medium text-gray-900">Data Model Editor</h3>
-                                    <p className="text-sm text-gray-500">Design your Data Models</p>
-                                </div>
-                                <div className="flex items-center space-x-2">
-                                    <Button variant="outline" size="sm">
-                                        <FileCodeIcon className="w-4 h-4 mr-2" />
-                                        View Code
-                                    </Button>
-                                </div>
-                            </div>
-                        </div>
                         {/* Editor Content */}
                         <div className="flex-1 overflow-auto p-6">
                             <div className="max-w-4xl mx-auto space-y-6">

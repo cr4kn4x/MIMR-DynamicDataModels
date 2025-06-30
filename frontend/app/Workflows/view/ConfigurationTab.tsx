@@ -4,7 +4,6 @@ import { Switch } from "@/components/ui/switch"
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
 import { Label } from "@/components/ui/label"
 import { useEffect, useState } from "react"
-import { Workflow } from "@/lib/interfaces/WorkflowInteraces"
 import { DataModelSelectorCombobox } from "@/components/my_ui/DataModelSelectorCombobox"
 import { getDataModelsByProjectId } from "@/lib/api/DataModelApi"
 import { DataModel } from "@/lib/interfaces/DataModelInterfaces"
@@ -13,43 +12,39 @@ import { DataModelCard } from "@/components/my_ui/DataModelCard"
 import CreateLLMDialog from "@/components/my_ui/CreateLLMDialog"
 import { createWorkflow, getLlms } from "@/lib/api/WorkflowApi"
 import { LLM } from "@/lib/interfaces/LlmInterfaces"
-import { ActivitySquare } from "lucide-react"
 import { toast } from "sonner"
+import { useNewWorkflowPageContext } from "./PageContext";
 
 
 interface ConfigureNewWorkflowTabProps {
 
 }
 
+
+// Hilfskomponente für die JSON-Vorschau ohne Syntax-Highlighting
+function ApiJsonPreview({ label, value }: { label: string, value: any }) {
+    return (
+        <div>
+            <span className="font-semibold text-xs">{label}:</span>
+            <pre className="bg-white rounded p-2 text-xs overflow-x-auto border border-gray-100 mt-1">
+                <code>{JSON.stringify(value, null, 2)}</code>
+            </pre>
+        </div>
+    );
+}
+
 export function ConfigureNewWorkflowTab({ }: ConfigureNewWorkflowTabProps) {
-    const params = useSearchParams()
-    const project_id = params.get("project_id")
+    
+    const {selected_project_id, selected_workflow_id, create, data_models, llms, get_and_set_llms} = useNewWorkflowPageContext()
+    // valid combinations need to be checked.. it think at best in PageContext! 
 
-
+    
+    // 
     const [is_active, set_is_active] = useState<boolean>(true)
     const [name, set_name] = useState<string>("")
-    const [data_models, set_data_models] = useState<DataModel[]>([])
-
     const [input_data_model, set_input_data_model] = useState<string | null>(null)
     const [output_data_model, set_output_data_model] = useState<string | null>(null)
-
     const [selected_llm, set_selected_llm] = useState<string>("")
-    const [llms, set_llms] = useState<LLM[]>([])
-
-
-    const get_and_set_llms = async () => {
-        const res = await getLlms()
-        set_llms(res.llms)
-    }
-
-    useEffect(() => {
-        if (project_id != null) {
-            getDataModelsByProjectId(project_id).then((res) => { set_data_models(res.data_models) })
-        }
-
-        get_and_set_llms()
-    }, [])
-
 
     const inputDataModel = data_models.find((m) => m.id === input_data_model)
     const outputDataModel = data_models.find((m) => m.id === output_data_model)
@@ -65,25 +60,14 @@ export function ConfigureNewWorkflowTab({ }: ConfigureNewWorkflowTabProps) {
     }
 
 
-    function renderTypedJsonSimple(obj: Record<string, string>, indent = 2, level = 0) {
-        const entries = Object.entries(obj);
-        let result = '{\n';
-        entries.forEach(([key, value], idx) => {
-            result += ' '.repeat((level + 1) * indent) + `"${key}": ${value}`;
-            if (idx < entries.length - 1) result += ',';
-            result += '\n';
-        });
-        result += ' '.repeat(level * indent) + '}';
-        return result;
-    }
-
     async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
             e.preventDefault()
 
-            // try to login
+            // 
             try {
-                if(!project_id || !inputDataModel  || !outputDataModel ){toast.error("Inputs not valid!"); return;}
-                createWorkflow(project_id, selected_llm, inputDataModel.id, outputDataModel.id, is_active, name)
+                if(!selected_project_id || !inputDataModel  || !outputDataModel || name.length == 0){toast.error("Inputs not valid!"); return;}
+
+                createWorkflow(selected_project_id, selected_llm, inputDataModel.id, outputDataModel.id, is_active, name)
 
                 toast.success("Workflow created")
             }
@@ -191,23 +175,13 @@ export function ConfigureNewWorkflowTab({ }: ConfigureNewWorkflowTabProps) {
                                 <span className="font-semibold text-xs">Headers:</span>
                                 <pre className="bg-white rounded p-2 text-xs overflow-x-auto border border-gray-100 mt-1 mb-2"><code>{`Authorization: Bearer xyz\nContent-Type: application/json`}</code></pre>
                             </div>
-                            <div>
-                                <span className="font-semibold text-xs">Body:</span>
-                                <pre className="bg-white rounded p-2 text-xs overflow-x-auto border border-gray-100 mt-1">
-                                    data: {renderTypedJsonSimple(generateExampleFromDataModel(inputDataModel))}
-                                </pre>
-                            </div>
+                            <ApiJsonPreview label="Body" value={{ data: generateExampleFromDataModel(inputDataModel) }} />
                         </div>
                         {/* Response Preview */}
                         <div className="flex-1 min-w-0">
                             <div className="font-semibold mb-1 text-green-700">Response</div>
                             <div className="text-xs text-gray-500 mb-1">200 OK</div>
-                            <div>
-                                <span className="font-semibold text-xs">Body:</span>
-                                <pre className="bg-white rounded p-2 text-xs overflow-x-auto border border-gray-100 mt-1">
-                                    pred: {renderTypedJsonSimple(generateExampleFromDataModel(outputDataModel))}
-                                </pre>
-                            </div>
+                            <ApiJsonPreview label="Body" value={{ pred: generateExampleFromDataModel(outputDataModel) }} />
                         </div>
                     </div>
                 </div>

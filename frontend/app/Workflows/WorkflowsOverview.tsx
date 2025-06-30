@@ -1,12 +1,10 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
 import { WorkflowCard } from "@/components/my_ui/WorkflowCard"
 import { ProjectSelectorCombobox } from "@/components/my_ui/ProjectSelectorCombobox"
-import { AppNavigation } from "@/components/my_ui/AppNavigation"
-import { useWorkflowPageContext, WorkflowPageContext } from "./PageContext"
+import { useWorkflowPageContext } from "./PageContext"
 import { FileCodeIcon, PlusCircleIcon } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
@@ -25,18 +23,16 @@ export default function WorkflowsOverviewPage() {
 
     return (
         <div className="h-screen flex flex-col bg-gray-50">
-            
-            
             <main>
                 {selected_project_id ?
                     (
                         workflows.length > 0 ? (
                             <div className="p-2 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 overflow-auto">
                                 {workflows.map((wf) => (
-                                    <WorkflowCard key={wf.id} workflow={wf} />
+                                    <WorkflowCard key={wf.id} workflow={wf} project_id={selected_project_id}/>
                                 ))}
                                 <div className="flex justify-center items-center">
-                                    <Link href={`/Workflows/new?project_id=${selected_project_id}`}>
+                                    <Link href={`/Workflows/view?project_id=${selected_project_id}&create=1`}>
                                         <Button>
                                             Add Workflow
                                             <PlusCircleIcon />
@@ -57,7 +53,7 @@ export default function WorkflowsOverviewPage() {
                                     </CardHeader>
                                     <CardContent className="text-center">
 
-                                        <Link href={`/Workflows/new?project_id=${selected_project_id}`}>
+                                        <Link href={`/Workflows/view?project_id=${selected_project_id}&create=1`}>
                                             <Button>
                                                 Create Workflow
                                                 <PlusCircleIcon />
