@@ -2,20 +2,15 @@ import CreateDataModelDialog from "@/components/my_ui/CreateDataModelDialog"
 import { useDataModelsPageContext } from "./PageContext"
 import { DataModelCard } from "@/components/my_ui/DataModelCard"
 import { FileCodeIcon } from "lucide-react"
+import { useProject } from "../ProjectContext"
 
 
 
 export function DataModelsSidebar() {
 
 
-    const {
-        selected_project_id,
-        selected_project,
-        selected_data_model_id, set_selected_data_model_id,
-        project_data_models,
-        get_and_set_project_data_models,
-        get_and_set_data_model,
-    } = useDataModelsPageContext()
+    const {selected_project_id, set_selected_project_id, selected_project, data_models, refresh_data_models} = useProject()
+    const {set_selected_data_model_id, selected_data_model_id} = useDataModelsPageContext()
 
     
     return (
@@ -27,9 +22,9 @@ export function DataModelsSidebar() {
                         (
                             <div>
                                 <CreateDataModelDialog
-                                    data_models={project_data_models}
+                                    data_models={data_models}
                                     selected_project_id={selected_project_id}
-                                    refresh_data_models_list={get_and_set_project_data_models}
+                                    refresh_data_models_list={refresh_data_models}
                                 />
                             </div>
                         ) : (<></>)
@@ -49,23 +44,22 @@ export function DataModelsSidebar() {
 
             <div className="flex-1 overflow-y-auto p-4">
                 <div className="space-y-3">
-                    {project_data_models.length === 0 && selected_project_id ? (
+                    {data_models.length === 0 && selected_project_id ? (
                         <div className="text-center py-8">
                             <FileCodeIcon className="w-12 h-12 text-gray-300 mx-auto mb-3" />
                             <p className="text-sm text-gray-500 mb-4">No data models yet</p>
 
                             <CreateDataModelDialog
-                                data_models={project_data_models}
+                                data_models={data_models}
                                 selected_project_id={selected_project_id}
-                                refresh_data_models_list={get_and_set_project_data_models}
+                                refresh_data_models_list={refresh_data_models}
                             />
                         </div>
                     ) : (
                         selected_project_id &&
-                        project_data_models.map((model, index) => (
+                        data_models.map((model, index) => (
                             <DataModelCard
-                                refresh_data_model={get_and_set_data_model}
-                                refresh_data_model_list={get_and_set_project_data_models}
+                                refresh_data_model_list={refresh_data_models}
                                 project_id={selected_project_id}
                                 key={model.name}
                                 data_model={model}

@@ -6,6 +6,7 @@ import WorkflowsOverviewPage from "./WorkflowsOverview"
 import { useEffect } from "react"
 import { useRouter } from "next/navigation"
 import PageContextualized from "./page-contextualized"
+import { ProjectProvider } from "../ProjectContext"
 
 
 export default function WorkflowsPage() {
@@ -20,8 +21,10 @@ export default function WorkflowsPage() {
 	}, [])
 
 	return (
+		<ProjectProvider>
 		<WorkflowPageContextProvider>
 			<PageContextualized/>
 		</WorkflowPageContextProvider>
+		</ProjectProvider>
 	)
 }

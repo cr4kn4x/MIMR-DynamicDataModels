@@ -7,6 +7,7 @@ import { ProjectSelectorCombobox } from "@/components/my_ui/ProjectSelectorCombo
 import { useWorkflowPageContext } from "./PageContext"
 import { FileCodeIcon, PlusCircleIcon } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { useProject } from "../ProjectContext"
 
 
 
@@ -16,23 +17,24 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 
 export default function WorkflowsOverviewPage() {
 
-    const { projects, get_and_set_projects, selected_project_id, set_selected_project_id,
-        workflows
+    const {selected_project_id: project_id, set_selected_project_id: set_project_id} = useProject() 
+
+    const { projects, get_and_set_projects, workflows
     } = useWorkflowPageContext()
 
 
     return (
         <div className="h-screen flex flex-col bg-gray-50">
             <main>
-                {selected_project_id ?
+                {project_id ?
                     (
                         workflows.length > 0 ? (
                             <div className="p-2 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 overflow-auto">
                                 {workflows.map((wf) => (
-                                    <WorkflowCard key={wf.id} workflow={wf} project_id={selected_project_id}/>
+                                    <WorkflowCard key={wf.id} workflow={wf} project_id={project_id}/>
                                 ))}
                                 <div className="flex justify-center items-center">
-                                    <Link href={`/Workflows/view?project_id=${selected_project_id}&create=1`}>
+                                    <Link href={`/Workflows/view?project_id=${project_id}&create=1`}>
                                         <Button>
                                             Add Workflow
                                             <PlusCircleIcon />
@@ -53,7 +55,7 @@ export default function WorkflowsOverviewPage() {
                                     </CardHeader>
                                     <CardContent className="text-center">
 
-                                        <Link href={`/Workflows/view?project_id=${selected_project_id}&create=1`}>
+                                        <Link href={`/Workflows/view?project_id=${project_id}&create=1`}>
                                             <Button>
                                                 Create Workflow
                                                 <PlusCircleIcon />
@@ -87,8 +89,8 @@ export default function WorkflowsOverviewPage() {
                                     <ProjectSelectorCombobox
                                         refresh_projects_list={get_and_set_projects}
                                         projects={projects}
-                                        selected_project_id={selected_project_id}
-                                        set_selected_project_id={set_selected_project_id}
+                                        selected_project_id={project_id}
+                                        set_selected_project_id={set_project_id}
                                     />
                                 </CardContent>
                             </Card>

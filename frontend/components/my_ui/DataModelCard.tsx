@@ -24,14 +24,13 @@ interface DataModelCardProps {
     data_model: DataModel
     is_selected: boolean
     onSelect?: () => void
-    refresh_data_model(data_model_id: string): void
     refresh_data_model_list(project_id: string): void
     preview: boolean
     className?: string
 }
 
 
-export function DataModelCard({ is_selected, data_model, onSelect, preview, refresh_data_model, refresh_data_model_list, project_id, className }: DataModelCardProps) {
+export function DataModelCard({ is_selected, data_model, onSelect, preview, refresh_data_model_list, project_id, className }: DataModelCardProps) {
 
     const [add_new_field, set_add_new_field] = useState(false)
     const [is_loading, set_is_loading] = useState(false)
@@ -147,7 +146,7 @@ export function DataModelCard({ is_selected, data_model, onSelect, preview, refr
                                 <div key={field.id} className="group">
                                     <EditableDataModelField
                                         data_model_fields={data_model.fields}
-                                        refresh_data_model={refresh_data_model}
+                                        refresh_data_model={refresh_data_model_list}
                                         field={field}
                                         data_model_id={data_model.id}
                                         create_new={false}
@@ -167,7 +166,7 @@ export function DataModelCard({ is_selected, data_model, onSelect, preview, refr
                             {add_new_field &&
                                 <EditableDataModelField
                                     data_model_fields={data_model.fields}
-                                    refresh_data_model={refresh_data_model}
+                                    refresh_data_model={refresh_data_model_list}
                                     field={{ name: "", type: "", description: null, id: "" }}
                                     create_new={true}
                                     data_model_id={data_model.id}

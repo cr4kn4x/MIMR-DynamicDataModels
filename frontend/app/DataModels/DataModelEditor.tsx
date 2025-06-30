@@ -5,6 +5,7 @@ import { useDataModelsPageContext } from "./PageContext"
 import { FileCodeIcon } from "lucide-react"
 import { DataModelCard } from "@/components/my_ui/DataModelCard"
 import { cn } from "@/lib/utils"
+import { useProject } from "../ProjectContext"
 
 
 
@@ -15,14 +16,12 @@ type DataModelEditorProps = {
 
 export default function DataModelEditor({ className }: DataModelEditorProps) {
 
-    const {
-        projects,
-        selected_project_id, set_selected_project_id,
-        selected_data_model,
-        get_and_set_projects,
-        get_and_set_project_data_models,
-        get_and_set_data_model,
-    } = useDataModelsPageContext()
+
+    const {selected_project_id, set_selected_project_id, projects, refresh_projects, refresh_data_models} = useProject()
+    const {selected_data_model} = useDataModelsPageContext()
+
+
+
 
 
     return (
@@ -37,8 +36,7 @@ export default function DataModelEditor({ className }: DataModelEditorProps) {
                                 {selected_data_model && selected_project_id ? (
                                     <DataModelCard
                                         project_id={selected_project_id}
-                                        refresh_data_model_list={get_and_set_project_data_models}
-                                        refresh_data_model={get_and_set_data_model}
+                                        refresh_data_model_list={refresh_data_models}
                                         data_model={selected_data_model}
                                         is_selected={true}
                                         preview={false}
@@ -75,7 +73,7 @@ export default function DataModelEditor({ className }: DataModelEditorProps) {
                             </CardHeader>
                             <CardContent className="text-center">
                                 <ProjectSelectorCombobox
-                                    refresh_projects_list={get_and_set_projects}
+                                    refresh_projects_list={refresh_projects}
                                     projects={projects}
                                     selected_project_id={selected_project_id}
                                     set_selected_project_id={set_selected_project_id}

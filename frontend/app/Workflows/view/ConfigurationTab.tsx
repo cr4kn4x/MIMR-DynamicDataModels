@@ -122,7 +122,7 @@ export function ConfigureNewWorkflowTab({ }: ConfigureNewWorkflowTabProps) {
                         <DataModelSelectorCombobox data_models={data_models} combobox_title="Input Data Model" selected_data_model_id={input_data_model} set_selected_data_model_id={set_input_data_model} />
                         <div className="mt-2">
                             {inputDataModel ? (
-                                <DataModelCard is_selected={true} data_model={inputDataModel} preview={true} project_id="" refresh_data_model={() => { }} refresh_data_model_list={() => { }} />
+                                <DataModelCard is_selected={true} data_model={inputDataModel} preview={true} project_id="" refresh_data_model_list={() => {toast.error("Unexpected call of refresh_data_model_list")}} />
                             ) : (
                                 <div className="text-gray-400 text-sm italic">Not selected</div>
                             )}
@@ -155,7 +155,7 @@ export function ConfigureNewWorkflowTab({ }: ConfigureNewWorkflowTabProps) {
                         <DataModelSelectorCombobox data_models={data_models} combobox_title="Output Data Model" selected_data_model_id={output_data_model} set_selected_data_model_id={set_output_data_model} />
                         <div className="mt-2">
                             {outputDataModel ? (
-                                <DataModelCard is_selected={true} data_model={outputDataModel} preview={true} project_id="" refresh_data_model={() => { }} refresh_data_model_list={() => { }} />
+                                <DataModelCard is_selected={true} data_model={outputDataModel} preview={true} project_id="" refresh_data_model_list={() => {toast.error("Unexpected call of refresh_data_model_list") }} />
                             ) : (
                                 <div className="text-gray-400 text-sm italic">Not selected</div>
                             )}
