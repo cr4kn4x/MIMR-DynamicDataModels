@@ -60,7 +60,7 @@ export function AppNavigation({children, selected_project_id, projects, refresh_
               size="sm"
               asChild
             >
-              <Link href={selected_project_id ? `/Workflows?projectId=${selected_project_id}` : "/Workflows"}>
+              <Link href={selected_project_id ? `/Workflows?project_id=${selected_project_id}` : "/Workflows"}>
                 <WorkflowIcon className="w-4 h-4 mr-2" />
                 Workflows
               </Link>
@@ -70,7 +70,7 @@ export function AppNavigation({children, selected_project_id, projects, refresh_
               size="sm"
               asChild
             >
-              <Link href={selected_project_id ? `/DataModels?projectId=${selected_project_id}` : "/DataModels"}>
+              <Link href={selected_project_id ? `/DataModels?project_id=${selected_project_id}` : "/DataModels"}>
                 <DatabaseIcon className="w-4 h-4 mr-2" />
                 Data Models
               </Link>
