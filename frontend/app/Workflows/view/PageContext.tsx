@@ -1,25 +1,16 @@
 "use client"
 import React, { createContext, useContext, useEffect, useState, type ReactNode } from "react"
 import { useSearchParams } from "next/navigation"
-import { DataModel } from "@/lib/interfaces/DataModelInterfaces"
-import { apiCallWrapper } from "@/lib/api/ApiCallWrapper"
-import { getDataModelsByProjectId } from "@/lib/api/DataModelApi"
 import { toast } from "sonner"
-import { LLM } from "@/lib/interfaces/LlmInterfaces"
-import { getLlms } from "@/lib/api/WorkflowApi"
+import { useProject } from "@/app/ProjectContext"
 
 export interface NewWorkflowPageContextType {
-    selected_project_id: string | null
     selected_workflow_id: string | null
     create: boolean
-    data_models: DataModel[]
-    llms: LLM[]
-    get_and_set_llms: () => void
 }
 
 
 export const NewWorkflowPageContext = createContext<NewWorkflowPageContextType | undefined>(undefined)
-
 
 export function useNewWorkflowPageContext() {
     const ctx = useContext(NewWorkflowPageContext)
@@ -36,19 +27,13 @@ export function NewWorkflowPageContextProvider({ children }: { children: ReactNo
     const [selected_workflow_id, set_selected_workflow_id] = useState<string|null>(null)
 
 
-    const [data_models, set_data_models] = useState<DataModel[]>([])
-    const [llms, set_llms] = useState<LLM[]>([])
+    
+    const {} = useProject()
 
 
-    const get_and_set_llms = async () => {
-        const res = await apiCallWrapper(getLlms(), toast, "Error in get_and_set_llms")
-        if (res) { set_llms(res.llms) }
-    }
+    
 
-    const get_and_set_data_models = async (selected_project_id: string) => {
-        const res = await apiCallWrapper(getDataModelsByProjectId(selected_project_id), toast, `Error in get_and_set_data_models for project id ${selected_project_id}`)
-        if (res) { set_data_models(res.data_models) }
-    }
+   
 
 
     useEffect(() => {
@@ -67,24 +52,12 @@ export function NewWorkflowPageContextProvider({ children }: { children: ReactNo
     }, [searchParams])
 
 
-    useEffect(() => {
-        if (selected_project_id) {
-            get_and_set_data_models(selected_project_id)
-        }
-    }, [selected_project_id])
+  
 
-
-    useEffect(() => {
-        get_and_set_llms()
-    }, [])
 
     const value: NewWorkflowPageContextType = {
-        selected_project_id,
         selected_workflow_id, 
-        create,
-        data_models,
-        llms,
-        get_and_set_llms
+        create
     }
 
     return React.createElement(NewWorkflowPageContext.Provider, { value: value }, children)

@@ -14,6 +14,7 @@ import { createWorkflow, getLlms } from "@/lib/api/WorkflowApi"
 import { LLM } from "@/lib/interfaces/LlmInterfaces"
 import { toast } from "sonner"
 import { useNewWorkflowPageContext } from "./PageContext";
+import { useProject } from "@/app/ProjectContext"
 
 
 interface ConfigureNewWorkflowTabProps {
@@ -35,7 +36,8 @@ function ApiJsonPreview({ label, value }: { label: string, value: any }) {
 
 export function ConfigureNewWorkflowTab({ }: ConfigureNewWorkflowTabProps) {
     
-    const {selected_project_id, selected_workflow_id, create, data_models, llms, get_and_set_llms} = useNewWorkflowPageContext()
+    const {} = useNewWorkflowPageContext()
+    const {selected_project_id, data_models, llms, refresh_llms} = useProject()
     // valid combinations need to be checked.. it think at best in PageContext! 
 
     
@@ -110,7 +112,7 @@ export function ConfigureNewWorkflowTab({ }: ConfigureNewWorkflowTabProps) {
                                 }
                             </SelectContent>
                         </Select>
-                        <CreateLLMDialog refresh_llm_list_trigger={get_and_set_llms} />
+                        <CreateLLMDialog refresh_llm_list_trigger={refresh_llms} />
                     </div>
                 </div>
 

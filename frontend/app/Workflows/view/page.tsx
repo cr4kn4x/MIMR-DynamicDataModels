@@ -1,13 +1,29 @@
 "use client"
 
+import { ProjectProvider } from "@/app/ProjectContext"
 import { NewWorkflowPageContextProvider } from "./PageContext"
-import PageContextualized from "./page-contextualized"
+import { Card, CardContent } from "@/components/ui/card"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { ConfigureNewWorkflowTab } from "./ConfigurationTab"
 
 
-export default function NewWorkflowPage() {
-  return (
-    <NewWorkflowPageContextProvider>
-      <PageContextualized />
-    </NewWorkflowPageContextProvider>
-  )
+export default function WorkflowViewPage() {
+    return (
+        <div className="h-screen flex flex-col bg-gray-50">
+            <main className="flex-1 flex flex-col items-stretch">
+                <Card className="w-full h-full rounded-none">
+                    <CardContent className="h-full">
+                        <Tabs defaultValue="config" className="w-full h-full">
+                            <TabsList className="mb-4">
+                                <TabsTrigger value="config">Configuration</TabsTrigger>
+                            </TabsList>
+                            <TabsContent value="config">
+                                <ConfigureNewWorkflowTab />
+                            </TabsContent>
+                        </Tabs>
+                    </CardContent>
+                </Card>
+            </main>
+        </div>
+    )
 }
