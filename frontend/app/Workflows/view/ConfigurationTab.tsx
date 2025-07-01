@@ -13,7 +13,7 @@ import CreateLLMDialog from "@/components/my_ui/CreateLLMDialog"
 import { createWorkflow, getLlms } from "@/lib/api/WorkflowApi"
 import { LLM } from "@/lib/interfaces/LlmInterfaces"
 import { toast } from "sonner"
-import { useNewWorkflowPageContext } from "./PageContext";
+import { viewWorkflowPageContext } from "./PageContext";
 import { useProject } from "@/app/ProjectContext"
 
 
@@ -36,7 +36,7 @@ function ApiJsonPreview({ label, value }: { label: string, value: any }) {
 
 export function ConfigureNewWorkflowTab({ }: ConfigureNewWorkflowTabProps) {
     
-    const {} = useNewWorkflowPageContext()
+    const { selected_workflow_id, selected_workflow, create} = viewWorkflowPageContext()
     const {selected_project_id, data_models, llms, refresh_llms} = useProject()
     // valid combinations need to be checked.. it think at best in PageContext! 
 
@@ -46,12 +46,21 @@ export function ConfigureNewWorkflowTab({ }: ConfigureNewWorkflowTabProps) {
     const [name, set_name] = useState<string>("")
     const [input_data_model, set_input_data_model] = useState<string | null>(null)
     const [output_data_model, set_output_data_model] = useState<string | null>(null)
-    const [selected_llm, set_selected_llm] = useState<string>("")
+    const [llm, set_llm] = useState<string>("")
 
     const inputDataModel = data_models.find((m) => m.id === input_data_model)
     const outputDataModel = data_models.find((m) => m.id === output_data_model)
 
-   
+    
+    useEffect(()=>{
+        if(selected_workflow){
+            set_name(selected_workflow.name)
+            set_input_data_model(selected_workflow.input_data_model)
+            set_output_data_model(selected_workflow.output_data_model)
+            set_llm(selected_workflow.llm)
+        }
+    }, [selected_workflow])
+
 
     function generateExampleFromDataModel(dataModel: any) {
         if (!dataModel || !dataModel.fields) return {};
@@ -69,7 +78,7 @@ export function ConfigureNewWorkflowTab({ }: ConfigureNewWorkflowTabProps) {
             try {
                 if(!selected_project_id || !inputDataModel  || !outputDataModel || name.length == 0){toast.error("Inputs not valid!"); return;}
 
-                createWorkflow(selected_project_id, selected_llm, inputDataModel.id, outputDataModel.id, is_active, name)
+                createWorkflow(selected_project_id, llm, inputDataModel.id, outputDataModel.id, is_active, name)
 
                 toast.success("Workflow created")
             }
@@ -98,7 +107,7 @@ export function ConfigureNewWorkflowTab({ }: ConfigureNewWorkflowTabProps) {
 
                     <Label className="block text-sm font-medium text-gray-700 my-2">Select LLM</Label>
                     <div className="flex gap-2 my-2">
-                        <Select value={selected_llm} onValueChange={set_selected_llm}>
+                        <Select value={llm} onValueChange={set_llm}>
                             <SelectTrigger className="w-full">
                                 <SelectValue placeholder="Select LLM..." />
                             </SelectTrigger>
@@ -131,11 +140,11 @@ export function ConfigureNewWorkflowTab({ }: ConfigureNewWorkflowTabProps) {
                         </div>
                     </div>
                     <div className="flex flex-col items-center justify-center">
-                        <div className={`text-sm font-medium px-2 py-1 rounded-full mb-1 ${selected_llm
+                        <div className={`text-sm font-medium px-2 py-1 rounded-full mb-1 ${llm
                                 ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white'
                                 : 'bg-gray-100 text-gray-500'
                             }`}>
-                            {selected_llm || 'Select LLM'}
+                            {llm || 'Select LLM'}
                         </div>
 
                         <div className="flex items-center">
@@ -191,8 +200,13 @@ export function ConfigureNewWorkflowTab({ }: ConfigureNewWorkflowTabProps) {
 
 
                 <div className="flex justify-end space-x-2 pt-4">
-                    <Button type="button" variant="secondary" onClick={() => window.history.back()}>Abbrechen</Button>
-                    <Button type="submit">Speichern</Button>
+                    <Button type="button" variant="secondary" onClick={() => window.history.back()}>Cancel</Button>
+                        
+                    {create? 
+                        (<Button>Create new Workflow</Button>
+                        ): (
+                        <Button>Save Changes</Button>)
+                    }
                 </div>
             </form>
         </div>

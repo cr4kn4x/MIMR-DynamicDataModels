@@ -370,5 +370,20 @@ def create_workflow():
     
     return jsonify({"msg": "Workflow created"})
 
+
+
+@app.post("/api/workflows/get_by_id")
+@firebase_token_required(dao)
+def get_workflow_by_id(): 
+    firebase_token = request.firebase_token
+    assert isinstance(firebase_token, FirebaseIdToken)
+
+    data = request.get_json()
+    workflow_id = data.get("workflow_id")
+
+
+    res = dao.get_workflow_by_id(firebase_token.user_id, workflow_id)
+    return jsonify({"workflow": res})
+
 # app.run(debug=True, host="0.0.0.0")
 # flask --app app.py run --debug

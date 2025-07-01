@@ -34,6 +34,34 @@ export async function getWorkflowsByProjectId(project_id: string): Promise<getWo
 }
 
 
+interface getWorkflowByIdResponse {
+    workflow: Workflow
+}
+
+export async function getWorkflowById(workflow_id: string): Promise<getWorkflowByIdResponse> {
+
+    const url = `${BASE_URL}/api/workflows/get_by_id`
+
+    const response = await fetch(url, {
+        method: "POST",
+        headers: {
+            "Authorization": await getFirebaseBearer(),
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            workflow_id: workflow_id
+        })
+    })
+
+    if(!response.ok) {
+        await raiseErrorFromApiResponse(response)
+    }
+
+    const res_json = await response.json()
+    return res_json
+}
+
+
 
 
 export async function addLlm(alias: string, model_name: string, base_url: string, api_key: string): Promise<Boolean> {

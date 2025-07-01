@@ -198,9 +198,15 @@ class DAO:
             with conn.cursor() as cur:
                 cur.execute("SELECT project_id, id, name, input_data_model, output_data_model FROM workflows WHERE user_id = %s and project_id = %s ORDER BY name", (user_id, project_id))
                 workflows = cur.fetchall()
-
-        
         return workflows
+    
+    @dao_exception_handler
+    def get_workflow_by_id(self, user_id: str, workflow_id: str): 
+        with self.__get_connection() as conn: 
+            with conn.cursor() as cur: 
+                cur.execute("SELECT * FROM workflows WHERE user_id = %s and id = %s", (user_id, workflow_id))
+                workflow = cur.fetchone() 
+        return workflow
     
 
     @dao_exception_handler

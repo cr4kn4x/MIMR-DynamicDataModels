@@ -1,17 +1,13 @@
-import { DataModel } from "./DataModelInterfaces"
-
-
-
 
 
 
 
 export interface Workflow {
-    name: string
+    project_id: string
     id: string
-
-
-    input: DataModel
-    output: DataModel
-    
+    name: string
+    llm: string
+    input_data_model: string 
+    output_data_model: string
+    active: boolean
 }

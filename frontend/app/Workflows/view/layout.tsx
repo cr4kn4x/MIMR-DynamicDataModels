@@ -1,13 +1,13 @@
-
 import { ProjectProvider } from "@/app/ProjectContext";
-import { NewWorkflowPageContextProvider } from "./PageContext";
+import { ViewWorkflowContextProvider } from "./PageContext";
+
 
 export default function WorkflowViewLayout({ children }: { children: React.ReactNode }) {
     return (
         <ProjectProvider>
-            <NewWorkflowPageContextProvider>
+            <ViewWorkflowContextProvider>
                 {children}
-            </NewWorkflowPageContextProvider>
+            </ViewWorkflowContextProvider>
         </ProjectProvider>
     );
 }
