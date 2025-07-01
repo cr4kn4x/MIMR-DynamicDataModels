@@ -58,6 +58,8 @@ CREATE TABLE workflows (
     output_data_model UUID NOT NULL REFERENCES data_models(id),
     active BOOLEAN NOT NULL,
 
+    api_key: TEXT NOT NULL,
+
     -- CONSTRAINTs
     CONSTRAINT unique_project_workflow_name UNIQUE (project_id, name)
 );

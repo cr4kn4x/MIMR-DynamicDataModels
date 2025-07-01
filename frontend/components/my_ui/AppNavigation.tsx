@@ -13,6 +13,16 @@ import { ProjectSelectorCombobox } from "./ProjectSelectorCombobox"
 import { Project } from "@/lib/interfaces/DataModelInterfaces"
 
 
+async function handleLogout(router: any) {
+  try {
+    const auth = getAuth(firebaseApp)
+    await signOut(auth)
+    router.push("/Login")
+  } catch (error) {
+    console.error("Logout error:", error)
+  }
+}
+
 interface AppNavigationProps {
   children?: React.ReactNode,
 
@@ -25,16 +35,6 @@ interface AppNavigationProps {
 export function AppNavigation({children, selected_project_id, projects, refresh_projects_list, set_selected_project_id}: AppNavigationProps) {
   const router = useRouter()
   const pathname = usePathname()
-
-  const handleLogout = async () => {
-    try {
-      const auth = getAuth(firebaseApp)
-      await signOut(auth)
-      router.push("/Login")
-    } catch (error) {
-      console.error("Logout error:", error)
-    }
-  }
 
   const isWorkflowsActive = pathname.startsWith("/Workflows")
   const isDataModelsActive = pathname.startsWith("/DataModels")
@@ -88,7 +88,7 @@ export function AppNavigation({children, selected_project_id, projects, refresh_
           <Button
             variant="outline"
             size="sm"
-            onClick={handleLogout}
+            onClick={() => handleLogout(router)}
           >
             <LogOutIcon className="w-4 h-4 mr-2" />
             Logout

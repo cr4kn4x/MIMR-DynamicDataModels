@@ -1,70 +1,97 @@
-import { DataModel, DataModelField } from "@/lib/interfaces/DataModelInterfaces"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Separator } from "@/components/ui/separator"
-import { cn } from "@/lib/utils"
-import {
-    FileCodeIcon,
-    Edit3Icon,
-    Trash2Icon,
-    Plus,
-    Loader2
-} from "lucide-react"
-import { EditableDataModelField } from "./EditableDataModelField"
-import { ReadOnlyDataModelField } from "./DataModelField"
-import React, { useState } from "react"
-import { deleteDataModel } from "@/lib/api/DataModelApi"
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "../ui/alert-dialog"
-import { toast } from "sonner"
+import { DataModel, DataModelField } from "@/lib/interfaces/DataModelInterfaces";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
+import { FileCodeIcon, Edit3Icon, Trash2Icon, Plus, Loader2 } from "lucide-react";
+import { EditableDataModelField } from "./EditableDataModelField";
+import { ReadOnlyDataModelField } from "./DataModelField";
+import React, { useState } from "react";
+import { deleteDataModel } from "@/lib/api/DataModelApi";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "../ui/alert-dialog";
+import { toast } from "sonner";
+import { apiCallWrapper } from "@/lib/api/ApiCallWrapper";
+
+
+interface FieldListProps {
+    fields: DataModelField[];
+    preview: boolean;
+    data_model_id: string;
+    refresh_data_model_list: (project_id: string) => void;
+    add_new_field: boolean;
+    set_add_new_field: (state: boolean) => void;
+}
+
+function FieldList({ fields, preview, data_model_id, refresh_data_model_list, add_new_field, set_add_new_field }: FieldListProps) {
+    return (
+        <div className="space-y-2">
+            {!preview && fields.map((field) => (
+                <div key={field.id} className="group">
+                    <EditableDataModelField
+                        data_model_fields={fields}
+                        refresh_data_model={refresh_data_model_list}
+                        field={field}
+                        data_model_id={data_model_id}
+                        create_new={false}
+                        create_new_state={set_add_new_field}
+                    />
+                </div>
+            ))}
+
+            {!preview && !add_new_field && (
+                <div className="flex justify-center">
+                    <Button size={"sm"} variant={"outline"} onClick={() => set_add_new_field(true)}>
+                        <Plus /> Add Field
+                    </Button>
+                </div>
+            )}
+
+            {add_new_field && (
+                <EditableDataModelField
+                    data_model_fields={fields}
+                    refresh_data_model={refresh_data_model_list}
+                    field={{ name: "", type: "", description: null, id: "" }}
+                    create_new={true}
+                    data_model_id={data_model_id}
+                    create_new_state={set_add_new_field}
+                />
+            )}
+
+            {preview && fields.map((field) => (
+                <div key={field.id} className="group">
+                    <ReadOnlyDataModelField field={field} />
+                </div>
+            ))}
+        </div>
+    );
+}
 
 
 interface DataModelCardProps {
-    project_id: string
-    data_model: DataModel
-    is_selected: boolean
-    onSelect?: () => void
-    refresh_data_model_list(project_id: string): void
-    preview: boolean
-    className?: string
+    project_id: string;
+    data_model: DataModel;
+    is_selected: boolean;
+    onSelect?: () => void;
+    refresh_data_model_list(project_id: string): void;
+    preview: boolean;
+    className?: string;
 }
 
 
 export function DataModelCard({ is_selected, data_model, onSelect, preview, refresh_data_model_list, project_id, className }: DataModelCardProps) {
-
-    const [add_new_field, set_add_new_field] = useState(false)
-    const [is_loading, set_is_loading] = useState(false)
-
-
+    const [add_new_field, set_add_new_field] = useState(false);
+    const [is_loading, set_is_loading] = useState(false);
 
     async function delete_data_model() {
-        set_is_loading(true)
-
-        try {
-            await deleteDataModel(data_model.id)
-            refresh_data_model_list(project_id)
-
-            toast.success("Data Model deleted", {richColors: true})
-        }
-        catch (e) {
-            const error_msg = e instanceof Error ? e.message : String(e)
-
-            toast.error("Failed to delete data model", {
-                description: error_msg,
-                richColors: true,
-            })
-        }
-        finally {
-            set_is_loading(false)
-        }
+        set_is_loading(true);
+        await apiCallWrapper(deleteDataModel(data_model.id), toast, "Failed to delete DataModel");
+        set_is_loading(false);
     }
-
 
     function handle_delete_data_model(e: React.MouseEvent) {
-        e.stopPropagation() 
-        delete_data_model()
+        e.stopPropagation();
+        delete_data_model();
     }
-
 
     return (
         <div className={cn("relative", className)}>
@@ -77,11 +104,10 @@ export function DataModelCard({ is_selected, data_model, onSelect, preview, refr
                 onClick={is_loading ? undefined : (preview ? onSelect : undefined)}
                 className={cn(
                     "transition-all hover:shadow-md",
-                    preview 
-                        ? (is_selected 
-                            ? "ring-2 ring-blue-500 bg-blue-50 cursor-pointer" 
+                    preview
+                        ? is_selected
+                            ? "ring-2 ring-blue-500 bg-blue-50 cursor-pointer"
                             : "cursor-pointer"
-                          ) 
                         : "border-1 border-gray-100",
                     is_loading && "pointer-events-none select-none opacity-80"
                 )}
@@ -92,9 +118,8 @@ export function DataModelCard({ is_selected, data_model, onSelect, preview, refr
                             <FileCodeIcon className="w-4 h-4 text-gray-600" />
                             <CardTitle className="text-sm font-medium">{data_model.name}</CardTitle>
 
-                            {!preview &&
+                            {!preview && (
                                 <div className="flex space-x-1">
-
                                     <AlertDialog>
                                         <AlertDialogTrigger asChild>
                                             <Button size="sm" variant="ghost" className="h-6 w-6 p-0" disabled={is_loading}>
@@ -122,7 +147,7 @@ export function DataModelCard({ is_selected, data_model, onSelect, preview, refr
                                         <Edit3Icon className="w-3 h-3" />
                                     </Button>
                                 </div>
-                            }
+                            )}
                         </div>
                         <div className="flex items-center space-x-1">
                             <Badge variant="secondary" className="text-xs">
@@ -132,57 +157,17 @@ export function DataModelCard({ is_selected, data_model, onSelect, preview, refr
                     </div>
                 </CardHeader>
 
-
                 <CardContent>
-                    <div className="space-y-2">
-                        <div className="flex items-center justify-between mb-2">
-                            <span className="text-xs font-medium text-gray-600 uppercase tracking-wide">
-                                Fields
-                            </span>
-                        </div>
-
-                        <div className="space-y-2">
-                            {!preview && data_model.fields.map((field, fieldIndex) => (
-                                <div key={field.id} className="group">
-                                    <EditableDataModelField
-                                        data_model_fields={data_model.fields}
-                                        refresh_data_model={refresh_data_model_list}
-                                        field={field}
-                                        data_model_id={data_model.id}
-                                        create_new={false}
-                                        create_new_state={set_add_new_field}
-                                    />
-                                </div>)
-                            )}
-
-                            {!preview && !add_new_field &&
-                                <div className="flex justify-center">
-                                    <Button size={"sm"} variant={"outline"} onClick={() => { set_add_new_field(true) }}>
-                                        <Plus /> Add Field
-                                    </Button>
-                                </div>
-                            }
-
-                            {add_new_field &&
-                                <EditableDataModelField
-                                    data_model_fields={data_model.fields}
-                                    refresh_data_model={refresh_data_model_list}
-                                    field={{ name: "", type: "", description: null, id: "" }}
-                                    create_new={true}
-                                    data_model_id={data_model.id}
-                                    create_new_state={set_add_new_field}
-                                />
-                            }
-
-                            {preview && data_model.fields.map((field, fieldIndex) => (
-                                <div key={field.id} className="group">
-                                    <ReadOnlyDataModelField field={field} />
-                                </div>
-                            ))}
-                        </div>
-                    </div>
+                    <FieldList
+                        fields={data_model.fields}
+                        preview={preview}
+                        data_model_id={data_model.id}
+                        refresh_data_model_list={refresh_data_model_list}
+                        add_new_field={add_new_field}
+                        set_add_new_field={set_add_new_field}
+                    />
                 </CardContent>
             </Card>
         </div>
-    )
+    );
 }

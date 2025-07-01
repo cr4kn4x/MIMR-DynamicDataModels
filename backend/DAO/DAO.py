@@ -1,4 +1,4 @@
-import psycopg, typing, uuid, inspect, psycopg.rows
+import psycopg, typing, uuid, psycopg.rows, secrets
 from DAO.Exceptions import (
     handle_database_error, 
     DAOException,
@@ -219,9 +219,9 @@ class DAO:
                 )
         return True
     
+    
     @dao_exception_handler
     def get_llms(self, user_id: str):
-
         with self.__get_connection() as conn:
             with conn.cursor() as cur:
                 cur.execute("SELECT id, alias, model_name, base_url FROM llms WHERE user_id = %s ORDER BY alias", (user_id, ))
@@ -232,9 +232,7 @@ class DAO:
 
     @dao_exception_handler
     def create_workflow(self, user_id: str, project_id: str, llm: str, input_data_model: str, output_data_model: str, active: bool, name: str):
-
         with self.__get_connection() as conn: 
-            with conn.cursor() as cur: 
-                cur.execute("INSERT INTO public.workflows(user_id, project_id, id, name, input_data_model, output_data_model, active, llm) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)", (user_id, project_id, str(uuid.uuid4()), name, input_data_model, output_data_model, active, llm))
-
+            with conn.cursor() as cur:
+                cur.execute("INSERT INTO public.workflows(user_id, project_id, id, name, input_data_model, output_data_model, active, llm, api_key) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)", (user_id, project_id, str(uuid.uuid4()), name, input_data_model, output_data_model, active, llm, secrets.token_urlsafe(32)))
         return True
