@@ -1,27 +1,27 @@
 import { DataModelField } from "@/lib/interfaces/DataModelInterfaces";
 import { validateDataModelFieldName, validateDataModelFieldType, validateDataModelFieldDescription } from "@/lib/input_validation";
+import { InputValidationResult } from "../interfaces/internal";
 
-interface ValidationResult {
-    is_valid: boolean;
-    msg: string;
+
+interface DataModelFieldValidation {
+    name_validation: InputValidationResult;
+    type_validation: InputValidationResult;
+    description_validation: InputValidationResult;
+    input_valid: boolean;
 }
 
-interface FieldValidation {
-    name_validation: ValidationResult;
-    type_validation: ValidationResult;
-    description_validation: ValidationResult;
-    is_field_valid: boolean;
-}
 
-export function useFieldValidation(
+export function useDataModelFieldValidation(
     name: string,
     type: string,
     description: string | null,
     data_model_fields: DataModelField[]
-): FieldValidation {
-    const name_validation = validateDataModelFieldName(name, data_model_fields.map((field) => field.name));
-    const type_validation = validateDataModelFieldType(type);
-    const description_validation = validateDataModelFieldDescription(description);
+): DataModelFieldValidation {
+    const name_validation = validateDataModelFieldName(name, data_model_fields.map((field) => field.name))
+
+    const type_validation = validateDataModelFieldType(type)
+
+    const description_validation = validateDataModelFieldDescription(description)
 
     const is_field_valid =
         name_validation.is_valid &&
@@ -32,6 +32,6 @@ export function useFieldValidation(
         name_validation,
         type_validation,
         description_validation,
-        is_field_valid,
+        input_valid: is_field_valid,
     };
 }

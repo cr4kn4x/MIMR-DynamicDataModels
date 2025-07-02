@@ -15,6 +15,7 @@ import { LLM } from "@/lib/interfaces/LlmInterfaces"
 import { toast } from "sonner"
 import { viewWorkflowPageContext } from "./PageContext";
 import { useProject } from "@/app/ProjectContext"
+import { useWorkflowValidation } from "@/lib/hooks/useWorkflowValidation";
 
 
 interface ConfigureNewWorkflowTabProps {
@@ -51,6 +52,8 @@ export function ConfigureNewWorkflowTab({ }: ConfigureNewWorkflowTabProps) {
     const inputDataModel = data_models.find((m) => m.id === input_data_model)
     const outputDataModel = data_models.find((m) => m.id === output_data_model)
 
+    const { name_validation, llm_validation, input_model_validation, output_model_validation, input_valid: is_workflow_valid } = useWorkflowValidation(name, llm, inputDataModel, outputDataModel)
+
     
     useEffect(()=>{
         if(selected_workflow){
@@ -72,23 +75,23 @@ export function ConfigureNewWorkflowTab({ }: ConfigureNewWorkflowTabProps) {
 
 
     async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-            e.preventDefault()
+        e.preventDefault();
 
-            // 
-            try {
-                if(!selected_project_id || !inputDataModel  || !outputDataModel || name.length == 0){toast.error("Inputs not valid!"); return;}
-
-                createWorkflow(selected_project_id, llm, inputDataModel.id, outputDataModel.id, is_active, name)
-
-                toast.success("Workflow created")
-            }
-            catch(err: any){
-                toast.error("Error occured", {description: err.message})
-            }
-            finally {
-                // set_loading(false)
-            }
+        if (!is_workflow_valid) {
+            if (!name_validation.is_valid) toast.error(name_validation.msg);
+            if (!llm_validation.is_valid) toast.error(llm_validation.msg);
+            if (!input_model_validation.is_valid) toast.error(input_model_validation.msg);
+            if (!output_model_validation.is_valid) toast.error(output_model_validation.msg);
+            return;
         }
+
+        try {
+            createWorkflow(selected_project_id, llm, inputDataModel.id, outputDataModel.id, is_active, name);
+            toast.success("Workflow created");
+        } catch (err: any) {
+            toast.error("Error occurred", { description: err.message });
+        }
+    }
 
 
     return (

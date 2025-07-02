@@ -25,7 +25,7 @@ import {
 import { CheckIcon, XIcon, Trash2Icon, Edit3Icon, AlertCircle, Loader2 } from "lucide-react"
 import { DataModelField } from "@/lib/interfaces/DataModelInterfaces"
 import { applyChangesToDataModelField, createNewDataModelField, deleteDataModelField } from "@/lib/api/DataModelApi"
-import { useFieldValidation } from "@/lib/hooks/useFieldValidation"
+import { useDataModelFieldValidation } from "@/lib/hooks/useFieldValidation"
 
 
 const FIELD_TYPES = [
@@ -65,7 +65,7 @@ export function EditableDataModelField({ field, data_model_id, data_model_fields
     const [server_error, set_server_error] = useState<string | null>(null)
 
 
-    const { name_validation, type_validation, description_validation, is_field_valid } = useFieldValidation(name, type, description, data_model_fields)
+    const { name_validation, type_validation, description_validation, input_valid: is_field_valid } = useDataModelFieldValidation(name, type, description, data_model_fields)
 
 
     const reset_field_states = () => {
@@ -243,6 +243,13 @@ export function EditableDataModelField({ field, data_model_id, data_model_fields
                                     ))}
                                 </SelectContent>
                             </Select>
+
+                            {!type_validation.is_valid && (
+                                <span className="text-xs text-red-500 mt-0.5 ml-1 flex items-center gap-1">
+                                    <AlertCircle className="h-3 w-3" />
+                                    {type_validation.msg}
+                                </span>
+                            )}
                         </div>
                     </div>
 
