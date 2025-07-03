@@ -1,0 +1,6 @@
+
+
+
+export const MAX_LENGTH_PROJECT_NAME = 64
+export const MAX_LENGTH_DATA_MODEL_NAME = 64
+export const MAX_LENGTH_DATA_MODEL_FIELD_NAME= 64
