@@ -1,70 +1,51 @@
 import typing
 import dspy
+import os
+from dotenv import load_dotenv
 from pydantic import BaseModel, Field, create_model
+load_dotenv("./secrets/.env")
+
+
+t = create_model(
+    "model_name  g", # this is all user input from UI
+    name=(str, Field(description="this is a name")), 
+    age=(int, Field())
+)
+
+
+print(t.model_json_schema())
 
 
 
+qwen = dspy.LM(model="openai/Qwen/Qwen3-14B", max_tokens=512, base_url="https://api.deepinfra.com/v1/openai", api_key=os.environ.get("DEEPINFRA_API"))
 
 
 
-
-
-import sys
-sys.exit(0)
-
-
-class dspy_signature(dspy.Signature): 
-    """
-    Prompt... 
-    """
-    msg: str = dspy.InputField()
-    sentiment: typing.Literal["positive", "negative", "neutral"] = dspy.OutputField() 
-
-
-def create_dspy_signature_class(class_name, input_fields, output_fields):
-    """
-    Dynamisch eine dspy.Signature-Klasse erzeugen.
-    input_fields: List[Tuple[str, type]]
-    output_fields: List[Tuple[str, type]]
-    """
-    namespace = dict()
-    annotations = dict()
-    for name, typ in input_fields:
-        namespace[name] = dspy.InputField()
-        annotations[name] = typ
-    for name, typ in output_fields:
-        namespace[name] = dspy.OutputField()
-        annotations[name] = typ
-    namespace['__annotations__'] = annotations
-    return type(class_name, (dspy.Signature,), namespace)
-
-
-# Beispielhafte Nutzung:
-input_fields = [("msg", str)]
-output_fields = [("sentiment", typing.Literal["positive", "negative", "neutral"])]
-DynamicSignature = create_dspy_signature_class("DynamicSignature", input_fields, output_fields)
-
-
-
-
-
-
-print(dspy_signature.output_fields)
-print(DynamicSignature.output_fields)
-
-
-
-
-
-model = create_model(
-    "ModelName",
-    name=(str, Field())
+# 
+t = create_model(
+    "*",
+    name=(str, Field(description="this is a name")), 
+    age=(int, Field())
 )
 
 
 
+o = t(name="", age=2)
+print(o)
+print(t.model_json_schema())
 
 
 
+class ExtractionSignature(dspy.Signature):
+    text: str = dspy.InputField() 
+    prediction: typing.List[t] = dspy.OutputField() 
 
 
+program = dspy.Predict(ExtractionSignature)
+
+
+text = "Tim is 10 years old. Sven is his father. He is 45 years old"
+with dspy.settings.context(lm=qwen):
+    pred = program(text=text)
+
+print(pred.prediction)

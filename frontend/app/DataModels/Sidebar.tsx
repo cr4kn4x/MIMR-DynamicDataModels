@@ -23,7 +23,7 @@ function DataModelList({ data_models, selected_project_id, refresh_data_models, 
                 <CreateDataModelDialog
                     data_models={data_models}
                     selected_project_id={selected_project_id}
-                    refresh_data_models_list={refresh_data_models}
+                    refresh_data_models={refresh_data_models}
                 />
             </div>
         )
@@ -34,8 +34,7 @@ function DataModelList({ data_models, selected_project_id, refresh_data_models, 
             {selected_project_id &&
                 data_models.map((model) => (
                     <DataModelCard
-                        refresh_data_model_list={refresh_data_models}
-                        project_id={selected_project_id}
+                        refresh_data_models={refresh_data_models}
                         key={model.name}
                         data_model={model}
                         is_selected={selected_data_model_id === model.id}
@@ -69,7 +68,7 @@ export function DataModelsSidebar() {
                                 <CreateDataModelDialog
                                     data_models={data_models}
                                     selected_project_id={selected_project_id}
-                                    refresh_data_models_list={refresh_data_models}
+                                    refresh_data_models={refresh_data_models}
                                 />
                             </div>
                         ) : (<></>)

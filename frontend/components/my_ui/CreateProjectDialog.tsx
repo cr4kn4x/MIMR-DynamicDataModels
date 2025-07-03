@@ -6,10 +6,12 @@ import { useState, useEffect } from "react"
 import { createNewProject } from "@/lib/api/DataModelApi"
 import { toast } from "sonner"
 import { Loader2, FolderPlus, AlertCircle, CheckCircle } from "lucide-react"
-import { MAX_LENGTH_PROJECT_NAME, validateProjectName } from "@/lib/input_validation"
+
 import { Project } from "@/lib/interfaces/DataModelInterfaces"
 import { apiCallWrapper } from "@/lib/api/ApiCallWrapper"
-import { useProjectNameValidation } from "@/lib/hooks/useProjectValidation"
+import { useProjectNameValidation } from "@/lib/hooks/input-validation/useProjectNameValidation"
+import { MAX_LENGTH_PROJECT_NAME } from "@/lib/hooks/input-validation/constants"
+import InputValidationStatus from "./InputValidationStatus"
 
 
 
@@ -26,7 +28,7 @@ export default function CreateProjectDialog({ projects, refresh_projects_list }:
     const [is_loading, set_is_loading] = useState<boolean>(false)
 
     //
-    const {project_name_validation, input_valid} = useProjectNameValidation(project_name, projects)
+    const {input_valid, input_valid_status} = useProjectNameValidation(project_name, projects)
 
 
     useEffect(()=>{
@@ -35,7 +37,6 @@ export default function CreateProjectDialog({ projects, refresh_projects_list }:
             set_project_name("")
         }
     }, [dialog_open])
-
 
 
     async function handle_create_new_project(project_name: string) {
@@ -52,9 +53,6 @@ export default function CreateProjectDialog({ projects, refresh_projects_list }:
         e.preventDefault()
         await handle_create_new_project(project_name)
     }
-
-
-
 
 
     return (
@@ -92,16 +90,7 @@ export default function CreateProjectDialog({ projects, refresh_projects_list }:
                                 maxLength={50}
                             />
 
-                            {/* Validation Messages */}
-                            {(!project_name_validation.is_valid) ? (
-                                <div className="text-sm text-red-500 flex items-center gap-1">
-                                    <AlertCircle className="h-3 w-3" /> {project_name_validation.msg}
-                                </div>
-                            ) : (
-                                <div className="text-sm text-green-600 flex items-center gap-1">
-                                    <CheckCircle className="h-3 w-3" /> {project_name_validation.msg}
-                                </div>
-                            )}
+                            <InputValidationStatus input_valid={input_valid} status={input_valid_status} />
 
                             {/* Character Counter */}
                             <div className="flex justify-between items-center text-xs text-muted-foreground">
@@ -117,7 +106,7 @@ export default function CreateProjectDialog({ projects, refresh_projects_list }:
                             </Button>
                         </DialogClose>
 
-                        <Button type="submit" disabled={is_loading || !project_name_validation.is_valid}>
+                        <Button type="submit" disabled={is_loading || !input_valid}>
                             {is_loading ? (
                                 <>
                                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />

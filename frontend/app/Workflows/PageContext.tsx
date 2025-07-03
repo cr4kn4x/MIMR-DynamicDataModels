@@ -4,6 +4,7 @@ import { Workflow } from "@/lib/interfaces/WorkflowInteraces"
 import React, { createContext, useContext, useEffect, useState, type ReactNode } from "react"
 import { toast } from "sonner"
 import { useProject } from "../ProjectContext"
+import { apiCallWrapper } from "@/lib/api/ApiCallWrapper"
 
 
 export interface WorkflowPageContextType {
@@ -22,16 +23,14 @@ export function useWorkflowPageContext() {
 
 
 export function WorkflowPageContextProvider({ children }: { children: ReactNode }) {
-
     const [workflows, set_workflows] = useState<Workflow[]>([])
-    const {selected_project_id} = useProject() 
+    const {selected_project_id} = useProject()
 
 
     async function refresh_workflows() {
         if(selected_project_id){
-            getWorkflowsByProjectId(selected_project_id)
-            .then((res) => {set_workflows(res.workflows)})
-            .catch((error) => {toast.error("Error in get_and_set_workflows", {description: error.message, richColors: true})}) 
+            const res = await apiCallWrapper(getWorkflowsByProjectId(selected_project_id), toast, "Error while fetching Workflows")
+            if(res){ set_workflows(res.workflows) } 
         }
     }
 

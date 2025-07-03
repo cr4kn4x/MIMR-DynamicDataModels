@@ -6,6 +6,7 @@ import { useProject } from "@/app/ProjectContext"
 import { getWorkflowById } from "@/lib/api/WorkflowApi"
 import { apiCallWrapper } from "@/lib/api/ApiCallWrapper"
 import { Workflow } from "@/lib/interfaces/WorkflowInteraces"
+import { useWorkflowPageContext } from "../PageContext"
 
 export interface ViewWorkflowPageContextType {
     selected_workflow_id: string | null
@@ -27,6 +28,8 @@ export function ViewWorkflowContextProvider({ children }: { children: ReactNode 
     const searchParams = useSearchParams()
 
     const {selected_project_id} = useProject()
+    const {workflows} = useWorkflowPageContext()
+    
     
     const [create, set_create] = useState<boolean>(false)
     const [selected_workflow_id, set_selected_workflow_id] = useState<string|null>(null)

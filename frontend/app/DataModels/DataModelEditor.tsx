@@ -55,8 +55,7 @@ function DataModelEditorContent({ selected_data_model, selected_project_id, refr
             <div className="max-w-4xl mx-auto space-y-6">
                 {selected_data_model && selected_project_id ? (
                     <DataModelCard
-                        project_id={selected_project_id}
-                        refresh_data_model_list={refresh_data_models}
+                        refresh_data_models={refresh_data_models}
                         data_model={selected_data_model}
                         is_selected={true}
                         preview={false}

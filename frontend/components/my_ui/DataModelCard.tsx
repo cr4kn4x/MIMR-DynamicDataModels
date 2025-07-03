@@ -13,84 +13,39 @@ import { toast } from "sonner";
 import { apiCallWrapper } from "@/lib/api/ApiCallWrapper";
 
 
-interface FieldListProps {
-    fields: DataModelField[];
-    preview: boolean;
-    data_model_id: string;
-    refresh_data_model_list: (project_id: string) => void;
-    add_new_field: boolean;
-    set_add_new_field: (state: boolean) => void;
-}
 
-function FieldList({ fields, preview, data_model_id, refresh_data_model_list, add_new_field, set_add_new_field }: FieldListProps) {
-    return (
-        <div className="space-y-2">
-            {!preview && fields.map((field) => (
-                <div key={field.id} className="group">
-                    <EditableDataModelField
-                        data_model_fields={fields}
-                        refresh_data_model={refresh_data_model_list}
-                        field={field}
-                        data_model_id={data_model_id}
-                        create_new={false}
-                        create_new_state={set_add_new_field}
-                    />
-                </div>
-            ))}
-
-            {!preview && !add_new_field && (
-                <div className="flex justify-center">
-                    <Button size={"sm"} variant={"outline"} onClick={() => set_add_new_field(true)}>
-                        <Plus /> Add Field
-                    </Button>
-                </div>
-            )}
-
-            {add_new_field && (
-                <EditableDataModelField
-                    data_model_fields={fields}
-                    refresh_data_model={refresh_data_model_list}
-                    field={{ name: "", type: "", description: null, id: "" }}
-                    create_new={true}
-                    data_model_id={data_model_id}
-                    create_new_state={set_add_new_field}
-                />
-            )}
-
-            {preview && fields.map((field) => (
-                <div key={field.id} className="group">
-                    <ReadOnlyDataModelField field={field} />
-                </div>
-            ))}
-        </div>
-    );
-}
 
 
 interface DataModelCardProps {
-    project_id: string;
     data_model: DataModel;
     is_selected: boolean;
     onSelect?: () => void;
-    refresh_data_model_list(project_id: string): void;
+    refresh_data_models: () => void;
     preview: boolean;
     className?: string;
 }
 
 
-export function DataModelCard({ is_selected, data_model, onSelect, preview, refresh_data_model_list, project_id, className }: DataModelCardProps) {
+export function DataModelCard({ is_selected, data_model, onSelect, preview, refresh_data_models, className }: DataModelCardProps) {
     const [add_new_field, set_add_new_field] = useState(false);
     const [is_loading, set_is_loading] = useState(false);
 
     async function delete_data_model() {
         set_is_loading(true);
-        await apiCallWrapper(deleteDataModel(data_model.id), toast, "Failed to delete DataModel");
+        
+        const res = await apiCallWrapper(deleteDataModel(data_model.id), toast, "Failed to delete DataModel");
+        
+        if(res && res == true){
+            refresh_data_models()
+            toast.success("DataModel deleted", {richColors: true})
+        }
+
         set_is_loading(false);
     }
 
     function handle_delete_data_model(e: React.MouseEvent) {
-        e.stopPropagation();
-        delete_data_model();
+        e.stopPropagation()
+        delete_data_model()
     }
 
     return (
@@ -162,12 +117,71 @@ export function DataModelCard({ is_selected, data_model, onSelect, preview, refr
                         fields={data_model.fields}
                         preview={preview}
                         data_model_id={data_model.id}
-                        refresh_data_model_list={refresh_data_model_list}
+                        refresh_data_models={refresh_data_models}
                         add_new_field={add_new_field}
                         set_add_new_field={set_add_new_field}
                     />
                 </CardContent>
             </Card>
+        </div>
+    );
+}
+
+
+
+
+
+
+interface FieldListProps {
+    fields: DataModelField[]
+    preview: boolean
+    data_model_id: string
+    refresh_data_models: () => void
+    add_new_field: boolean
+    set_add_new_field: (state: boolean) => void
+}
+
+
+function FieldList({ fields, preview, data_model_id, refresh_data_models, add_new_field, set_add_new_field }: FieldListProps) {
+    return (
+        <div className="space-y-2">
+            {!preview && fields.map((field) => (
+                <div key={field.id} className="group">
+                    <EditableDataModelField
+                        data_model_fields={fields}
+                        refresh_data_models={refresh_data_models}
+                        field={field}
+                        data_model_id={data_model_id}
+                        create_new={false}
+                        create_new_state={set_add_new_field}
+                    />
+                </div>
+            ))}
+
+            {!preview && !add_new_field && (
+                <div className="flex justify-center">
+                    <Button size={"sm"} variant={"outline"} onClick={() => set_add_new_field(true)}>
+                        <Plus /> Add Field
+                    </Button>
+                </div>
+            )}
+
+            {add_new_field && (
+                <EditableDataModelField
+                    data_model_fields={fields}
+                    refresh_data_models={refresh_data_models}
+                    field={{ name: "", type: "", description: null, id: "" }}
+                    create_new={true}
+                    data_model_id={data_model_id}
+                    create_new_state={set_add_new_field}
+                />
+            )}
+
+            {preview && fields.map((field) => (
+                <div key={field.id} className="group">
+                    <ReadOnlyDataModelField field={field} />
+                </div>
+            ))}
         </div>
     );
 }

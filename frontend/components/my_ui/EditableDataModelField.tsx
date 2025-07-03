@@ -25,7 +25,10 @@ import {
 import { CheckIcon, XIcon, Trash2Icon, Edit3Icon, AlertCircle, Loader2 } from "lucide-react"
 import { DataModelField } from "@/lib/interfaces/DataModelInterfaces"
 import { applyChangesToDataModelField, createNewDataModelField, deleteDataModelField } from "@/lib/api/DataModelApi"
-import { useDataModelFieldValidation } from "@/lib/hooks/useFieldValidation"
+import { useDataModelFieldValidation } from "@/lib/hooks/input-validation/useDataModelFieldValidation"
+import { apiCallWrapper } from "@/lib/api/ApiCallWrapper"
+import { toast } from "sonner"
+import InputValidationStatus from "./InputValidationStatus"
 
 
 const FIELD_TYPES = [
@@ -47,14 +50,14 @@ interface EditableFieldProps {
     field: DataModelField
     data_model_id: string
     data_model_fields: DataModelField[]
-    refresh_data_model(data_model_id: string): void
+    refresh_data_models: () => void 
 
     create_new: boolean
     create_new_state(state: boolean): void
 }
 
 
-export function EditableDataModelField({ field, data_model_id, data_model_fields, refresh_data_model, create_new, create_new_state }: EditableFieldProps) {
+export function EditableDataModelField({ field, data_model_id, data_model_fields, refresh_data_models, create_new, create_new_state }: EditableFieldProps) {
     const [name, set_name] = useState<string>(field.name)
     const [type, set_type] = useState<string>(field.type)
     const [description, set_description] = useState<string | null>(field.description)
@@ -62,10 +65,10 @@ export function EditableDataModelField({ field, data_model_id, data_model_fields
     // ui states
     const [is_edit, set_is_edit] = useState<boolean>(create_new)
     const [is_loading, set_is_loading] = useState<boolean>(false)
-    const [server_error, set_server_error] = useState<string | null>(null)
 
 
-    const { name_validation, type_validation, description_validation, input_valid: is_field_valid } = useDataModelFieldValidation(name, type, description, data_model_fields)
+
+    const { name_validation, type_validation, description_validation, input_valid} = useDataModelFieldValidation(name, type, description, data_model_fields)
 
 
     const reset_field_states = () => {
@@ -74,67 +77,48 @@ export function EditableDataModelField({ field, data_model_id, data_model_fields
         set_description(field.description)
     }
 
-
+        
     useEffect(()=>{
         if(!is_edit){
             create_new_state(false)
         }
     }, [is_edit])
     
-
-    useEffect(() => {
-        // reset server error on change
-        if(server_error){
-            set_server_error(null)
-        }
-    }, [name, type, description])
-
     
-
     async function save_changes() {
         set_is_loading(true)
-        
-        try {
-            const new_field: DataModelField = {id: field.id, description, name, type}
-            
-            if(create_new){
-                await createNewDataModelField(data_model_id, new_field)
-            }
-            else{
-                await applyChangesToDataModelField(data_model_id, new_field) 
-            }
 
-            //  refresh and close editor
-            create_new_state(false)
-            refresh_data_model(data_model_id)
-            cancel_edit_mode()       
+        const new_field: DataModelField = {id: field.id, description, name, type}
+
+        let res: boolean | undefined
+        if(create_new){
+            res = await apiCallWrapper(createNewDataModelField(data_model_id, new_field), toast, "Failed to create new field!")
         }
-        catch (e) {
-            const error_msg = e instanceof Error ? e.message : String(e)
-            set_server_error(error_msg)
-            return
-        } 
-        finally {
-            set_is_loading(false)
-        }            
+        else{
+            res = await apiCallWrapper(applyChangesToDataModelField(data_model_id, new_field), toast, "Failed to change field") 
+        }
+
+        if(res && res == true){
+            create_new_state(false)
+            refresh_data_models()
+            cancel_edit_mode()
+        }
+        
+        set_is_loading(false)                 
     }
+
 
     async function delete_field() {
         set_is_loading(true)
-        try {
-            await deleteDataModelField(field.id)
-            refresh_data_model(data_model_id)
+
+        const res = await apiCallWrapper(deleteDataModelField(field.id), toast, "Failed to delete field")
+
+        if(res && res==true){
+            refresh_data_models()
             cancel_edit_mode()
-            return
         }
-        catch (e) {
-            const error_msg = e instanceof Error ? e.message : String(e)
-            set_server_error(error_msg)
-            return
-        }
-        finally {
-            set_is_loading(false)
-        }
+
+        set_is_loading(false)
     }
 
 
@@ -143,6 +127,7 @@ export function EditableDataModelField({ field, data_model_id, data_model_fields
         set_is_edit(true)
     }    
     
+
     function cancel_edit_mode(){
         reset_field_states() 
         set_is_edit(false)
@@ -215,19 +200,9 @@ export function EditableDataModelField({ field, data_model_id, data_model_fields
                                 placeholder="Field name" 
                                 value={name} 
                                 onChange={(e) => set_name(e.target.value)} 
-                                className={
-                                    !name_validation.is_valid
-                                        ? "border-red-500 ring-1 ring-red-300"
-                                        : ""
-                                }
                                 disabled={is_loading}
                             />
-                            {!name_validation.is_valid && (
-                                <span className="text-xs text-red-500 mt-0.5 ml-1 flex items-center gap-1">
-                                    <AlertCircle className="h-3 w-3" />
-                                    {name_validation.msg}
-                                </span>
-                            )}
+                            <InputValidationStatus input_valid={name_validation.is_valid} status={name_validation.msg}/>
                         </div>
 
                         <div className="flex flex-col w-44">
@@ -244,12 +219,7 @@ export function EditableDataModelField({ field, data_model_id, data_model_fields
                                 </SelectContent>
                             </Select>
 
-                            {!type_validation.is_valid && (
-                                <span className="text-xs text-red-500 mt-0.5 ml-1 flex items-center gap-1">
-                                    <AlertCircle className="h-3 w-3" />
-                                    {type_validation.msg}
-                                </span>
-                            )}
+                            <InputValidationStatus input_valid={type_validation.is_valid} status={type_validation.msg}/>
                         </div>
                     </div>
 
@@ -258,32 +228,21 @@ export function EditableDataModelField({ field, data_model_id, data_model_fields
                             placeholder="Description (optional)"
                             value={description ? (description) : ("")}
                             onChange={(e) => set_description(e.target.value)}
-                            className={`text-xs overflow-hidden h-fit ${
-                                !description_validation.is_valid
-                                    ? "border-red-500 ring-1 ring-red-300"
-                                    : ""
-                            }`}
                             disabled={is_loading}
                         />
+
+                        <InputValidationStatus input_valid={description_validation.is_valid} status={description_validation.msg}/>
                     </div>
 
-                    {/* Validation/Error/Success messages */}
-                    <div className="min-h-[22px]">
-                        {(server_error) && (
-                            <div className="text-sm text-red-500 flex items-center gap-1">
-                                <AlertCircle className="h-3 w-3" />
-                                {server_error}
-                            </div>
-                        )}
-                    </div>
+                    
 
                     <div>
                         {/* Save/Cancel buttons on the right */}
                         <div className="flex gap-1">
                             <Button size="icon" variant="ghost" onClick={ cancel_edit_mode } disabled={is_loading}>
-                                <XIcon />
+                                <XIcon  className="text-red-500"/>
                             </Button>
-                            <Button size="icon" variant="ghost" onClick={save_changes} disabled={!is_field_valid || is_loading}>
+                            <Button size="icon" variant="ghost" onClick={save_changes} className="text-green-500" disabled={!input_valid || is_loading}>
                                 {is_loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckIcon />}
                             </Button>
                         </div>

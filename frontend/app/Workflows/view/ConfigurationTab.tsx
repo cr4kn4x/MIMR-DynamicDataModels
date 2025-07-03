@@ -9,13 +9,14 @@ import { getDataModelsByProjectId } from "@/lib/api/DataModelApi"
 import { DataModel } from "@/lib/interfaces/DataModelInterfaces"
 import { useSearchParams } from "next/navigation"
 import { DataModelCard } from "@/components/my_ui/DataModelCard"
-import CreateLLMDialog from "@/components/my_ui/CreateLLMDialog"
 import { createWorkflow, getLlms } from "@/lib/api/WorkflowApi"
 import { LLM } from "@/lib/interfaces/LlmInterfaces"
 import { toast } from "sonner"
 import { viewWorkflowPageContext } from "./PageContext";
 import { useProject } from "@/app/ProjectContext"
-import { useWorkflowValidation } from "@/lib/hooks/useWorkflowValidation";
+import { useWorkflowValidation } from "@/lib/hooks/input-validation/useWorkflowValidation";
+import { useWorkflowPageContext, WorkflowPageContext } from "../PageContext"
+import InputValidationStatus from "@/components/my_ui/InputValidationStatus"
 
 
 interface ConfigureNewWorkflowTabProps {
@@ -38,6 +39,7 @@ function ApiJsonPreview({ label, value }: { label: string, value: any }) {
 export function ConfigureNewWorkflowTab({ }: ConfigureNewWorkflowTabProps) {
     
     const { selected_workflow_id, selected_workflow, create} = viewWorkflowPageContext()
+    const { workflows } = useWorkflowPageContext()
     const {selected_project_id, data_models, llms, refresh_llms} = useProject()
     // valid combinations need to be checked.. it think at best in PageContext! 
 
@@ -45,21 +47,23 @@ export function ConfigureNewWorkflowTab({ }: ConfigureNewWorkflowTabProps) {
     // 
     const [is_active, set_is_active] = useState<boolean>(true)
     const [name, set_name] = useState<string>("")
-    const [input_data_model, set_input_data_model] = useState<string | null>(null)
-    const [output_data_model, set_output_data_model] = useState<string | null>(null)
+    const [selected_input_data_model_id, set_selected_input_data_model_id] = useState<string | null>(null)
+    const [selected_output_data_model_id, set_selected_output_data_model_id] = useState<string | null>(null)
     const [llm, set_llm] = useState<string>("")
 
-    const inputDataModel = data_models.find((m) => m.id === input_data_model)
-    const outputDataModel = data_models.find((m) => m.id === output_data_model)
+    const [is_loading, set_is_loading] = useState<boolean>(false)
 
-    const { name_validation, llm_validation, input_model_validation, output_model_validation, input_valid: is_workflow_valid } = useWorkflowValidation(name, llm, inputDataModel, outputDataModel)
+    const selected_input_data_model = data_models.find((m) => m.id === selected_input_data_model_id)
+    const selected_output_data_model = data_models.find((m) => m.id === selected_output_data_model_id)
 
+    
+    
     
     useEffect(()=>{
         if(selected_workflow){
             set_name(selected_workflow.name)
-            set_input_data_model(selected_workflow.input_data_model)
-            set_output_data_model(selected_workflow.output_data_model)
+            set_selected_input_data_model_id(selected_workflow.input_data_model)
+            set_selected_output_data_model_id(selected_workflow.output_data_model)
             set_llm(selected_workflow.llm)
         }
     }, [selected_workflow])
@@ -74,29 +78,25 @@ export function ConfigureNewWorkflowTab({ }: ConfigureNewWorkflowTabProps) {
     }
 
 
-    async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    async function handle_submit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
-
-        if (!is_workflow_valid) {
-            if (!name_validation.is_valid) toast.error(name_validation.msg);
-            if (!llm_validation.is_valid) toast.error(llm_validation.msg);
-            if (!input_model_validation.is_valid) toast.error(input_model_validation.msg);
-            if (!output_model_validation.is_valid) toast.error(output_model_validation.msg);
-            return;
-        }
-
+        /* 
         try {
             createWorkflow(selected_project_id, llm, inputDataModel.id, outputDataModel.id, is_active, name);
             toast.success("Workflow created");
         } catch (err: any) {
             toast.error("Error occurred", { description: err.message });
         }
+        */
     }
 
 
+
+    const { name_validation, llm_validation, input_data_model_validation, output_data_model_validation, input_valid } = useWorkflowValidation(name, llm, workflows, selected_input_data_model, selected_output_data_model)
+
     return (
         <div>
-            <form className="space-y-4" onSubmit={e => { handleSubmit(e) }}>
+            <form className="space-y-4" onSubmit={e => { handle_submit(e) }}>
 
                 <div className="flex items-center space-x-4">
                     <Label className="font-semibold">Active</Label>
@@ -104,12 +104,15 @@ export function ConfigureNewWorkflowTab({ }: ConfigureNewWorkflowTabProps) {
                 </div>
 
                 <div>
-                    <Label className="block text-sm font-medium text-gray-700 my-2">Workflow Name</Label>
+                    <Label className="block text-sm font-medium text-gray-700">Workflow Name</Label>
                     <Input value={name} onChange={(e) => { set_name(e.target.value) }} placeholder="e.g. Sentiment Extraction" required />
 
+                    <InputValidationStatus input_valid={name_validation.is_valid} status={name_validation.msg}/>
+                </div>
 
+                <div>
                     <Label className="block text-sm font-medium text-gray-700 my-2">Select LLM</Label>
-                    <div className="flex gap-2 my-2">
+                    <div className="flex gap-2">
                         <Select value={llm} onValueChange={set_llm}>
                             <SelectTrigger className="w-full">
                                 <SelectValue placeholder="Select LLM..." />
@@ -124,8 +127,8 @@ export function ConfigureNewWorkflowTab({ }: ConfigureNewWorkflowTabProps) {
                                 }
                             </SelectContent>
                         </Select>
-                        <CreateLLMDialog refresh_llm_list_trigger={refresh_llms} />
                     </div>
+                    <InputValidationStatus input_valid={llm_validation.is_valid} status={llm_validation.msg}/>
                 </div>
 
 
@@ -133,10 +136,11 @@ export function ConfigureNewWorkflowTab({ }: ConfigureNewWorkflowTabProps) {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
                     <div>
                         <Label className="block text-sm font-medium mb-1">Input Data Structure</Label>
-                        <DataModelSelectorCombobox data_models={data_models} combobox_title="Input Data Model" selected_data_model_id={input_data_model} set_selected_data_model_id={set_input_data_model} />
+                        <DataModelSelectorCombobox data_models={data_models} combobox_title="Input Data Model" selected_data_model_id={selected_input_data_model_id} set_selected_data_model_id={set_selected_input_data_model_id} />
+                        <InputValidationStatus input_valid={input_data_model_validation.is_valid} status={input_data_model_validation.msg}/>
                         <div className="mt-2">
-                            {inputDataModel ? (
-                                <DataModelCard is_selected={true} data_model={inputDataModel} preview={true} project_id="" refresh_data_model_list={() => {toast.error("Unexpected call of refresh_data_model_list")}} />
+                            {selected_input_data_model ? (
+                                <DataModelCard is_selected={true} data_model={selected_input_data_model} preview={true} refresh_data_models={() => {toast.error("Unexpected call of refresh_data_models trigger")}} />
                             ) : (
                                 <div className="text-gray-400 text-sm italic">Not selected</div>
                             )}
@@ -166,10 +170,11 @@ export function ConfigureNewWorkflowTab({ }: ConfigureNewWorkflowTabProps) {
 
                     <div>
                         <Label className="block text-sm font-medium mb-1">Output Data Structure</Label>
-                        <DataModelSelectorCombobox data_models={data_models} combobox_title="Output Data Model" selected_data_model_id={output_data_model} set_selected_data_model_id={set_output_data_model} />
+                        <DataModelSelectorCombobox data_models={data_models} combobox_title="Output Data Model" selected_data_model_id={selected_output_data_model_id} set_selected_data_model_id={set_selected_output_data_model_id} />
+                        <InputValidationStatus input_valid={output_data_model_validation.is_valid} status={output_data_model_validation.msg}/>
                         <div className="mt-2">
-                            {outputDataModel ? (
-                                <DataModelCard is_selected={true} data_model={outputDataModel} preview={true} project_id="" refresh_data_model_list={() => {toast.error("Unexpected call of refresh_data_model_list") }} />
+                            {selected_output_data_model ? (
+                                <DataModelCard is_selected={true} data_model={selected_output_data_model} preview={true} refresh_data_models={() => {toast.error("Unexpected call of refresh_data_models trigger") }} />
                             ) : (
                                 <div className="text-gray-400 text-sm italic">Not selected</div>
                             )}
@@ -189,13 +194,13 @@ export function ConfigureNewWorkflowTab({ }: ConfigureNewWorkflowTabProps) {
                                 <span className="font-semibold text-xs">Headers:</span>
                                 <pre className="bg-white rounded p-2 text-xs overflow-x-auto border border-gray-100 mt-1 mb-2"><code>{`Authorization: Bearer xyz\nContent-Type: application/json`}</code></pre>
                             </div>
-                            <ApiJsonPreview label="Body" value={{ data: generateExampleFromDataModel(inputDataModel) }} />
+                            <ApiJsonPreview label="Body" value={{ data: generateExampleFromDataModel(selected_input_data_model) }} />
                         </div>
                         {/* Response Preview */}
                         <div className="flex-1 min-w-0">
                             <div className="font-semibold mb-1 text-green-700">Response</div>
                             <div className="text-xs text-gray-500 mb-1">200 OK</div>
-                            <ApiJsonPreview label="Body" value={{ pred: generateExampleFromDataModel(outputDataModel) }} />
+                            <ApiJsonPreview label="Body" value={{ pred: generateExampleFromDataModel(selected_output_data_model) }} />
                         </div>
                     </div>
                 </div>
@@ -204,11 +209,13 @@ export function ConfigureNewWorkflowTab({ }: ConfigureNewWorkflowTabProps) {
 
                 <div className="flex justify-end space-x-2 pt-4">
                     <Button type="button" variant="secondary" onClick={() => window.history.back()}>Cancel</Button>
-                        
-                    {create? 
-                        (<Button>Create new Workflow</Button>
-                        ): (
-                        <Button>Save Changes</Button>)
+                    {create?
+                        (
+                            <Button disabled={is_loading || !input_valid}>Create new Workflow</Button>
+                        ):
+                        (
+                            <Button disabled={is_loading || !input_valid}>Save Changes</Button>
+                        )
                     }
                 </div>
             </form>
