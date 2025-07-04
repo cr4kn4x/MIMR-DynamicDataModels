@@ -100,7 +100,7 @@ export default function CreateProjectDialog({ projects, refresh_projects_list }:
                     </div>
 
                     <DialogFooter>
-                        <DialogClose>
+                        <DialogClose asChild>
                             <Button variant="outline" type="button" disabled={is_loading}>
                                 Cancel
                             </Button>
