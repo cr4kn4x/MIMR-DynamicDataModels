@@ -128,7 +128,7 @@ class DAO:
 
 
     @dao_exception_handler
-    def get_data_models_by_project_id(self, user_id: str, project_id: str):
+    def get_data_models_by_project_id(self, user_id: str, project_id: str) -> typing.List[DataModelApi]:
         # The existence check below is only for user-friendly error messages. Data integrity and race conditions are handled by DB constraints.
         if not self.__check_project_exists_by_id(user_id=user_id, project_id=project_id): 
             raise DAOValidationException("Associated project does not exist")
@@ -138,11 +138,13 @@ class DAO:
             data_models = cur.fetchall()
 
         data_models = self.__add_fields_to_data_model(user_id, data_models=data_models)
+
+        data_models = [DataModelApi(**dm) for dm in data_models]
         return data_models
 
 
     @dao_exception_handler
-    def get_data_model_by_id(self, user_id: str, data_model_id: str) -> dict:
+    def get_data_model_by_id(self, user_id: str, data_model_id: str) -> DataModelApi:
         # The existence check below is only for user-friendly error messages. Data integrity and race conditions are handled by DB constraints.
         if not self.__check_data_model_exists_by_id(user_id=user_id, data_model_id=data_model_id):
             raise DAOValidationException("Data model does not exist")
@@ -150,7 +152,10 @@ class DAO:
         with self.rls_cursor(user_id) as cur:
             cur.execute("SELECT project_id, id, name FROM data_models WHERE user_id=%s and id=%s", (user_id, data_model_id))
             res = cur.fetchone()
+        
         data_model = self.__add_fields_to_data_model(user_id=user_id, data_models=[res])[0]
+        
+        data_model = DataModelApi(**data_model)
         return data_model
 
 
@@ -207,7 +212,7 @@ class DAO:
     
 
     @dao_exception_handler
-    def get_workflows_by_project_id(self, user_id: str, project_id: str):
+    def get_workflows_by_project_id(self, user_id: str, project_id: str) -> typing.List[WorkflowApi]:
         # The existence check below is only for user-friendly error messages. Data integrity and race conditions are handled by DB constraints.
         if not self.__check_project_exists_by_id(user_id=user_id, project_id=project_id): 
             raise DAOValidationException("Associated project does not exist")
@@ -215,13 +220,17 @@ class DAO:
         with self.rls_cursor(user_id) as cur:
             cur.execute("SELECT project_id, id, name, input_data_model, output_data_model FROM workflows WHERE user_id = %s and project_id = %s ORDER BY name", (user_id, project_id))
             workflows = cur.fetchall()
+
+        workflows = [WorkflowApi(**w) for w in workflows]
         return workflows
     
     @dao_exception_handler
-    def get_workflow_by_id(self, user_id: str, workflow_id: str): 
+    def get_workflow_by_id(self, user_id: str, workflow_id: str) -> WorkflowApi: 
         with self.rls_cursor(user_id) as cur:
             cur.execute("SELECT * FROM workflows WHERE user_id = %s and id = %s", (user_id, workflow_id))
             workflow = cur.fetchone() 
+        
+        workflow = WorkflowApi(**workflow)
         return workflow
     
 

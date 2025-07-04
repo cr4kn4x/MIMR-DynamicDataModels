@@ -1,31 +1,107 @@
-import typing 
+import typing
+import re
+from pydantic import BaseModel, Field, field_validator, ValidationError, StringConstraints
 
 
-class InputValidation: 
+str_striped = typing.Annotated[str, StringConstraints(strip_whitespace=True)] 
 
-    @staticmethod
-    def is_valid_project_name(project_name: any) -> typing.Tuple[bool, str | None]:
-        if not isinstance(project_name, str): 
-            return False, "project_name must be a valid string"
+MAX_LENGTH_PROJECT_NAME = 64
+MAX_LENGTH_DATA_MODEL_NAME = 64
+MAX_LENGTH_DATA_MODEL_FIELD_NAME = 64
+MAX_LENGTH_WORKFLOW_NAME = 64
+MAX_LENGTH_DATA_MODEL_FIELD_DESCRIPTION = 1024
 
-        if len(project_name) < 1:
-            return False, "project_name cannot be empty"
+UUID_LENGTH = 36
 
-        if len(project_name) > 64: 
-            return False, "max length of project_name is 64 characters"
-        
-        return True, None
+def validate_string_input(input: str):
+    if not re.fullmatch(r"[a-zA-Z0-9_]*", input): 
+        raise ValueError("invalid charset")
+    
+    return input
+
+
+class CreateNewProjectRequest(BaseModel):
+    project_name: str_striped = Field(min_length=1, max_length=MAX_LENGTH_PROJECT_NAME)
+
+    @field_validator("project_name", mode="after")
+    def validate_project_name(cls, value: str):
+        return validate_string_input(value)
     
 
-    @staticmethod
-    def is_valid_data_model_name(data_model_name: str) -> typing.Tuple[bool, str | None]:
-        if not isinstance(data_model_name, str): 
-            return False, "data_model_name must be a valid string"
+class CreateNewDataModelRequest(BaseModel): 
+    project_id: str = Field(min_length=UUID_LENGTH, max_length=UUID_LENGTH)
+    data_model_name: str_striped = Field(min_length=1, max_length=MAX_LENGTH_DATA_MODEL_NAME)
 
-        if len(data_model_name) < 1:
-            return False, "data_model_name cannot be empty"
+    @field_validator("data_model_name", mode="after")
+    def validate_data_model_name(cls, value: str): 
+        return validate_string_input(value)
+    
 
-        if len(data_model_name) > 64: 
-            return False, "max length of data_model_name is 64 characters"
-        
-        return True, None
+class GetDataModelByIdRequest(BaseModel): 
+    data_model_id: str = Field(min_length=UUID_LENGTH, max_length=UUID_LENGTH)
+
+
+class GetDataModelsByProjectIdRequest(BaseModel): 
+    project_id: str = Field(min_length=UUID_LENGTH, max_length=UUID_LENGTH)
+
+
+
+
+
+class CreateDataModelFieldRequest(BaseModel): 
+
+    class FieldRequest(BaseModel): 
+        name: str_striped = Field() 
+        type: str_striped = Field() 
+        description: typing.Optional[str_striped] = Field()
+
+        @field_validator("name", mode="after")
+        def validate_data_model_name(cls, value: str): 
+            return validate_string_input(value)
+
+    data_model_id: str = Field(min_length=UUID_LENGTH, max_length=UUID_LENGTH) 
+    new_field: FieldRequest = Field()
+
+
+class ChangeDataModelFieldRequest(BaseModel): 
+    class FieldRequest(BaseModel): 
+        id: str = Field(min_length=UUID_LENGTH, max_length=UUID_LENGTH)
+        name: str_striped = Field() 
+        type: str_striped = Field() 
+        description: typing.Optional[str_striped] = Field()
+
+        @field_validator("name", mode="after")
+        def validate_data_model_name(cls, value: str): 
+            return validate_string_input(value)
+
+    data_model_id: str = Field(min_length=UUID_LENGTH, max_length=UUID_LENGTH) 
+    new_field: FieldRequest = Field()
+
+
+class DeleteDataModelFieldRequest(BaseModel): 
+    field_id: str = Field(min_length=UUID_LENGTH, max_length=UUID_LENGTH)
+
+
+class DeleteDataModelRequest(BaseModel):
+    data_model_id: str = Field(min_length=UUID_LENGTH, max_length=UUID_LENGTH)
+
+
+class GetWorkflowsByProjectIdRequest(BaseModel):
+    project_id: str = Field(min_length=UUID_LENGTH, max_length=UUID_LENGTH)
+
+
+class CreateWorkflowRequest(BaseModel):
+    name: str_striped = Field() 
+    llm: str = Field(min_length=UUID_LENGTH, max_length=UUID_LENGTH)
+    input_data_model: str = Field(min_length=UUID_LENGTH, max_length=UUID_LENGTH)
+    output_data_model: str = Field(min_length=UUID_LENGTH, max_length=UUID_LENGTH) 
+    active: bool = Field() 
+    project_id: str = Field(min_length=UUID_LENGTH, max_length=UUID_LENGTH) 
+
+    @field_validator("name", mode="after")
+    def validate_data_model_name(cls, value: str): 
+        return validate_string_input(value)
+
+
+class GetWorkflowByIdRequest(BaseModel): 
+    workflow_id: str = Field(min_length=UUID_LENGTH, max_length=UUID_LENGTH)

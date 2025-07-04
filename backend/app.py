@@ -1,10 +1,9 @@
 import typing, os, dotenv, logging, pydantic
+from pydantic import BaseModel, Field, validator
 from firebase import FirebaseIdToken, firebase_token_required, init_firebase
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from DAO.DAO import DAO, DAOException
-from InputValidation import InputValidation
-import DAO.ApiInterfaces as Interfaces
 from DAO.Exceptions import (
     DAOException,
     DAOValidationException,
@@ -12,7 +11,7 @@ from DAO.Exceptions import (
     DAOConnectionException,
     DAOIntegrityException
 )
-
+from InputValidation import *
 
 ############################################################
 ############################################################
@@ -30,6 +29,13 @@ dao = DAO(dsn=os.environ.get("POSTGRES_DSN"))           ####
 init_firebase()                                         ####    
 ############################################################
 ############################################################
+
+
+MAX_LENGTH_PROJECT_NAME = 64
+MAX_LENGTH_DATA_MODEL_NAME = 64
+MAX_LENGTH_DATA_MODEL_FIELD_NAME = 64
+MAX_LENGTH_WORKFLOW_NAME = 64
+MAX_LENGTH_DATA_MODEL_FIELD_DESCRIPTION = 1024
 
 
 ############################################################
@@ -66,39 +72,26 @@ def handle_generic_dao_error(e: DAOException):
     log_exception(e)
     return jsonify({"error": "Internal database error."}), 500
 
+@app.errorhandler(pydantic.ValidationError)
+def handle_pydantic_validation_error(e: pydantic.ValidationError): 
+    log_exception(e)
+    return jsonify({"error": str(e)}), 400
 
 
 ############################################################
 ############################################################
-
-
-
 @app.post("/api/project/create")
 @firebase_token_required(dao)
 def create_new_project():
     firebase_token = request.firebase_token
     assert isinstance(firebase_token, FirebaseIdToken)
 
-    # get json body
-    data = request.get_json()
-    project_name = data.get("project_name")
+    data = CreateNewProjectRequest(**request.get_json())
 
-    # validate inputs
-    is_valid_project_name, msg = InputValidation.is_valid_project_name(project_name)
-    if not is_valid_project_name:
-        return jsonify({"msg": msg}), 400
-
-    # try to insert 
-    try: 
-        dao.insert_project(user_id=firebase_token.user_id, project_name=project_name)
-    except DAOException as e: 
-        return jsonify({"msg": e.message}), 500
-    except Exception as e: 
-        return jsonify({"msg": "Datbase Error"}), 500
-
+    # insert
+    dao.insert_project(user_id=firebase_token.user_id, project_name=data.project_name)
     # success
-    return jsonify({"msg": "Project created successfully"})
-
+    return jsonify({"msg": "Project created successfully"}), 200
 
 
 @app.get("/api/project/get_all")
@@ -107,8 +100,8 @@ def get_all_projects():
     firebase_token = request.firebase_token
     assert isinstance(firebase_token, FirebaseIdToken)
 
-    projects = [ Interfaces.Project(**obj).model_dump() for obj in dao.get_all_projects(firebase_token.user_id) ]
-    return jsonify({"projects": projects})
+    projects = dao.get_all_projects(firebase_token.user_id)
+    return jsonify({"projects": [obj.model_dump() for obj in projects]})
 
 
 
@@ -118,27 +111,10 @@ def create_data_model():
     firebase_token = request.firebase_token
     assert isinstance(firebase_token, FirebaseIdToken)
 
-    # get json body
-    data = request.get_json()
-    project_id = data.get("project_id")
-    data_model_name = data.get("data_model_name")
+    data = CreateNewDataModelRequest(**request.get_json())
 
-    # validate inputs
-    is_valid_model_name, msg = InputValidation.is_valid_data_model_name(data_model_name)
-    if not is_valid_model_name:
-        return jsonify({"msg": msg}), 400
-    
+    dao.insert_data_model(user_id=firebase_token.user_id, project_id=data.project_id, data_model_name=data.data_model_name)
 
-    # try to insert 
-    try: 
-        dao.insert_data_model(user_id=firebase_token.user_id, project_id=project_id, data_model_name=data_model_name)
-    except DAOException as e: 
-        logging.exception(e)
-        return jsonify({"msg": str(e)}), 400 
-    except Exception as e:
-        logging.exception(e)
-        return jsonify({"msg": "Failed to create data model"}), 500 
-    
     return jsonify({"msg": "Successfully created new data model"})
 
 
@@ -149,19 +125,12 @@ def get_data_model_by_id():
     firebase_token = request.firebase_token
     assert isinstance(firebase_token, FirebaseIdToken)
 
-    data = request.get_json()
-    
-    data_model_id = data.get("data_model_id")
+    data = GetDataModelByIdRequest(**request.get_json())
 
-    try:
-        data_model = dao.get_data_model_by_id(firebase_token.user_id, data_model_id=data_model_id)
-        data_model = Interfaces.DataModel(**data_model).model_dump() 
-        return jsonify({"data_model": data_model})
-    except DAOException as e: 
-        logging.exception(e)
-        return jsonify({"msg": str(e)})
-    except Exception as e: 
-        return jsonify({"msg": "Failed to get data model"}), 500
+    dm = dao.get_data_model_by_id(firebase_token.user_id, data_model_id=data.data_model_id)
+    return jsonify({"data_models": dm.model_dump()})
+    
+   
     
     
 
@@ -171,18 +140,13 @@ def get_data_model_by_id():
 def get_data_models_by_project():
     firebase_token = request.firebase_token
     assert isinstance(firebase_token, FirebaseIdToken)
-    
 
     # get json body
-    data = request.get_json()
-    project_id = data.get("project_id")
+    data = GetDataModelsByProjectIdRequest(**request.get_json())
 
-    data_models = []
+    data_models = dao.get_data_models_by_project_id(user_id=firebase_token.user_id, project_id=data.project_id)
 
-    data_models = dao.get_data_models_by_project_id(user_id=firebase_token.user_id, project_id=project_id)
-    data_models = [Interfaces.DataModel(**obj).model_dump() for obj in data_models]
-
-    return jsonify({"data_models": data_models})
+    return jsonify({"data_models": [dm.model_dump() for dm in data_models]})
 
 
 
@@ -198,33 +162,16 @@ def create_data_model_field():
 
 
     # get json body
-    data = request.get_json()
-    data_model_id = data.get("data_model_id")
-    field = data.get("new_field")
+    data = CreateDataModelFieldRequest(**request.get_json())
+    field = data.new_field
 
-    class request_model_field(pydantic.BaseModel):
-        name: str
-        type: typing.Literal["str", "int", "float"]
-        description: typing.Optional[str]
-    
-    field = request_model_field(**field)
-
-
-    try:
-        dao.insert_data_model_field(user_id=firebase_token.user_id, 
-                                    data_model_id=data_model_id,
-                                    field_name=field.name,
-                                    field_type=field.type,
-                                    field_description=field.description, 
-                                    )
-    except DAOException as e: 
-        logging.exception(e)
-        return jsonify({"msg": str(e)}), 400
-    except Exception as e: 
-        logging.exception(e)
-        return jsonify({"msg": "Failed to create data model field"}), 500 
-
-
+    dao.insert_data_model_field(user_id=firebase_token.user_id, 
+                                data_model_id=data.data_model_id,
+                                field_name=field.name,
+                                field_type=field.type,
+                                field_description=field.description, 
+                                )
+   
     return jsonify({"msg": "Successfully created new data model field"})
 
 
@@ -234,32 +181,19 @@ def create_data_model_field():
 
 @app.post("/api/data_models/change_field")
 @firebase_token_required(dao)
-def change_data_model(): 
-
+def change_data_model():
     firebase_token = request.firebase_token
     assert isinstance(firebase_token, FirebaseIdToken)
 
-    data = request.get_json()
-    new_field = data.get("new_field")
-
-    try: 
-        new_field = Interfaces.DataModelField(**new_field)
-    except Exception as e:
-        return jsonify({"msg": "new_field is invalid data structure!"}), 400
+    data = ChangeDataModelFieldRequest(**request.get_json())
+    field = data.new_field
     
-    try:
-        dao.change_data_model_field(user_id=firebase_token.user_id, 
-                                    field_id=new_field.id, 
-                                    field_name=new_field.name, 
-                                    field_type=new_field.type, 
-                                    field_description=new_field.description)
-    except DAOException as e: 
-        logging.exception(e)
-        return jsonify({"msg": str(e)}), 400
-    except Exception as e: 
-        logging.exception(e)
-        return jsonify({"msg": "Failed to apply changes to data model field"}), 500
-
+    dao.change_data_model_field(user_id=firebase_token.user_id, 
+                                field_id=field.id, 
+                                field_name=field.name, 
+                                field_type=field.type, 
+                                field_description=field.description)
+   
     return jsonify({"msg": "Successfully applied changes to data model field"})
 
 
@@ -269,16 +203,12 @@ def change_data_model():
 @app.post("/api/data_models/delete_field")
 @firebase_token_required(dao)
 def delete_data_model_field(): 
-
     firebase_token = request.firebase_token
     assert isinstance(firebase_token, FirebaseIdToken)
 
-    data = request.get_json()
-    field_id = data.get("field_id")
+    data = DeleteDataModelFieldRequest(**request.get_json())
 
-    
-    dao.delete_data_model_field(firebase_token.user_id, field_id)
-
+    dao.delete_data_model_field(firebase_token.user_id, data.field_id)
     return jsonify({"msg": "Successfully deleted data model field"})
 
 
@@ -289,10 +219,9 @@ def delete_data_model():
     firebase_token = request.firebase_token
     assert isinstance(firebase_token, FirebaseIdToken)
 
-    data = request.get_json()
-    data_model_id = data.get("data_model_id")
+    data = DeleteDataModelRequest(**request.get_json())
 
-    dao.delete_data_model(user_id=firebase_token.user_id, data_model_id=data_model_id)
+    dao.delete_data_model(user_id=firebase_token.user_id, data_model_id=data.data_model_id)
 
     return jsonify({"msg": "Successfully deleted data model"})
 
@@ -306,34 +235,11 @@ def get_workflows_by_project():
     firebase_token = request.firebase_token
     assert isinstance(firebase_token, FirebaseIdToken)
 
-    data = request.get_json()
-    project_id = data.get("project_id")
+    data = GetWorkflowsByProjectIdRequest(**request.get_json())
 
-    # dao.delete_data_model(user_id=firebase_token.user_id, data_model_id=data_model_id)
-    res = dao.get_workflows_by_project_id(user_id=firebase_token.user_id, project_id=project_id)
+    workflows = dao.get_workflows_by_project_id(user_id=firebase_token.user_id, project_id=data.project_id)
 
-    return jsonify({"workflows": res})
-
-
-
-@app.post("/api/llms/add")
-@firebase_token_required(dao)
-def add_llm(): 
-    firebase_token = request.firebase_token
-    assert isinstance(firebase_token, FirebaseIdToken)
-
-    data = request.get_json() 
-
-    alias = data.get("alias")
-    model_name = data.get("model_name")
-    base_url = data.get("base_url")
-    api_key = data.get("api_key")
-
-    dao.insert_llm(firebase_token.user_id, alias, model_name, base_url, api_key)
-
-    return jsonify({"msg": "LLM added"})
-
-
+    return jsonify({"workflows": [w.model_dump() for w in workflows]})
 
 
 
@@ -343,9 +249,8 @@ def get_llms():
     firebase_token = request.firebase_token
     assert isinstance(firebase_token, FirebaseIdToken)
 
-    res = dao.get_llms(user_id=firebase_token.user_id)
-
-    return jsonify({"llms": res})
+    # res = dao.get_llms(user_id=firebase_token.user_id)
+    return jsonify({"llms": []})
 
 
 
@@ -355,18 +260,9 @@ def create_workflow():
     firebase_token = request.firebase_token
     assert isinstance(firebase_token, FirebaseIdToken)
 
-    data = request.get_json() 
+    data = CreateWorkflowRequest(**request.get_json())
 
-    # get data 
-    llm = data.get("llm")
-    input_data_model = data.get("input_data_model")
-    output_data_model = data.get("output_data_model")
-    active = data.get("active")
-    name = data.get("name")
-    project_id = data.get("project_id")
-
-
-    res = dao.create_workflow(firebase_token.user_id, project_id, llm, input_data_model, output_data_model, active, name)
+    dao.create_workflow(firebase_token.user_id, data.project_id, data.llm, data.input_data_model, data.output_data_model, data.active, data.name)
     
     return jsonify({"msg": "Workflow created"})
 
@@ -378,12 +274,11 @@ def get_workflow_by_id():
     firebase_token = request.firebase_token
     assert isinstance(firebase_token, FirebaseIdToken)
 
-    data = request.get_json()
-    workflow_id = data.get("workflow_id")
+    data = GetWorkflowByIdRequest(**request.get_json())
 
-
-    res = dao.get_workflow_by_id(firebase_token.user_id, workflow_id)
-    return jsonify({"workflow": res})
+    workflow = dao.get_workflow_by_id(firebase_token.user_id, data.workflow_id)
+    
+    return jsonify({"workflow": workflow.model_dump()})
 
 # app.run(debug=True, host="0.0.0.0")
 # flask --app app.py run --debug
