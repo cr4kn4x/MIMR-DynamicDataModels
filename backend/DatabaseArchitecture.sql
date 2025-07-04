@@ -45,27 +45,6 @@ CREATE TABLE data_model_fields (
 );
 
 
-
-CREATE TABLE workflows (
-    user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
-    -- workflow id 
-    id UUID PRIMARY KEY,
-    -- workflow attributes
-    name TEXT NOT NULL,
-    llm UUID NOT NULL REFERENCES llms(id), -- TO-DO (SECURITY): IT MAY BE POSSIBLE TO REF A LLM BY ID THAT IS ASSOCIATED WITH ANOTHER USER! THIS NEEDS TO BE CHECKED IN DETAIL!
-    input_data_model UUID NOT NULL REFERENCES data_models(id),
-    output_data_model UUID NOT NULL REFERENCES data_models(id),
-    active BOOLEAN NOT NULL,
-
-    api_key: TEXT NOT NULL,
-
-    -- CONSTRAINTs
-    CONSTRAINT unique_project_workflow_name UNIQUE (project_id, name)
-);
-
-
-
 -- This table is weakly validated! It is questionable if this feature makes it into production as it exposes high risk for us (saas provider)
 -- A hack of this table causes the leak of critical api-keys, that can only be locked by the uses. Unauthorized access to this will likely cause a huge fincial damge!
 CREATE TABLE llms (
@@ -81,4 +60,49 @@ CREATE TABLE llms (
 
 
 
+CREATE TABLE workflows (
+    user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+    -- workflow id 
+    id UUID PRIMARY KEY,
+    -- workflow attributes
+    name TEXT NOT NULL,
+    llm UUID NOT NULL REFERENCES llms(id), -- TO-DO (SECURITY): IT MAY BE POSSIBLE TO REF A LLM BY ID THAT IS ASSOCIATED WITH ANOTHER USER! THIS NEEDS TO BE CHECKED IN DETAIL!
+    input_data_model UUID NOT NULL REFERENCES data_models(id),
+    output_data_model UUID NOT NULL REFERENCES data_models(id),
+    active BOOLEAN NOT NULL,
 
+    api_key TEXT NOT NULL,
+
+    -- CONSTRAINTs
+    CONSTRAINT unique_project_workflow_name UNIQUE (project_id, name)
+);
+
+
+
+-- Row-Level Security aktivieren und Policies anlegen
+
+-- projects
+ALTER TABLE projects ENABLE ROW LEVEL SECURITY;
+CREATE POLICY projects_rls ON projects
+  USING (user_id = current_setting('mimr.current_user'));
+
+-- data_models
+ALTER TABLE data_models ENABLE ROW LEVEL SECURITY;
+CREATE POLICY data_models_rls ON data_models
+  USING (user_id = current_setting('mimr.current_user'));
+
+-- data_model_fields
+ALTER TABLE data_model_fields ENABLE ROW LEVEL SECURITY;
+CREATE POLICY data_model_fields_rls ON data_model_fields
+  USING (user_id = current_setting('mimr.current_user'));
+
+-- workflows
+ALTER TABLE workflows ENABLE ROW LEVEL SECURITY;
+CREATE POLICY workflows_rls ON workflows
+  USING (user_id = current_setting('mimr.current_user'));
+
+-- llms
+ALTER TABLE llms ENABLE ROW LEVEL SECURITY;
+CREATE POLICY llms_rls ON llms
+  USING (user_id = current_setting('mimr.current_user'));
