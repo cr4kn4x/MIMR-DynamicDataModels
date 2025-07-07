@@ -7,7 +7,7 @@ import { useEffect, useState } from "react"
 import { DataModelSelectorCombobox } from "@/components/my_ui/DataModelSelectorCombobox"
 import { getDataModelsByProjectId } from "@/lib/api/DataModelApi"
 import { DataModel } from "@/lib/interfaces/DataModelInterfaces"
-import { useSearchParams } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { DataModelCard } from "@/components/my_ui/DataModelCard"
 import { createWorkflow, getLlms } from "@/lib/api/WorkflowApi"
 import { LLM } from "@/lib/interfaces/LlmInterfaces"
@@ -17,6 +17,7 @@ import { useProject } from "@/app/ProjectContext"
 import { useWorkflowValidation } from "@/lib/hooks/input-validation/useWorkflowValidation";
 import { useWorkflowPageContext, WorkflowPageContext } from "../PageContext"
 import InputValidationStatus from "@/components/my_ui/InputValidationStatus"
+import { apiCallWrapper } from "@/lib/api/ApiCallWrapper"
 
 
 interface ConfigureNewWorkflowTabProps {
@@ -49,7 +50,7 @@ export function ConfigureNewWorkflowTab({ }: ConfigureNewWorkflowTabProps) {
     const [name, set_name] = useState<string>("")
     const [selected_input_data_model_id, set_selected_input_data_model_id] = useState<string | null>(null)
     const [selected_output_data_model_id, set_selected_output_data_model_id] = useState<string | null>(null)
-    const [llm, set_llm] = useState<string>("")
+    const [selected_llm_id, set_selected_llm_id] = useState<string>("")
 
     const [is_loading, set_is_loading] = useState<boolean>(false)
 
@@ -57,14 +58,14 @@ export function ConfigureNewWorkflowTab({ }: ConfigureNewWorkflowTabProps) {
     const selected_output_data_model = data_models.find((m) => m.id === selected_output_data_model_id)
 
     
-    
+    const router = useRouter()
     
     useEffect(()=>{
         if(selected_workflow){
             set_name(selected_workflow.name)
             set_selected_input_data_model_id(selected_workflow.input_data_model)
             set_selected_output_data_model_id(selected_workflow.output_data_model)
-            set_llm(selected_workflow.llm)
+            set_selected_llm_id(selected_workflow.llm)
         }
     }, [selected_workflow])
 
@@ -80,19 +81,22 @@ export function ConfigureNewWorkflowTab({ }: ConfigureNewWorkflowTabProps) {
 
     async function handle_submit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
-        /* 
-        try {
-            createWorkflow(selected_project_id, llm, inputDataModel.id, outputDataModel.id, is_active, name);
-            toast.success("Workflow created");
-        } catch (err: any) {
-            toast.error("Error occurred", { description: err.message });
+        
+        if(selected_project_id == null || selected_input_data_model_id == null || selected_output_data_model_id == null){
+            toast.error("Please check your inputs", {richColors: true})
+            return
         }
-        */
+
+        const res = await apiCallWrapper(createWorkflow(selected_project_id, selected_llm_id, selected_input_data_model_id, selected_output_data_model_id, is_active, name), toast, "Failed to create new Workflow")
+
+        if(res === true){
+            router.push("/Workflows")
+        }
     }
 
 
 
-    const { name_validation, llm_validation, input_data_model_validation, output_data_model_validation, input_valid } = useWorkflowValidation(name, llm, workflows, selected_input_data_model, selected_output_data_model)
+    const { name_validation, llm_validation, input_data_model_validation, output_data_model_validation, input_valid } = useWorkflowValidation(name, selected_llm_id, workflows, selected_input_data_model, selected_output_data_model)
 
     return (
         <div>
@@ -113,7 +117,7 @@ export function ConfigureNewWorkflowTab({ }: ConfigureNewWorkflowTabProps) {
                 <div>
                     <Label className="block text-sm font-medium text-gray-700 my-2">Select LLM</Label>
                     <div className="flex gap-2">
-                        <Select value={llm} onValueChange={set_llm}>
+                        <Select value={selected_llm_id} onValueChange={set_selected_llm_id}>
                             <SelectTrigger className="w-full">
                                 <SelectValue placeholder="Select LLM..." />
                             </SelectTrigger>
@@ -121,7 +125,7 @@ export function ConfigureNewWorkflowTab({ }: ConfigureNewWorkflowTabProps) {
                                 {
                                     llms.map((llm) => {
                                         return (
-                                            <SelectItem key={llm.id} id={llm.id} value={llm.id}>{llm.alias}</SelectItem>
+                                            <SelectItem key={llm.id} id={llm.id} value={llm.name}>{llm.name}</SelectItem>
                                         )
                                     })
                                 }
@@ -146,12 +150,13 @@ export function ConfigureNewWorkflowTab({ }: ConfigureNewWorkflowTabProps) {
                             )}
                         </div>
                     </div>
+
                     <div className="flex flex-col items-center justify-center">
-                        <div className={`text-sm font-medium px-2 py-1 rounded-full mb-1 ${llm
+                        <div className={`text-sm font-medium px-2 py-1 rounded-full mb-1 ${selected_llm_id
                                 ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white'
                                 : 'bg-gray-100 text-gray-500'
                             }`}>
-                            {llm || 'Select LLM'}
+                            {selected_llm_id || 'Select LLM'}
                         </div>
 
                         <div className="flex items-center">

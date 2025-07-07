@@ -2,8 +2,57 @@ import typing
 import dspy
 import os
 from dotenv import load_dotenv
-from pydantic import BaseModel, Field, create_model
+from typing import Annotated
+from pydantic import BaseModel, Field, create_model, ValidationError, field_validator, StringConstraints
+
+
+import uuid
+
+
+while True:
+    u = uuid.uuid4()
+    if (len(str(u))) != 36: 
+        print("WWWWWWWWWWW")
+
+
+import sys
+sys.exit(0)
+
 load_dotenv("./secrets/.env")
+
+
+
+
+
+
+
+class Person(BaseModel): 
+    age: int = Field()
+
+    @field_validator("age")
+    def validate_age(cls, value): 
+        raise ValueError("Value cannot be empty")
+
+
+
+
+try: 
+    t = Person(age=10)
+except ValidationError as e: 
+    print(e)
+except ValueError as e: 
+    print("VALUE ERROR!")
+except Exception as e: 
+    print("STH ELSE!")
+
+
+import sys
+sys.exit(0)
+
+
+
+
+
 
 
 t = create_model(

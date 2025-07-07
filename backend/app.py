@@ -1,5 +1,4 @@
-import typing, os, dotenv, logging, pydantic
-from pydantic import BaseModel, Field, validator
+import os, dotenv, logging, pydantic
 from firebase import FirebaseIdToken, firebase_token_required, init_firebase
 from flask import Flask, jsonify, request
 from flask_cors import CORS
@@ -31,11 +30,7 @@ init_firebase()                                         ####
 ############################################################
 
 
-MAX_LENGTH_PROJECT_NAME = 64
-MAX_LENGTH_DATA_MODEL_NAME = 64
-MAX_LENGTH_DATA_MODEL_FIELD_NAME = 64
-MAX_LENGTH_WORKFLOW_NAME = 64
-MAX_LENGTH_DATA_MODEL_FIELD_DESCRIPTION = 1024
+
 
 
 ############################################################
@@ -112,7 +107,6 @@ def create_data_model():
     assert isinstance(firebase_token, FirebaseIdToken)
 
     data = CreateNewDataModelRequest(**request.get_json())
-
     dao.insert_data_model(user_id=firebase_token.user_id, project_id=data.project_id, data_model_name=data.data_model_name)
 
     return jsonify({"msg": "Successfully created new data model"})
@@ -126,8 +120,8 @@ def get_data_model_by_id():
     assert isinstance(firebase_token, FirebaseIdToken)
 
     data = GetDataModelByIdRequest(**request.get_json())
-
     dm = dao.get_data_model_by_id(firebase_token.user_id, data_model_id=data.data_model_id)
+
     return jsonify({"data_models": dm.model_dump()})
     
    
@@ -143,7 +137,6 @@ def get_data_models_by_project():
 
     # get json body
     data = GetDataModelsByProjectIdRequest(**request.get_json())
-
     data_models = dao.get_data_models_by_project_id(user_id=firebase_token.user_id, project_id=data.project_id)
 
     return jsonify({"data_models": [dm.model_dump() for dm in data_models]})
@@ -207,8 +200,8 @@ def delete_data_model_field():
     assert isinstance(firebase_token, FirebaseIdToken)
 
     data = DeleteDataModelFieldRequest(**request.get_json())
-
     dao.delete_data_model_field(firebase_token.user_id, data.field_id)
+
     return jsonify({"msg": "Successfully deleted data model field"})
 
 
@@ -220,7 +213,6 @@ def delete_data_model():
     assert isinstance(firebase_token, FirebaseIdToken)
 
     data = DeleteDataModelRequest(**request.get_json())
-
     dao.delete_data_model(user_id=firebase_token.user_id, data_model_id=data.data_model_id)
 
     return jsonify({"msg": "Successfully deleted data model"})
@@ -236,7 +228,6 @@ def get_workflows_by_project():
     assert isinstance(firebase_token, FirebaseIdToken)
 
     data = GetWorkflowsByProjectIdRequest(**request.get_json())
-
     workflows = dao.get_workflows_by_project_id(user_id=firebase_token.user_id, project_id=data.project_id)
 
     return jsonify({"workflows": [w.model_dump() for w in workflows]})
@@ -249,8 +240,10 @@ def get_llms():
     firebase_token = request.firebase_token
     assert isinstance(firebase_token, FirebaseIdToken)
 
-    # res = dao.get_llms(user_id=firebase_token.user_id)
-    return jsonify({"llms": []})
+    llms = [
+        {"id": "001", "name": "default"}
+    ]
+    return jsonify({"llms": llms})
 
 
 
@@ -261,7 +254,6 @@ def create_workflow():
     assert isinstance(firebase_token, FirebaseIdToken)
 
     data = CreateWorkflowRequest(**request.get_json())
-
     dao.create_workflow(firebase_token.user_id, data.project_id, data.llm, data.input_data_model, data.output_data_model, data.active, data.name)
     
     return jsonify({"msg": "Workflow created"})
@@ -275,10 +267,15 @@ def get_workflow_by_id():
     assert isinstance(firebase_token, FirebaseIdToken)
 
     data = GetWorkflowByIdRequest(**request.get_json())
-
     workflow = dao.get_workflow_by_id(firebase_token.user_id, data.workflow_id)
     
     return jsonify({"workflow": workflow.model_dump()})
+
+
+
+
+
+
 
 # app.run(debug=True, host="0.0.0.0")
 # flask --app app.py run --debug

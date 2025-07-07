@@ -58,6 +58,7 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({ children }) =>
     const refresh_llms = async () => {
         const res = await apiCallWrapper(getLlms(), toast, "Error while fetching LLMs");
         if (res) set_llms(res.llms);
+        console.log(res)
     };
 
     const refresh_projects = async () => {

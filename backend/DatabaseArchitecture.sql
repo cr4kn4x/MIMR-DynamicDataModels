@@ -45,21 +45,6 @@ CREATE TABLE data_model_fields (
 );
 
 
--- This table is weakly validated! It is questionable if this feature makes it into production as it exposes high risk for us (saas provider)
--- A hack of this table causes the leak of critical api-keys, that can only be locked by the uses. Unauthorized access to this will likely cause a huge fincial damge!
-CREATE TABLE llms (
-    user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-
-    id UUID PRIMARY KEY,
-    alias TEXT NOT NULL, 
-
-    api_key TEXT NOT NULL,
-    base_url TEXT NOT NULL,
-    model_name TEXT NOT NULL
-);
-
-
-
 CREATE TABLE workflows (
     user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
@@ -67,7 +52,7 @@ CREATE TABLE workflows (
     id UUID PRIMARY KEY,
     -- workflow attributes
     name TEXT NOT NULL,
-    llm UUID NOT NULL REFERENCES llms(id), -- TO-DO (SECURITY): IT MAY BE POSSIBLE TO REF A LLM BY ID THAT IS ASSOCIATED WITH ANOTHER USER! THIS NEEDS TO BE CHECKED IN DETAIL!
+    llm TEXT NOT NULL,
     input_data_model UUID NOT NULL REFERENCES data_models(id),
     output_data_model UUID NOT NULL REFERENCES data_models(id),
     active BOOLEAN NOT NULL,
