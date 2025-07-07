@@ -33,7 +33,7 @@ export default function WorkflowsOverviewPage() {
                                     <WorkflowCard key={wf.id} workflow={wf} project_id={selected_project_id}/>
                                 ))}
                                 <div className="flex justify-center items-center">
-                                    <Link href={`/Workflows/view?project_id=${selected_project_id}&create=1`}>
+                                    <Link href={`/Workflows/create?project_id=${selected_project_id}&create=1`}>
                                         <Button>
                                             Add Workflow
                                             <PlusCircleIcon />
@@ -54,7 +54,7 @@ export default function WorkflowsOverviewPage() {
                                     </CardHeader>
                                     <CardContent className="text-center">
 
-                                        <Link href={`/Workflows/view?project_id=${selected_project_id}&create=1`}>
+                                        <Link href={`/Workflows/create?project_id=${selected_project_id}&create=1`}>
                                             <Button>
                                                 Create Workflow
                                                 <PlusCircleIcon />

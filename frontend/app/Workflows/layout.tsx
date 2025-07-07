@@ -8,5 +8,5 @@ export default function WorkflowsLayout({ children }: { children: React.ReactNod
                 {children}
             </WorkflowPageContextProvider>
         </ProjectProvider>
-    );
+    )
 }
