@@ -66,9 +66,10 @@ export function EditableDataModelField({ field, data_model_id, data_model_fields
     const [is_edit, set_is_edit] = useState<boolean>(create_new)
     const [is_loading, set_is_loading] = useState<boolean>(false)
 
-
-
-    const { name_validation, type_validation, description_validation, input_valid} = useDataModelFieldValidation(name, type, description, data_model_fields)
+    
+    const { name_validation, type_validation, description_validation, input_valid } = useDataModelFieldValidation(name, type, description, (is_edit && !create_new) ? data_model_fields.filter(f => f.id !== field.id): data_model_fields)
+    
+    
 
 
     const reset_field_states = () => {
