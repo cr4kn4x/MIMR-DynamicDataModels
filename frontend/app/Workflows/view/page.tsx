@@ -1,7 +1,4 @@
 "use client"
-import { Button } from "@/components/ui/button";
-import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarTrigger } from "@/components/ui/sidebar";
-import { InfoCircledIcon, LockClosedIcon } from "@radix-ui/react-icons";
 import WorkflowSidebar, { SidebarSelectionLiteral } from "./components/Sidebar";
 import { useState } from "react";
 import GeneralTab from "./components/GeneralTab";

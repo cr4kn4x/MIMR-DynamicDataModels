@@ -122,7 +122,7 @@ def get_data_model_by_id():
     data = GetDataModelByIdRequest(**request.get_json())
     dm = dao.get_data_model_by_id(firebase_token.user_id, data_model_id=data.data_model_id)
 
-    return jsonify({"data_models": dm.model_dump()})
+    return jsonify({"data_model": dm.model_dump()})
     
    
     

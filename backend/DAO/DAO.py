@@ -218,7 +218,7 @@ class DAO:
             raise DAOValidationException("Associated project does not exist")
         
         with self.rls_cursor(user_id) as cur:
-            cur.execute("SELECT project_id, id, name, input_data_model, output_data_model FROM workflows WHERE user_id = %s and project_id = %s ORDER BY name", (user_id, project_id))
+            cur.execute("SELECT project_id, id, name, input_data_model, output_data_model, active, llm FROM workflows WHERE user_id = %s and project_id = %s ORDER BY name", (user_id, project_id))
             workflows = cur.fetchall()
 
         workflows = [WorkflowApi(**w) for w in workflows]

@@ -5,20 +5,20 @@ import { useState } from "react";
 import { ChevronsUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { ClipboardCopyIcon } from "@radix-ui/react-icons";
+import { ClipboardCopyIcon, Link1Icon, Link2Icon } from "@radix-ui/react-icons";
 import CopyButton from "@/components/my_ui/CopyButton";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 
 
 export default function GeneralTab() {
-    const { selected_workflow } = viewWorkflowPageContext();
+    const { selected_workflow, selected_workflow_populated} = viewWorkflowPageContext();
 
     const [is_open, set_is_open] = useState(true)
 
     return (
         <div className="w-full p-4">
-            {selected_workflow ? (
+            {(selected_workflow_populated && selected_workflow_populated.input_data_model && selected_workflow_populated.output_data_model) ? (
                 <div>
                     <div className="w-full grid grid-cols-3 gap-5">
 
@@ -26,7 +26,7 @@ export default function GeneralTab() {
                             <h1 className="font-semibold text-gray-600">Workflow Details</h1>
 
                             <div className="flex items-center pt-2">
-                                {selected_workflow.active ? (
+                                {selected_workflow_populated.active ? (
                                     <span className="px-2 py-1 rounded bg-green-500 text-white text-xs">Workflow Active</span>
                                 ) : (
                                     <span className="px-2 py-1 rounded bg-red-500 text-white text-xs">Workflow Inactive</span>
@@ -35,15 +35,15 @@ export default function GeneralTab() {
 
                             <Label className="font-semibold pt-2">Workflow-Name</Label>
                             <div className="flex items-center pl-1">
-                                <Input className="max-h-fit" disabled={true} value={selected_workflow.name}/>
-                                <CopyButton value={selected_workflow.name} value_name="workflow name" toaster={toast}/>
+                                <Input className="max-h-fit" disabled={true} value={selected_workflow_populated.name}/>
+                                <CopyButton value={selected_workflow_populated.name} value_name="workflow name" toaster={toast}/>
                             </div>
 
 
                             <Label className="font-semibold pt-2">Workflow-ID</Label>
                             <div className="flex items-center pl-1">
-                                <Input className="text-sm" disabled={true} value={selected_workflow.id}/>
-                                <CopyButton value={selected_workflow.id} value_name="workflow id" toaster={toast}/>
+                                <Input className="text-sm" disabled={true} value={selected_workflow_populated.id}/>
+                                <CopyButton value={selected_workflow_populated.id} value_name="workflow id" toaster={toast}/>
                             </div>
                         </Card>
 
@@ -51,24 +51,18 @@ export default function GeneralTab() {
                         <Card className="flex flex-col gap-y-1 p-2">
                             <h1 className="font-semibold text-gray-600">Task Details</h1>
 
-                            
                             <Label className="font-semibold pt-2">Input Data Model</Label>
                             <div className="flex items-center pl-1">
-                                
+                                <Input className="text-sm" value={selected_workflow_populated.input_data_model.name} disabled={true}></Input>
+                                <a><Button variant={"ghost"} size={"icon"}><Link2Icon /></Button></a>
                             </div>
-
 
                             <Label className="font-semibold pt-2">Output Data Model</Label>
                             <div className="flex items-center pl-1">
-                                
+                                <Input className="text-sm" value={selected_workflow_populated.output_data_model.name} disabled={true}></Input>
+                                <a><Button variant={"ghost"} size={"icon"}><Link2Icon /></Button></a>
                             </div>
                         </Card>
-
-
-
-
-
-                        
                     </div>
 
                     <Collapsible open={is_open} onOpenChange={set_is_open}>
