@@ -233,31 +233,76 @@ class DAO:
         workflow = WorkflowApi(**workflow)
         return workflow
     
-
-    @dao_exception_handler
-    def insert_llm(self, user_id: str, alias: str, model_name: str, base_url: str, api_key: str): 
-        with self.rls_cursor(user_id) as cur:
-            cur.execute(
-                "INSERT INTO llms(user_id, id, alias, model_name, base_url, api_key) VALUES (%s, %s, %s, %s, %s, %s);",
-                (user_id, str(uuid.uuid4()), alias, model_name, base_url, api_key)
-            )
-        return True
-    
-    
-    @dao_exception_handler
-    def get_llms(self, user_id: str):
-        with self.rls_cursor(user_id) as cur:
-            cur.execute("SELECT id, alias, model_name, base_url FROM llms WHERE user_id = %s ORDER BY alias", (user_id, ))
-            llms = cur.fetchall()
-
-        return llms
-    
-
     @dao_exception_handler
     def create_workflow(self, user_id: str, project_id: str, llm: str, input_data_model: str, output_data_model: str, active: bool, name: str):
         with self.rls_cursor(user_id) as cur:
-            cur.execute("INSERT INTO public.workflows(user_id, project_id, id, name, input_data_model, output_data_model, active, llm, api_key) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)", (user_id, project_id, str(uuid.uuid4()), name, input_data_model, output_data_model, active, llm, secrets.token_urlsafe(32)))
+            cur.execute("INSERT INTO public.workflows(user_id, project_id, id, name, input_data_model, output_data_model, active, llm) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)", (user_id, project_id, str(uuid.uuid4()), name, input_data_model, output_data_model, active, llm))
+        return True
+    
+
+
+
+
+
+
+    @dao_exception_handler
+    def create_workflow_api_key(self, user_id: str, workflow_id: str, name: str) -> str:
+        api_key = "mimr_" + secrets.token_urlsafe(32)
+        api_key_preview = f"{api_key[:5]}...{api_key[-4:]}"
+        key_id = str(uuid.uuid4())
+        with self.rls_cursor(user_id) as cur:
+            cur.execute(
+                """
+                INSERT INTO workflow_api_keys (id, workflow_id, user_id, name, api_key, api_key_preview, created_at)
+                VALUES (%s, %s, %s, %s, %s, %s, now())
+                """,
+                (key_id, workflow_id, user_id, name, api_key, api_key_preview)
+            )
+        return api_key
+
+
+    @dao_exception_handler
+    def delete_workflow_api_key(self, user_id: str, key_id: str) -> bool:
+        with self.rls_cursor(user_id) as cur:
+            cur.execute(
+                "DELETE FROM workflow_api_keys WHERE user_id = %s AND id = %s",
+                (user_id, key_id)
+            )
+            if cur.rowcount == 0:
+                raise DAOValidationException(f"API-Key with id '{key_id}' does not exist. DELETE failed!")
         return True
 
-    def __get_rls_cursor(self, user_id: str):
-        raise NotImplementedError("Use rls_cursor context manager instead.")
+
+    @dao_exception_handler
+    def refresh_workflow_api_key(self, user_id: str, key_id: str) -> str:
+        new_api_key = "mimr_" + secrets.token_urlsafe(32)
+        api_key_preview = f"{new_api_key[:5]}...{new_api_key[-4:]}"
+        with self.rls_cursor(user_id) as cur:
+            cur.execute(
+                """
+                UPDATE workflow_api_keys
+                SET api_key = %s, api_key_preview = %s, last_refreshed_at = now()
+                WHERE user_id = %s AND id = %s
+                """,
+                (new_api_key, api_key_preview, user_id, key_id)
+            )
+            if cur.rowcount == 0:
+                raise DAOValidationException(f"API-Key with id '{key_id}' does not exist. REFRESH failed!")
+        return new_api_key
+    
+
+    @dao_exception_handler
+    def get_workflow_api_key_previews(self, user_id: str, workflow_id: str) -> typing.List[WorkflowApiKeyPreview]:
+        with self.rls_cursor(user_id) as cur:
+            cur.execute(
+                """
+                SELECT id, workflow_id, name, api_key_preview, created_at, last_used_at, last_refreshed_at
+                FROM workflow_api_keys
+                WHERE user_id = %s AND workflow_id = %s
+                ORDER BY created_at DESC
+                """,
+                (user_id, workflow_id)
+            )
+            res = cur.fetchall()
+        
+        return [WorkflowApiKeyPreview(**obj) for obj in res]

@@ -272,10 +272,52 @@ def get_workflow_by_id():
     return jsonify({"workflow": workflow.model_dump()})
 
 
+@app.post("/api/workflows/security/create_access_token")
+@firebase_token_required(dao)
+def create_workflow_access_token():
+    firebase_token = request.firebase_token
+    assert isinstance(firebase_token, FirebaseIdToken)
+    
+    data = CreateWorkflowApiKeyRequest(**request.get_json())
+    api_key = dao.create_workflow_api_key(firebase_token.user_id, data.workflow_id, data.key_name)
+
+    return jsonify({"api_key": api_key})
 
 
+@app.post("/api/workflows/security/access_tokens_preview")
+@firebase_token_required(dao)
+def get_workflow_access_tokens_preview():
+    firebase_token = request.firebase_token
+    assert isinstance(firebase_token, FirebaseIdToken)
+    
+    data = GetWorkflowAccessTokensPreviewApiKeyRequest(**request.get_json())
+    api_keys = dao.get_workflow_api_key_previews(firebase_token.user_id, data.workflow_id)
+
+    return jsonify({"api_keys": [obj.model_dump() for obj in api_keys]})
 
 
+@app.post("/api/workflows/security/delete_access_token")
+@firebase_token_required(dao)
+def delete_workflow_access_token():
+    firebase_token = request.firebase_token
+    assert isinstance(firebase_token, FirebaseIdToken)
+    
+    data = DeleteWorkflowAccessTokenRequest(**request.get_json())
+    dao.delete_workflow_api_key(firebase_token.user_id, data.key_id)
+
+    return jsonify({"msg": "Access Token deleted"})
+
+
+@app.post("/api/workflows/security/refresh_access_token")
+@firebase_token_required(dao)
+def refresh_workflow_access_token():
+    firebase_token = request.firebase_token
+    assert isinstance(firebase_token, FirebaseIdToken)
+    
+    data = RefreshWorkflowAccessTokenRequest(**request.get_json())
+    api_key = dao.refresh_workflow_api_key(firebase_token.user_id, data.key_id)
+
+    return jsonify({"api_key": api_key})
 
 # app.run(debug=True, host="0.0.0.0")
 # flask --app app.py run --debug

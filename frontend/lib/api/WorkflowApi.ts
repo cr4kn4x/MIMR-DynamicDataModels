@@ -1,5 +1,5 @@
 import { LLM } from "../interfaces/LlmInterfaces"
-import { Workflow } from "../interfaces/WorkflowInteraces"
+import { Workflow, WorkflowApiKey } from "../interfaces/WorkflowInteraces"
 import { getFirebaseBearer, raiseErrorFromApiResponse } from "./utils"
 
 const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_BASE
@@ -148,3 +148,107 @@ export async function createWorkflow(project_id: string, llm: string, input_data
     
     return true
 }
+
+
+interface CreateAccessTokenResponse {
+    api_key: string
+}
+
+export async function createWorkflowAccessToken(workflow_id: string, key_name: string): Promise<CreateAccessTokenResponse> {
+    const url = `${BASE_URL}/api/workflows/security/create_access_token`
+
+    const response = await fetch(url, {
+        method: "POST",
+        headers: {
+            "Authorization": await getFirebaseBearer(),
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            workflow_id: workflow_id,
+            key_name: key_name
+        })
+    })
+
+    if(!response.ok) {
+        await raiseErrorFromApiResponse(response)
+    }
+
+    const res_json = await response.json()
+    return res_json
+}
+
+
+
+interface GetWorkflowAccessTokensPreviewResponse {
+    api_keys: WorkflowApiKey[]
+}
+
+export async function getWorkflowAccessTokensPreview(workflow_id: string): Promise<GetWorkflowAccessTokensPreviewResponse> {
+    const url = `${BASE_URL}/api/workflows/security/access_tokens_preview`
+
+    const response = await fetch(url, {
+        method: "POST",
+        headers: {
+            "Authorization": await getFirebaseBearer(),
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            workflow_id: workflow_id,
+        })
+    })
+
+    if(!response.ok) {
+        await raiseErrorFromApiResponse(response)
+    }
+
+    const res_json = await response.json()
+    return res_json
+}
+
+
+
+export async function refreshWorkflowAccessToken(key_id: string): Promise<CreateAccessTokenResponse> {
+    const url = `${BASE_URL}/api/workflows/security/refresh_access_token`
+
+    const response = await fetch(url, {
+        method: "POST",
+        headers: {
+            "Authorization": await getFirebaseBearer(),
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            key_id: key_id
+        })
+    })
+
+    if(!response.ok) {
+        await raiseErrorFromApiResponse(response)
+    }
+
+    const res_json = await response.json()
+    return res_json
+} 
+
+
+export async function deleteWorkflowAccessToken(key_id: string) {
+    const url = `${BASE_URL}/api/workflows/security/delete_access_token`
+
+    const response = await fetch(url, {
+        method: "POST",
+        headers: {
+            "Authorization": await getFirebaseBearer(),
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            key_id: key_id
+        })
+    })
+
+    if(!response.ok) {
+        await raiseErrorFromApiResponse(response)
+    }
+
+    const res_json = await response.json()
+    return res_json
+} 
+

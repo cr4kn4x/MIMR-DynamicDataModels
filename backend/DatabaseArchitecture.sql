@@ -45,6 +45,7 @@ CREATE TABLE data_model_fields (
 );
 
 
+
 CREATE TABLE workflows (
     user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
@@ -57,11 +58,32 @@ CREATE TABLE workflows (
     output_data_model UUID NOT NULL REFERENCES data_models(id),
     active BOOLEAN NOT NULL,
 
-    api_key TEXT NOT NULL,
-
     -- CONSTRAINTs
     CONSTRAINT unique_project_workflow_name UNIQUE (project_id, name)
 );
+
+
+
+CREATE TABLE workflow_api_keys (
+    id UUID PRIMARY KEY,
+    workflow_id UUID NOT NULL REFERENCES workflows(id) ON DELETE CASCADE,
+    user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    api_key TEXT NOT NULL,
+    api_key_preview TEXT NOT NULL,
+    
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+    last_used_at TIMESTAMP WITH TIME ZONE,
+    last_refreshed_at TIMESTAMP WITH TIME ZONE,
+
+    -- CONSTRAINTs
+    CONSTRAINT unique_api_key UNIQUE (workflow_id, api_key),
+    CONSTRAINT unique_api_key_name UNIQUE (workflow_id, name)
+)
+
+
+
+
 
 
 
@@ -82,9 +104,15 @@ ALTER TABLE data_model_fields ENABLE ROW LEVEL SECURITY;
 CREATE POLICY data_model_fields_rls ON data_model_fields
   USING (user_id = current_setting('mimr.current_user'));
 
+
 -- workflows
 ALTER TABLE workflows ENABLE ROW LEVEL SECURITY;
 CREATE POLICY workflows_rls ON workflows
+  USING (user_id = current_setting('mimr.current_user'));
+
+-- workflow_api_keys
+ALTER TABLE workflow_api_keys ENABLE ROW LEVEL SECURITY;
+CREATE POLICY workflow_api_keys_rls ON workflow_api_keys
   USING (user_id = current_setting('mimr.current_user'));
 
 -- llms

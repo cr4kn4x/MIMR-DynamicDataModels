@@ -1,7 +1,7 @@
 import typing 
 from uuid import UUID
-from pydantic import BaseModel, Field
-
+from pydantic import BaseModel, Field, field_validator
+from datetime import date
 
 
 
@@ -32,3 +32,23 @@ class DataModelApi(BaseModel):
     id: str | UUID = Field()
     name: str = Field()
     fields: typing.List[DataModelFieldApi] = Field()
+
+
+class WorkflowApiKeyPreview(BaseModel): 
+    id: str | UUID = Field()
+    workflow_id: str | UUID = Field()
+    name: str = Field()
+    api_key_preview: str = Field()
+    created_at: str | date = Field()
+    last_used_at: typing.Optional[str | date] = Field()
+    last_refreshed_at: typing.Optional[str | date] = Field()
+
+
+    @field_validator('created_at', 'last_used_at', 'last_refreshed_at', mode='before')
+    @classmethod
+    def convert_datetime(cls, v):
+        if v is None:
+            return None
+        if hasattr(v, 'isoformat'):
+            return v.isoformat()
+        return str(v)

@@ -10,6 +10,7 @@ MAX_LENGTH_DATA_MODEL_NAME = 64
 MAX_LENGTH_DATA_MODEL_FIELD_NAME = 64
 MAX_LENGTH_WORKFLOW_NAME = 64
 MAX_LENGTH_DATA_MODEL_FIELD_DESCRIPTION = 1024
+MAX_LENGTH_API_KEY_NAME = 64
 
 UUID_LENGTH = 36
 
@@ -105,3 +106,19 @@ class CreateWorkflowRequest(BaseModel):
 
 class GetWorkflowByIdRequest(BaseModel): 
     workflow_id: str = Field(min_length=UUID_LENGTH, max_length=UUID_LENGTH)
+
+
+class CreateWorkflowApiKeyRequest(BaseModel): 
+    workflow_id: str = Field(min_length=UUID_LENGTH, max_length=UUID_LENGTH)
+    key_name: str_striped = Field(min_length=1, max_length=MAX_LENGTH_API_KEY_NAME)    
+
+
+
+class GetWorkflowAccessTokensPreviewApiKeyRequest(BaseModel): 
+    workflow_id: str = Field(min_length=UUID_LENGTH, max_length=UUID_LENGTH)
+
+class DeleteWorkflowAccessTokenRequest(BaseModel):
+    key_id: str = Field(min_length=UUID_LENGTH, max_length=UUID_LENGTH)
+
+class RefreshWorkflowAccessTokenRequest(BaseModel): 
+    key_id: str = Field(min_length=UUID_LENGTH, max_length=UUID_LENGTH)
