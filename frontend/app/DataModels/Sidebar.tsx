@@ -18,8 +18,8 @@ function DataModelList({ data_models, selected_project_id, refresh_data_models, 
     if (data_models.length === 0 && selected_project_id) {
         return (
             <div className="text-center py-8">
-                <FileCodeIcon className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                <p className="text-sm text-gray-500 mb-4">No data models yet</p>
+                <FileCodeIcon className="w-12 h-12 mx-auto mb-3" />
+                <p className="text-sm text-gray-400 mb-4">No data models yet</p>
                 <CreateDataModelDialog
                     data_models={data_models}
                     selected_project_id={selected_project_id}
@@ -58,10 +58,10 @@ export function DataModelsSidebar() {
 
     
     return (
-        <aside className="w-80 bg-white border-r border-gray-200 flex flex-col">
-            <div className="p-4 border-b border-gray-200">
+        <aside className="w-80 border-r flex flex-col">
+            <div className="p-4">
                 <div className="flex items-center justify-between mb-3">
-                    <h2 className="font-semibold text-gray-900">Data Models</h2>
+                    <h2 className="font-semibold">Data Models</h2>
                     {selected_project_id ?
                         (
                             <div>
@@ -76,11 +76,11 @@ export function DataModelsSidebar() {
                 </div>
 
                 {selected_project_id ? (
-                    <div className="text-sm text-gray-600">
+                    <div className="text-sm text-gray-400">
                         Project: {selected_project_id}
                     </div>
                 ) : (
-                    <div className="text-sm text-gray-500 italic">
+                    <div className="text-sm text-gray-400 italic">
                         Select a project to get started
                     </div>
                 )}

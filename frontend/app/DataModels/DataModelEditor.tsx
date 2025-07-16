@@ -19,10 +19,10 @@ interface NoProjectSelectedProps {
 
 function NoProjectSelected({ projects, selected_project_id, set_selected_project_id, refresh_projects }: NoProjectSelectedProps) {
     return (
-        <div className="flex-1 flex items-center justify-center bg-gray-50">
+        <div className="flex-1 flex items-center justify-center">
             <Card className="w-96">
                 <CardHeader className="text-center">
-                    <div className="mx-auto w-16 h-16 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
+                    <div className="mx-auto w-16 h-16 rounded-lg flex items-center justify-center mb-4">
                         <FileCodeIcon />
                     </div>
                     <CardTitle>Welcome to Pydantic Model Builder</CardTitle>
@@ -63,10 +63,10 @@ function DataModelEditorContent({ selected_data_model, selected_project_id, refr
                 ) : (
                     <Card className="border-dashed border-2 border-gray-300">
                         <CardHeader className="text-center pb-4">
-                            <div className="mx-auto w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center mb-4">
+                            <div className="mx-auto w-12 h-12  rounded-lg flex items-center justify-center mb-4">
                                 <FileCodeIcon className="w-6 h-6 text-gray-400" />
                             </div>
-                            <CardTitle className="text-gray-900">Select a Data Model to edit</CardTitle>
+                            <CardTitle className="text-gray-400">Select a Data Model to edit</CardTitle>
                             <CardDescription>
                                 Choose a data model from the sidebar to start editing
                             </CardDescription>

@@ -51,19 +51,14 @@ export function DataModelCard({ is_selected, data_model, onSelect, preview, refr
     return (
         <div className={cn("relative", className)}>
             {is_loading && (
-                <div className="absolute inset-0 z-20 flex items-center justify-center bg-white/70 backdrop-blur-sm rounded shadow-inner cursor-not-allowed">
-                    <Loader2 className="h-7 w-7 text-blue-500 animate-spin" />
+                <div className="absolute inset-0 z-20 flex items-center justify-center backdrop-blur-sm rounded shadow-inner cursor-not-allowed">
+                    <Loader2 className="h-7 w-7 animate-spin" />
                 </div>
             )}
             <Card
                 onClick={is_loading ? undefined : (preview ? onSelect : undefined)}
                 className={cn(
                     "transition-all hover:shadow-md",
-                    preview
-                        ? is_selected
-                            ? "ring-2 ring-blue-500 bg-blue-50 cursor-pointer"
-                            : "cursor-pointer"
-                        : "border-1 border-gray-100",
                     is_loading && "pointer-events-none select-none opacity-80"
                 )}
             >

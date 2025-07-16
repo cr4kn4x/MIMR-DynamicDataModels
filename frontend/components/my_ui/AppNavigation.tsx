@@ -40,7 +40,7 @@ export function AppNavigation({children, selected_project_id, projects, refresh_
   const isDataModelsActive = pathname.startsWith("/DataModels")
 
   return (
-    <header className="bg-white border-b border-gray-200 px-6 py-4">
+    <header className="border-b px-6 py-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
 
