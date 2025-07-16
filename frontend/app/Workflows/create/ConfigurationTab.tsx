@@ -25,17 +25,6 @@ interface ConfigureNewWorkflowTabProps {
 }
 
 
-// Hilfskomponente für die JSON-Vorschau ohne Syntax-Highlighting
-function ApiJsonPreview({ label, value }: { label: string, value: any }) {
-    return (
-        <div>
-            <span className="font-semibold text-xs">{label}:</span>
-            <pre className="bg-white rounded p-2 text-xs overflow-x-auto border border-gray-100 mt-1">
-                <code>{JSON.stringify(value, null, 2)}</code>
-            </pre>
-        </div>
-    );
-}
 
 export function ConfigureNewWorkflowTab({ }: ConfigureNewWorkflowTabProps) {
     
@@ -70,14 +59,6 @@ export function ConfigureNewWorkflowTab({ }: ConfigureNewWorkflowTabProps) {
     }, [selected_workflow])
 
 
-    function generateExampleFromDataModel(dataModel: any) {
-        if (!dataModel || !dataModel.fields) return {};
-        return dataModel.fields.reduce((acc: any, field: any) => ({
-            ...acc,
-            [field.name]: field.type
-        }), {});
-    }
-
 
     async function handle_submit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
@@ -108,14 +89,14 @@ export function ConfigureNewWorkflowTab({ }: ConfigureNewWorkflowTabProps) {
                 </div>
 
                 <div>
-                    <Label className="block text-sm font-medium text-gray-700">Workflow Name</Label>
+                    <Label className="block text-sm font-medium">Workflow Name</Label>
                     <Input value={name} onChange={(e) => { set_name(e.target.value) }} placeholder="e.g. Sentiment Extraction" required />
 
                     <InputValidationStatus input_valid={name_validation.is_valid} status={name_validation.msg}/>
                 </div>
 
                 <div>
-                    <Label className="block text-sm font-medium text-gray-700 my-2">Select LLM</Label>
+                    <Label className="block text-sm font-medium my-2">Select LLM</Label>
                     <div className="flex gap-2">
                         <Select value={selected_llm_id} onValueChange={set_selected_llm_id}>
                             <SelectTrigger className="w-full">
@@ -134,8 +115,6 @@ export function ConfigureNewWorkflowTab({ }: ConfigureNewWorkflowTabProps) {
                     </div>
                     <InputValidationStatus input_valid={llm_validation.is_valid} status={llm_validation.msg}/>
                 </div>
-
-
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
                     <div>
@@ -186,31 +165,6 @@ export function ConfigureNewWorkflowTab({ }: ConfigureNewWorkflowTabProps) {
                         </div>
                     </div>
                 </div>
-
-
-                <div className="my-2">
-                    {/* API Preview Section */}
-                    <div className="flex flex-col md:flex-row gap-6 bg-gray-50 rounded-lg p-4 border border-gray-200">
-                        {/* Request Preview */}
-                        <div className="flex-1 min-w-0">
-                            <div className="font-semibold mb-1 text-blue-700">Request</div>
-                            <div className="text-xs text-gray-500 mb-1">POST /api/predict</div>
-                            <div className="mb-1">
-                                <span className="font-semibold text-xs">Headers:</span>
-                                <pre className="bg-white rounded p-2 text-xs overflow-x-auto border border-gray-100 mt-1 mb-2"><code>{`Authorization: Bearer xyz\nContent-Type: application/json`}</code></pre>
-                            </div>
-                            <ApiJsonPreview label="Body" value={{ data: generateExampleFromDataModel(selected_input_data_model) }} />
-                        </div>
-                        {/* Response Preview */}
-                        <div className="flex-1 min-w-0">
-                            <div className="font-semibold mb-1 text-green-700">Response</div>
-                            <div className="text-xs text-gray-500 mb-1">200 OK</div>
-                            <ApiJsonPreview label="Body" value={{ pred: generateExampleFromDataModel(selected_output_data_model) }} />
-                        </div>
-                    </div>
-                </div>
-
-
 
                 <div className="flex justify-end space-x-2 pt-4">
                     <Button type="button" variant="secondary" onClick={() => window.history.back()}>Cancel</Button>

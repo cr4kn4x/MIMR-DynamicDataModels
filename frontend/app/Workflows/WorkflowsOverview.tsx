@@ -23,7 +23,7 @@ export default function WorkflowsOverviewPage() {
 
 
     return (
-        <div className="h-screen flex flex-col bg-gray-50">
+        <div className="h-screen flex flex-col">
             <main>
                 {selected_project_id ?
                     (
