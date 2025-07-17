@@ -319,5 +319,17 @@ def refresh_workflow_access_token():
 
     return jsonify({"api_key": api_key})
 
+
+
+
+
+
+@app.route("/api/predict/<workflow_id>", methods=["POST"])
+def predict(workflow_id):
+    
+    return jsonify({"workflow_id": workflow_id})
+
+
+
 # app.run(debug=True, host="0.0.0.0")
 # flask --app app.py run --debug
