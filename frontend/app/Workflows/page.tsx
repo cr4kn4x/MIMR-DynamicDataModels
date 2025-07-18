@@ -2,14 +2,14 @@
 
 import { redirect_based_on_login } from "@/lib/redirect"
 import { useWorkflowPageContext} from "./PageContext"
-import WorkflowsOverviewPage from "./WorkflowsOverview"
+import WorkflowsPage from "./WorkflowsPage"
 import { useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useProject } from "../ProjectContext"
 import { AppNavigation } from "@/components/my_ui/AppNavigation"
 
 
-export default function WorkflowsPage() {
+export default function Page() {
 
 
 	const router = useRouter()
@@ -23,7 +23,7 @@ export default function WorkflowsPage() {
     return(
         <main>
             <AppNavigation projects={projects} refresh_projects_list={refresh_projects} selected_project_id={selected_project_id} set_selected_project_id={set_selected_project_id}/>
-            <WorkflowsOverviewPage/>
+            <WorkflowsPage/>
         </main>
     )
 }

@@ -18,6 +18,44 @@ interface WorkflowValidation {
 }
 
 
+
+interface WorkflowNameValidation {
+    name_validation: InputValidationResult
+    input_valid_status: string
+    input_valid: boolean
+}
+
+export function useWorkflowNameValidation(
+    name: string,
+    workflows: Workflow[]
+): WorkflowNameValidation {
+    const trimmed_name = name.trim() 
+
+    // call validators
+    const name_validation = validateStringInput(trimmed_name, MAX_LENGTH_WORKFLOW_NAME, workflows.map((w)=>{return w.name}))
+  
+
+    // compute general is_valid state
+    const {input_valid, input_valid_status} = extractFirstError(name_validation)
+    
+    
+    return {
+        name_validation, 
+        input_valid_status,
+        input_valid 
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
 export function useWorkflowValidation(
     name: string,
     llm: string | null, 

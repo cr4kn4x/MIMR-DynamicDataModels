@@ -133,8 +133,8 @@ export default function GeneralTab() {
                         <div className="flex flex-col md:flex-row gap-6 rounded-lg p-4 border">
                             {/* Request Preview */}
                             <div className="flex-1 min-w-0">
-                                <div className="font-semibold mb-1 text-blue-700">Request</div>
-                                <div className="text-xs mb-1">POST /api/predict</div>
+                                <div className="font-semibold mb-1 text-blue-700">Request (HTTP POST)</div>
+                                <div className="mb-1 text-sm font-semibold flex items-center">http://localhost:3000/api/predict/{selected_workflow?.id} <CopyButton value={`http://localhost:3000/api/predict/${selected_workflow?.id}`} toaster={toast} value_name="API-URL"/></div>
                                 <div className="mb-1">
                                     <span className="font-semibold text-xs">Headers:</span>
                                     <pre className="rounded p-2 text-xs overflow-x-auto border mt-1 mb-2"><code>{`Authorization: Bearer xyz\nContent-Type: application/json`}</code></pre>
@@ -174,39 +174,4 @@ export default function GeneralTab() {
             )}
         </div>
     )
-
-
-    /*
-    return (
-      <div className="flex flex-col flex-1 w-full h-full p-8">
-        <div className="flex flex-col md:flex-row md:items-end md:justify-between mb-8 gap-4">
-          <div className="text-3xl font-bold flex items-center gap-4">
-            {selected_workflow.name}
-            {selected_workflow.active ? (
-              <Badge className="bg-green-500 text-white">Active</Badge>
-            ) : (
-              <Badge variant="destructive">Inactive</Badge>
-            )}
-          </div>
-          <div className="text-xs text-gray-400">Workflow ID: {selected_workflow.id}</div>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full">
-          <div>
-            <div className="font-semibold text-gray-700 mb-1">Project</div>
-            <div className="text-gray-900 mb-4 break-all">{selected_workflow.project_id}</div>
-  
-            <div className="font-semibold text-gray-700 mb-1">LLM</div>
-            <div className="text-gray-900 mb-4 break-all">{selected_workflow.llm}</div>
-          </div>
-          <div>
-            <div className="font-semibold text-gray-700 mb-1">Input Data Model</div>
-            <div className="text-gray-900 mb-4 break-all">{selected_workflow.input_data_model}</div>
-  
-            <div className="font-semibold text-gray-700 mb-1">Output Data Model</div>
-            <div className="text-gray-900 mb-4 break-all">{selected_workflow.output_data_model}</div>
-          </div>
-        </div>
-      </div>
-    );
-    */
 }
