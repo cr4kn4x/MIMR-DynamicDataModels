@@ -23,6 +23,8 @@ interface ProjectContextType {
     data_models: DataModel[]
     refresh_data_models: () => void
 
+    native_input_data_models: DataModel[]
+
     llms: LLM[]
     refresh_llms: () => void
 }
@@ -49,10 +51,21 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({ children }) =>
     const searchParams = useSearchParams();
 
     // State management for projects, data models, and LLMs
-    const [selected_project_id, set_selected_project_id] = useState<string | null>(null);
-    const [projects, set_projects] = useState<Project[]>([]);
-    const [data_models, set_data_models] = useState<DataModel[]>([]);
-    const [llms, set_llms] = useState<LLM[]>([]);
+    const [selected_project_id, set_selected_project_id] = useState<string | null>(null)
+    const [projects, set_projects] = useState<Project[]>([])
+    const [data_models, set_data_models] = useState<DataModel[]>([])
+    const [llms, set_llms] = useState<LLM[]>([])
+
+    
+    // This is used for the creation of worfklows
+    const native_input_data_models: DataModel[] = [
+        {
+            name: "simple text (native)",
+            id: "f5e2f8d9-13fa-44b2-8806-8496466ebbc2",
+            fields: [{id: "", description: "", name: "text", type: "str"}], 
+        }
+    ]
+
 
     // Refresh functions for fetching data
     const refresh_llms = async () => {
@@ -72,27 +85,29 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({ children }) =>
             if (res) set_data_models(res.data_models);
             return;
         }
-        set_data_models([]); // Clear data models if no project is selected
-    };
+        set_data_models([]) // Clear data models if no project is selected
+    }
 
+    
     // Initial data fetch and URL parameter handling
     useEffect(() => {
-        refresh_llms();
-        refresh_projects();
+        refresh_llms()
+        refresh_projects()
 
-        const url_project_id = searchParams.get("project_id");
+        const url_project_id = searchParams.get("project_id")
         if (url_project_id) {
-            set_selected_project_id(url_project_id);
+            set_selected_project_id(url_project_id)
         }
-    }, []);
+    }, [])
 
     // Fetch data models when the selected project changes
     useEffect(() => {
         if (selected_project_id) {
-            refresh_data_models();
+            refresh_data_models()
         }
-    }, [selected_project_id]);
+    }, [selected_project_id])
 
+    
     // Derive the selected project from the list of projects
     const selected_project = projects.find((p) => p.id === selected_project_id) ?? null;
 
@@ -106,6 +121,7 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({ children }) =>
                 selected_project,
                 data_models,
                 refresh_data_models,
+                native_input_data_models,
                 llms,
                 refresh_llms,
             }}

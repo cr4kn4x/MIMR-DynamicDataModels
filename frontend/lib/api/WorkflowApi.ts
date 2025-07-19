@@ -120,9 +120,12 @@ export async function getLlms(): Promise<getLlmsResponse> {
     return res_json
 }
 
+interface CreateWorkflowResponse {
+    msg: string, 
+    id: string
+}
 
-
-export async function createWorkflow(project_id: string, llm: string, input_data_model: string, output_data_model: string, active: boolean, name: string) {
+export async function createWorkflow(project_id: string, llm: string, input_data_model: string, output_data_model: string, active: boolean, name: string): Promise<CreateWorkflowResponse> {
 
     const url = `${BASE_URL}/api/workflows/create`
 
@@ -146,7 +149,8 @@ export async function createWorkflow(project_id: string, llm: string, input_data
         await raiseErrorFromApiResponse(response)
     }
     
-    return true
+    const res = await response.json() 
+    return res
 }
 
 

@@ -20,7 +20,7 @@ export default function LLMSelctor({ set_selected_llm_id, selected_llm_id, llms 
                 {
                     llms.map((llm) => {
                         return (
-                            <SelectItem key={llm.id} id={llm.id} value={llm.name}>{llm.name}</SelectItem>
+                            <SelectItem key={llm.id} id={llm.id} value={llm.id}>{llm.name}</SelectItem>
                         )
                     })
                 }

@@ -234,10 +234,14 @@ class DAO:
         return workflow
     
     @dao_exception_handler
-    def create_workflow(self, user_id: str, project_id: str, llm: str, input_data_model: str, output_data_model: str, active: bool, name: str):
+    def create_workflow(self, user_id: str, project_id: str, llm: str, input_data_model: str, output_data_model: str, active: bool, name: str) -> str:
+        workflow_id = str(uuid.uuid4())
         with self.rls_cursor(user_id) as cur:
-            cur.execute("INSERT INTO public.workflows(user_id, project_id, id, name, input_data_model, output_data_model, active, llm) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)", (user_id, project_id, str(uuid.uuid4()), name, input_data_model, output_data_model, active, llm))
-        return True
+            cur.execute(
+                "INSERT INTO public.workflows(user_id, project_id, id, name, input_data_model, output_data_model, active, llm) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",
+                (user_id, project_id, workflow_id, name, input_data_model, output_data_model, active, llm)
+            )
+        return workflow_id
     
 
 

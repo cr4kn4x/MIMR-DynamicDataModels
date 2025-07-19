@@ -254,9 +254,9 @@ def create_workflow():
     assert isinstance(firebase_token, FirebaseIdToken)
 
     data = CreateWorkflowRequest(**request.get_json())
-    dao.create_workflow(firebase_token.user_id, data.project_id, data.llm, data.input_data_model, data.output_data_model, data.active, data.name)
+    workflow_id = dao.create_workflow(firebase_token.user_id, data.project_id, data.llm, data.input_data_model, data.output_data_model, data.active, data.name)
     
-    return jsonify({"msg": "Workflow created"})
+    return jsonify({"msg": "Workflow created", "id": workflow_id})
 
 
 

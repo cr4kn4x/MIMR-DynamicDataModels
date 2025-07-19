@@ -36,7 +36,7 @@ export default function WorkflowsPage() {
     return (
         <div className="h-screen flex flex-col">
             <main>
-                <CreateWorkflowWizard open={wizardOpen} onOpenChange={setWizardOpen} />
+                <CreateWorkflowWizard open={wizardOpen} set_open={setWizardOpen} />
 
                 {selected_project_id ? (
                     workflows.length > 0 ? (
