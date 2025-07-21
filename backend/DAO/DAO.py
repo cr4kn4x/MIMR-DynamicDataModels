@@ -1,4 +1,4 @@
-import psycopg, typing, uuid, psycopg.rows, secrets
+import psycopg, typing, uuid, psycopg.rows, secrets, logging
 from DAO.Exceptions import (
     handle_database_error, 
     DAOException,
@@ -7,6 +7,7 @@ from DAO.Exceptions import (
 )
 from psycopg import sql
 from DAO.ApiInterfaces import * 
+from DAO.Interfaces import *
 from contextlib import contextmanager
 
 
@@ -310,3 +311,46 @@ class DAO:
             res = cur.fetchall()
         
         return [WorkflowApiKeyPreview(**obj) for obj in res]
+    
+
+
+
+
+
+    #####################################################################################
+    #####################################################################################
+    @dao_exception_handler
+    def get_workflow_no_authentication(self, workflow_id: str) -> Workflow: 
+        logging.error("THIS FUNCTION IS NOT READY FOR PRODUCTION!")
+
+        with self.rls_cursor(user_id="MYBplhJ7cOQJyGGzzALAgzBogpg2") as cur: 
+            cur.execute("""SELECT * FROM workflows WHERE id = %s""", (workflow_id, ))
+            res = cur.fetchone()
+
+        return Workflow(**res)
+    
+
+    @dao_exception_handler
+    def get_data_model_no_authentication(self, data_model_id: str) -> DataModel: 
+        logging.error("THIS FUNCTION IS NOT READY FOR PRODUCTION!")
+        with self.rls_cursor(user_id="MYBplhJ7cOQJyGGzzALAgzBogpg2") as cur: 
+            cur.execute("""SELECT * FROM data_models WHERE id = %s""", (data_model_id, ))
+            res = cur.fetchone()
+
+        return DataModel(**res)
+    
+
+    @dao_exception_handler
+    def get_data_model_fields_no_authentication(self, data_model_id: str) -> typing.List[DataModelField]: 
+        
+        logging.error("THIS FUNCTION IS NOT READY FOR PRODUCTION!")
+
+        with self.rls_cursor(user_id="MYBplhJ7cOQJyGGzzALAgzBogpg2") as cur: 
+            cur.execute("""SELECT * FROM data_model_fields WHERE data_model_id = %s""", (data_model_id, ))
+            res = cur.fetchall()
+
+        return [DataModelField(**obj) for obj in res]
+    #####################################################################################
+    #####################################################################################
+    
+

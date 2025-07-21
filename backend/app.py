@@ -1,4 +1,4 @@
-import os, dotenv, logging, pydantic
+import os, dotenv, logging, pydantic, dspy
 from firebase import FirebaseIdToken, firebase_token_required, init_firebase
 from flask import Flask, jsonify, request
 from flask_cors import CORS
@@ -11,6 +11,8 @@ from DAO.Exceptions import (
     DAOIntegrityException
 )
 from InputValidation import *
+
+from pydantic import create_model, Field, BaseModel
 
 ############################################################
 ############################################################
@@ -326,8 +328,65 @@ def refresh_workflow_access_token():
 
 @app.route("/api/predict/<workflow_id>", methods=["POST"])
 def predict(workflow_id):
+    logging.exception("THIS ROUTE IS NOT READY FOR PRODUCTION!")
+
+
+
+    data = request.get_json()
     
-    return jsonify({"workflow_id": workflow_id})
+
+    workflow = dao.get_workflow_no_authentication(workflow_id=workflow_id)
+
+    
+    input_data_model = dao.get_data_model_no_authentication(workflow.input_data_model)
+    input_data_model_fields = dao.get_data_model_fields_no_authentication(workflow.input_data_model)
+
+    output_data_model = dao.get_data_model_no_authentication(workflow.output_data_model)
+    output_data_model_fields = dao.get_data_model_fields_no_authentication(workflow.output_data_model)
+
+    
+    # 
+    type_map = {
+        "str": str, 
+        "int": int, 
+        "float": float, 
+        "boolean": bool,
+    }
+
+    input_base_model_fields = {
+        f.name: (type_map[f.type], Field(description=f.description)) for f in input_data_model_fields
+    }
+
+    input_base_model = create_model(input_data_model.name, 
+        **input_base_model_fields
+    )
+
+    
+
+    output_base_model_fields = {
+        f.name: (type_map[f.type], Field(description=f.description)) for f in output_data_model_fields
+    }
+
+    output_base_model = create_model(output_data_model.name, 
+        **output_base_model_fields
+    )
+
+
+    llm = dspy.LM(model="openai/mistralai/Mistral-Nemo-Instruct-2407", base_url="https://api.deepinfra.com/v1/openai", api_key=os.environ.get("DEEPINFRA_API"), max_tokens=1024, temperature=0.3)
+
+    dspy.configure(lm=llm)
+
+    class Signature(dspy.Signature):
+        input: input_base_model = dspy.InputField()
+        prediction: output_base_model = dspy.OutputField()
+    
+    program = dspy.Predict(Signature)
+    
+
+    pred = program(input=input_base_model(**data["data"]))
+    
+
+    return jsonify({"workflow_id": workflow_id, "pred": pred.prediction.model_dump()})
 
 
 
