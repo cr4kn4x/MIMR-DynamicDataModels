@@ -3,6 +3,7 @@ from firebase import FirebaseIdToken, firebase_token_required, init_firebase
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from DAO.DAO import DAO, DAOException
+from DAO.SupabaseAdminDAO import SupbaseAdminDAO
 from DAO.Exceptions import (
     DAOException,
     DAOValidationException,
@@ -25,6 +26,7 @@ CORS(app, origins="*")                                  ####
 #                                                       ####
 #  initialize DAO                                       ####
 dao = DAO(dsn=os.environ.get("POSTGRES_DSN"))           ####
+supbase_dao = SupbaseAdminDAO(os.environ.get("SUPABASE_POSTGRES_DSN"))
 #                                                       ####
 # firebase config                                       ####
 init_firebase()                                         ####    
@@ -321,6 +323,18 @@ def refresh_workflow_access_token():
 
     return jsonify({"api_key": api_key})
 
+
+
+@app.post("/api/auth/check_registration_status")
+def check_registration_status(): 
+    email = request.get_json().get("email", None)
+
+    if email == None: 
+        return jsonify({"msg": "Please provide a valid email address"}), 404
+    
+    res = supbase_dao.check_registration_status_by_email(email)
+
+    return jsonify(res.model_dump())
 
 
 
