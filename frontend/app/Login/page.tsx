@@ -110,7 +110,7 @@ export default function Page() {
                 }
             }
             else {
-                toast.error("Wrong e-mail or password", { richColors: true })
+                toast.error("This E-Mail is not registered", { richColors: true })
             }
         }
         catch (e: any) {
