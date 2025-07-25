@@ -8,12 +8,8 @@ import { DataModelsSidebar } from "./Sidebar";
 import { useProject } from "../ProjectContext";
 
 export default function Page() {
-    const router = useRouter();
-    useEffect(() => {
-        redirect_based_on_login(router);
-    }, []);
-
-    const { selected_project_id, set_selected_project_id, refresh_projects, projects } = useProject();
+    
+    const { selected_project_id, set_selected_project_id, refresh_projects, projects } = useProject()
 
     return (
         <div className="h-screen w-screen flex flex-col">
