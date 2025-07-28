@@ -1,57 +1,42 @@
-CREATE TABLE users (
-    -- firebase user id
-    id TEXT PRIMARY KEY,
-    email TEXT NOT NULL -- UNIQUE
-);
-
-
-CREATE TABLE projects (
-    user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    -- project_id
+CREATE TABLE public.projects (
+    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
     id UUID PRIMARY KEY,
-    -- project attributes
     name TEXT NOT NULL,
 
-    -- CONSTRAINTs
     CONSTRAINT unique_user_project_name UNIQUE (user_id, name)
 );
+ALTER TABLE public.projects ENABLE ROW LEVEL SECURITY;
 
 
-CREATE TABLE data_models (
-    user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+CREATE TABLE public.data_models (
+    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
     project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
-    -- data_model id
     id UUID PRIMARY KEY,
-    -- data_model_attributes
     name TEXT NOT NULL,
 
-    -- CONSTRAINTs
     CONSTRAINT unique_project_data_model_name UNIQUE (project_id, name)
 );
+ALTER TABLE public.data_models ENABLE ROW LEVEL SECURITY;
 
 
-CREATE TABLE data_model_fields (
-    user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+CREATE TABLE public.data_model_fields (
+    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
     data_model_id UUID NOT NULL REFERENCES data_models(id) ON DELETE CASCADE,
-    -- data_model_field id
     id UUID NOT NULL PRIMARY KEY,
-    -- data_model attributes
     name TEXT NOT NULL, 
     type TEXT NOT NULL,
     description TEXT,
 
-    -- CONSTRAINTs
     CONSTRAINT unique_data_model_field_name UNIQUE (data_model_id, name)
 );
+ALTER TABLE public.data_model_fields ENABLE ROW LEVEL SECURITY;
 
 
 
-CREATE TABLE workflows (
-    user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+CREATE TABLE public.workflows (
+    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
     project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
-    -- workflow id 
     id UUID PRIMARY KEY,
-    -- workflow attributes
     name TEXT NOT NULL,
     llm TEXT NOT NULL,
     input_data_model UUID NOT NULL REFERENCES data_models(id),
@@ -61,6 +46,9 @@ CREATE TABLE workflows (
     -- CONSTRAINTs
     CONSTRAINT unique_project_workflow_name UNIQUE (project_id, name)
 );
+ALTER TABLE public.workflows ENABLE ROW LEVEL SECURITY;
+
+
 
 
 
@@ -80,6 +68,7 @@ CREATE TABLE workflow_api_keys (
     CONSTRAINT unique_api_key UNIQUE (workflow_id, api_key),
     CONSTRAINT unique_api_key_name UNIQUE (workflow_id, name)
 )
+ALTER TABLE public.workflow_api_keys ENABLE ROW LEVEL SECURITY;
 
 
 
@@ -90,9 +79,10 @@ CREATE TABLE workflow_api_keys (
 -- Row-Level Security aktivieren und Policies anlegen
 
 -- projects
-ALTER TABLE projects ENABLE ROW LEVEL SECURITY;
-CREATE POLICY projects_rls ON projects
-  USING (user_id = current_setting('mimr.current_user'));
+
+
+
+
 
 -- data_models
 ALTER TABLE data_models ENABLE ROW LEVEL SECURITY;
@@ -119,3 +109,11 @@ CREATE POLICY workflow_api_keys_rls ON workflow_api_keys
 ALTER TABLE llms ENABLE ROW LEVEL SECURITY;
 CREATE POLICY llms_rls ON llms
   USING (user_id = current_setting('mimr.current_user'));
+
+
+ALTER TABLE public.projects ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can only view their own projects" 
+ON public.projects 
+FOR SELECT
+USING (auth.uid() = user_id);
