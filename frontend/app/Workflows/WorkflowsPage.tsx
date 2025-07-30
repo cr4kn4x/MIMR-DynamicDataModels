@@ -8,7 +8,7 @@ import {
     ConfigurationStep,
     SecurityStep,
     SummaryStep
-} from "./create/WorkflowSteps"
+} from "./components/WorkflowSteps"
 import { useState } from "react"
 import Link from "next/link"
 import { WorkflowCard } from "@/components/my_ui/WorkflowCard"

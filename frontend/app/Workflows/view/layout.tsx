@@ -1,6 +1,6 @@
 import { ProjectProvider } from "@/app/ProjectContext";
 import { SidebarProvider } from "@/components/ui/sidebar";
-import { ViewWorkflowContextProvider } from "../create/PageContext";
+import { ViewWorkflowContextProvider } from "./PageContext";
 
 
 

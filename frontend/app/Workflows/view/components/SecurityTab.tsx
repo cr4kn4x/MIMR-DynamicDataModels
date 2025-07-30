@@ -1,6 +1,6 @@
 
 import { Card } from "@/components/ui/card";
-import { viewWorkflowPageContext } from "../../create/PageContext";
+import { viewWorkflowPageContext } from "./../PageContext"
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";

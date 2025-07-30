@@ -2,8 +2,8 @@
 import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { Card, CardContent } from "@/components/ui/card"
 import { useState } from "react";
-import { GeneralSettingsStep, GeneralStep } from "../create/WorkflowSteps";
-import WorkflowCreateStepper from "../create/WorkflowCreateStepper";
+import { GeneralSettingsStep, GeneralStep } from "./WorkflowSteps";
+import WorkflowCreateStepper from "./WorkflowCreateStepper";
 
 
 

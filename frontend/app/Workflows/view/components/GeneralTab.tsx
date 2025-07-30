@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { viewWorkflowPageContext } from "../../create/PageContext";
+import { viewWorkflowPageContext } from "./../PageContext"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { useState } from "react";
 import { ChevronsUpDown } from "lucide-react";
