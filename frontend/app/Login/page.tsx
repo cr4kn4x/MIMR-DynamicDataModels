@@ -145,8 +145,6 @@ export default function Page() {
 
     return (
         <div className="w-screen h-screen flex items-center justify-center">
-
-
             <AlertDialog open={email_pending_dialog_open}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
@@ -162,7 +160,6 @@ export default function Page() {
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
-
 
             <AlertDialog open={password_reset_sent_dialog_open}>
                             <AlertDialogContent>

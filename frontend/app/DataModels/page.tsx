@@ -1,15 +1,24 @@
 "use client";
 import DataModelEditor from "./DataModelEditor";
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { redirect_based_on_login } from "@/lib/redirect";
 import { AppNavigation } from "@/components/my_ui/AppNavigation";
 import { DataModelsSidebar } from "./Sidebar";
 import { useProject } from "../ProjectContext";
+import { useEffect } from "react";
+import { createClient } from "@/utils/supabase/client";
+
+const supabase = createClient()
 
 export default function Page() {
     
     const { selected_project_id, set_selected_project_id, refresh_projects, projects } = useProject()
+
+
+    useEffect(()=>{
+        const t = async() => {
+            console.log(await supabase.auth.getSession())
+        }
+        t()
+    }, [])
 
     return (
         <div className="h-screen w-screen flex flex-col">

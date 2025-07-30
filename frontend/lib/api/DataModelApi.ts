@@ -1,5 +1,5 @@
 import { DataModel, DataModelField, Project } from "../interfaces/DataModelInterfaces";
-import { getFirebaseBearer, raiseErrorFromApiResponse } from "./utils";
+import { getSupabaseBearer, raiseErrorFromApiResponse } from "./utils";
 
 
 const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_BASE
@@ -10,18 +10,18 @@ interface getAllProjectsResponse {
     projects: Project[]
 }
 
-export async function getAllProjects(): Promise<getAllProjectsResponse> {
+export async function getAllProjects(): Promise<Project[]> {
     const url = `${BASE_URL}/api/project/get_all`
 
     const response = await fetch(url, {
         method: "GET",
-        headers: {"Authorization": await getFirebaseBearer()}
+        headers: {"Authorization": await getSupabaseBearer()}
     })
 
     if (!response.ok) { await raiseErrorFromApiResponse(response) }
 
     const res_json = await response.json()
-    return res_json
+    return res_json.projects
 }
 
 
@@ -31,7 +31,7 @@ export async function createNewProject(project_name: string) {
     const response = await fetch(url, {
         method: "POST",
         headers: {
-            "Authorization": await getFirebaseBearer(),
+            "Authorization": await getSupabaseBearer(),
             "Content-Type": "application/json"
         },
         body: JSON.stringify({
@@ -53,7 +53,7 @@ export async function createNewDataModel(project_id: string, data_model_name: st
     const response = await fetch(url, {
         method: "POST",
         headers: {
-            "Authorization": await getFirebaseBearer(),
+            "Authorization": await getSupabaseBearer(),
             "Content-Type": "application/json"
         },
         body: JSON.stringify({
@@ -71,18 +71,16 @@ export async function createNewDataModel(project_id: string, data_model_name: st
 
 
 
-interface getDataModelsByProjectIdResponse {
-    data_models: DataModel[]
-}
 
-export async function getDataModelsByProjectId(project_id: string): Promise<getDataModelsByProjectIdResponse> {
+
+export async function getDataModelsByProjectId(project_id: string): Promise<DataModel[]> {
     
     const url = `${BASE_URL}/api/data_models/get_by_project_id`
 
     const response = await fetch(url, {
         method: "POST", 
         headers: {
-            "Authorization": await getFirebaseBearer(),
+            "Authorization": await getSupabaseBearer(),
             "Content-Type": "application/json"
         },
         body: JSON.stringify({
@@ -95,7 +93,7 @@ export async function getDataModelsByProjectId(project_id: string): Promise<getD
     }
     
     const res_json = await response.json()
-    return res_json
+    return res_json.data_models
 }
 
 
@@ -107,7 +105,7 @@ export async function applyChangesToDataModelField(data_model_id: string, new_fi
     const response = await fetch(url, {
         method: "POST", 
         headers: {
-            "Authorization": await getFirebaseBearer(),
+            "Authorization": await getSupabaseBearer(),
             "Content-Type": "application/json"
         },
         body: JSON.stringify({
@@ -134,7 +132,7 @@ export async function getDataModelById(data_model_id: string): Promise<getDataMo
     const response = await fetch(url, {
         method: "POST", 
         headers: {
-            "Authorization": await getFirebaseBearer(),
+            "Authorization": await getSupabaseBearer(),
             "Content-Type": "application/json"
         },
         body: JSON.stringify({
@@ -158,7 +156,7 @@ export async function createNewDataModelField(data_model_id: string, new_field: 
     const response = await fetch(url, {
         method: "POST", 
         headers: {
-            "Authorization": await getFirebaseBearer(),
+            "Authorization": await getSupabaseBearer(),
             "Content-Type": "application/json"
         },
         body: JSON.stringify({
@@ -182,7 +180,7 @@ export async function deleteDataModelField(field_id: string) {
     const response = await fetch(url, {
         method: "POST", 
         headers: {
-            "Authorization": await getFirebaseBearer(),
+            "Authorization": await getSupabaseBearer(),
             "Content-Type": "application/json"
         },
         body: JSON.stringify({
@@ -206,7 +204,7 @@ export async function deleteDataModel(data_model_id: string) {
     const response = await fetch(url, {
         method: "POST", 
         headers: {
-            "Authorization": await getFirebaseBearer(),
+            "Authorization": await getSupabaseBearer(),
             "Content-Type": "application/json"
         },
         body: JSON.stringify({

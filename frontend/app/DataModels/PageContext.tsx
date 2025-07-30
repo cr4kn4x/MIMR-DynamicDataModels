@@ -22,10 +22,10 @@ export function useDataModelsPageContext() {
 
 export function DataModelsPageContextProvider({ children }: { children: ReactNode }) {
     // 
-    const {data_models, selected_project_id, projects} = useProject()
+    const { data_models } = useProject()
 
-    
     const [selected_data_model_id, set_selected_data_model_id] = useState<string | null>(null)
+
 
     const selected_data_model = useMemo(() => {
         if (!selected_data_model_id) return null;
@@ -34,9 +34,6 @@ export function DataModelsPageContextProvider({ children }: { children: ReactNod
     }, [selected_data_model_id, data_models])
     
     
-
-
-
     const value: DataModelsContextType = {
         selected_data_model_id,
         set_selected_data_model_id,

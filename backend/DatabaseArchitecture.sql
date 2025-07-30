@@ -55,7 +55,7 @@ ALTER TABLE public.workflows ENABLE ROW LEVEL SECURITY;
 CREATE TABLE workflow_api_keys (
     id UUID PRIMARY KEY,
     workflow_id UUID NOT NULL REFERENCES workflows(id) ON DELETE CASCADE,
-    user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
     name TEXT NOT NULL,
     api_key TEXT NOT NULL,
     api_key_preview TEXT NOT NULL,

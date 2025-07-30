@@ -2,7 +2,6 @@ import typing
 from flask import request, jsonify
 from pydantic import BaseModel, Field
 from functools import wraps
-from DAO.DAO import DAO
 from flask import Request
 import logging
 from jose import jwt

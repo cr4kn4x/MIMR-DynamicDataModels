@@ -1,12 +1,17 @@
+import { createClient } from "@/utils/supabase/client"
 
-import { getAuth } from "firebase/auth"
 
 
-export async function getFirebaseBearer() {
-    const token = await getAuth().currentUser?.getIdToken()
-    if(!token){ throw Error("Firebase Token not accessible by client") }
+export async function getSupabaseBearer() {
+    const supabase = createClient()
 
-    return `Bearer ${token}`
+    const {data, error} = await supabase.auth.getSession()
+
+    if(error || !data.session?.access_token){
+        throw Error("Supabse Token not accessible by client")
+    }
+
+    return `Bearer ${data.session.access_token}`
 }
 
 
@@ -32,6 +37,15 @@ export async function raiseErrorFromApiResponse(response: Response): Promise<nev
 
 
 export function generateErrorText(e: any){
-    const error_msg = e instanceof Error ? e.message : String(e)
+    let error_msg = "Unknown error occurred"
+    
+    if (e instanceof Error) {
+        error_msg = e.message
+    } else if (typeof e === 'string') {
+        error_msg = e
+    } else if (e && typeof e === 'object' && 'message' in e) {
+        error_msg = String(e.message)
+    }
+
     return error_msg
 }

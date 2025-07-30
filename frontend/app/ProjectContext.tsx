@@ -1,6 +1,6 @@
 "use client"
 
-import { apiCallWrapper } from '@/lib/api/ApiCallWrapper'
+import { apiCallWrapper, SupabaseDataCallWrapper } from '@/lib/api/ApiCallWrapper'
 import { getAllProjects, getDataModelsByProjectId } from '@/lib/api/DataModelApi'
 import { getLlms } from '@/lib/api/WorkflowApi'
 import { DataModel, Project } from '@/lib/interfaces/DataModelInterfaces'
@@ -8,8 +8,12 @@ import { LLM } from '@/lib/interfaces/LlmInterfaces'
 import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react'
 import { toast } from 'sonner'
 import { useSearchParams, useRouter } from "next/navigation"
-import { Router } from 'lucide-react'
 
+import { createClient } from '@/utils/supabase/client'
+import { PostgrestError } from '@supabase/supabase-js'
+import { generateErrorText } from '@/lib/api/utils'
+import { PostgrestQueryBuilder } from '@supabase/postgrest-js'
+const supabase = createClient()
 
 interface ProjectContextType {
     projects: Project[]
@@ -56,13 +60,13 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({ children }) =>
     const [data_models, set_data_models] = useState<DataModel[]>([])
     const [llms, set_llms] = useState<LLM[]>([])
 
-    
+
     // This is used for the creation of worfklows
     const native_input_data_models: DataModel[] = [
         {
             name: "simple text (native)",
             id: "f5e2f8d9-13fa-44b2-8806-8496466ebbc2",
-            fields: [{id: "", description: "", name: "text", type: "str"}], 
+            fields: [{ id: "", description: "", name: "text", type: "str" }],
         }
     ]
 
@@ -74,21 +78,23 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({ children }) =>
         console.log(res)
     };
 
-    const refresh_projects = async () => {
-        const res = await apiCallWrapper(getAllProjects(), toast, "Error while fetching projects");
-        if (res) set_projects(res.projects);
-    };
 
-    const refresh_data_models = async () => {
-        if (selected_project_id) {
-            const res = await apiCallWrapper(getDataModelsByProjectId(selected_project_id), toast, "Error while fetching DataModels");
-            if (res) set_data_models(res.data_models);
-            return;
-        }
-        set_data_models([]) // Clear data models if no project is selected
+
+
+
+    const refresh_projects = async () => {
+        await apiCallWrapper<Project[]>(getAllProjects(), toast, "", set_projects)
+        // await SupabaseDataCallWrapper<Project[]>(supabase.from("projects").select("*"), toast, set_projects)
     }
 
-    
+    const refresh_data_models = async () => {
+        if(selected_project_id){
+            await apiCallWrapper<DataModel[]>(getDataModelsByProjectId(selected_project_id), toast, "", set_data_models)
+        }
+        else{set_data_models([])}
+    }
+
+
     // Initial data fetch and URL parameter handling
     useEffect(() => {
         refresh_llms()
@@ -107,7 +113,7 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({ children }) =>
         }
     }, [selected_project_id])
 
-    
+
     // Derive the selected project from the list of projects
     const selected_project = projects.find((p) => p.id === selected_project_id) ?? null;
 

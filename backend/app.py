@@ -11,6 +11,8 @@ from InputValidation import *
 
 from pydantic import create_model, Field, BaseModel
 
+from DAO.SupabaseDataAccess import SupabaseServiceDAO, SupabaseApiData, Project, Workflow, PopulatedDataModel, DataModel, DataModelField
+
 ############################################################
 ############################################################
 # load secrets                                          ####
@@ -28,12 +30,12 @@ CORS(app, origins="*")                                  ####
 
 
 
+supabaseServiceDao = SupabaseServiceDAO(os.environ.get("SUPABASE_POSTGRES_DSN"))
 
 
 ############################################################
 ############################################################
 
-from supabase import create_client, Client, ClientOptions
 
 
 @app.errorhandler(postgrest.exceptions.APIError)
@@ -41,128 +43,6 @@ def handle_postgrest_api_error(e: postgrest.exceptions.APIError):
     logging.exception(e)
     return jsonify({"error": e.message}), 400
 
-
-
-class Project(BaseModel):
-    user_id: UUID = Field()
-    id: UUID = Field(default_factory=lambda: str(uuid.uuid4()))
-    name: str = Field()
-
-
-class DataModel(BaseModel):
-    user_id: UUID = Field()
-    id: UUID = Field(default_factory=lambda: str(uuid.uuid4()))
-    project_id: UUID = Field()
-    name: str = Field()
-
-
-class DataModelField(BaseModel): 
-    user_id: UUID = Field() 
-    id: UUID = Field(default_factory=lambda: str(uuid.uuid4())) 
-    data_model_id: UUID = Field() 
-    name: str = Field() 
-    type: str = Field() 
-    description: str | None = Field() 
-
-
-class PopulatedDataModel(DataModel): 
-    fields: typing.List[DataModelField] = Field(default=[])
-
-class Workflow(BaseModel):
-    user_id: UUID = Field()
-    project_id: UUID = Field()
-    id: UUID = Field(default_factory=lambda: str(uuid.uuid4()))
-    name: str = Field()
-    input_data_model: UUID = Field()
-    output_data_model: UUID = Field()
-    active: bool = Field()
-    llm: str = Field()
-
-
-
-class RegistrationStatus(BaseModel): 
-    registered: bool = Field()
-    email_confirmed: bool = Field()
-
-class SupabaseServiceDAO: 
-    def __init__(self, dsn: str):
-        self.dsn = dsn 
-
-    def __get_connection(self):
-        return psycopg.connect(self.dsn, row_factory=psycopg.rows.dict_row)
-    
-    def getRegistrationStatus(self, email: str) -> RegistrationStatus: 
-        with self.__get_connection() as conn: 
-            with conn.cursor() as cur: 
-                cur.execute("SELECT email_confirmed_at FROM auth.users WHERE email=%s", (email, ))
-                res = cur.fetchone()
-
-            if res == None: 
-                # email is not registered at all 
-                return RegistrationStatus(registered=False, email_confirmed=False)
-            else: 
-                if res["email_confirmed_at"] != None: 
-                    # email is registered and confirmed
-                    return RegistrationStatus(registered=True, email_confirmed=True)
-                else: 
-                    # email is registered but not  confirmed 
-                    return RegistrationStatus(registered=True, email_confirmed=False)
-
-            
-supabaseServiceDao = SupabaseServiceDAO(os.environ.get("SUPABASE_POSTGRES_DSN"))
-
-class SupabaseApiData: 
-    def __init__(self, supabase_url: str, supabase_key: str, jwt: str):
-        self.client: Client = create_client(supabase_url=supabase_url, supabase_key=supabase_key, options=ClientOptions(headers={"Authorization": f"Bearer {jwt}"}))
-
-
-    def getDataModelsByProject(self, project_id: str):
-        data_models = self.client.table("data_models").select("*").eq("project_id", project_id).execute()
-        return [PopulatedDataModel(**obj, fields=self.getDataModelFields(obj["id"])) for obj in data_models.data]
-
-
-    def insertDataModelField(self, data_model_field: DataModelField):
-        return self.client.table("data_model_fields").insert(data_model_field.model_dump(mode="json")).execute()
-
-
-    def changeDataModelField(self, data_model_field: DataModelField):
-        update = data_model_field.model_dump(mode="json")
-
-        field_id = update.pop("id")
-        user_id = update.pop("user_id")
-
-        response = self.client.table("data_model_fields").update(update).eq("id", field_id).execute()
-        return response
-
-
-    def deleteDataModelField(self, field_id: str):
-        return self.client.table("data_model_fields").delete().eq("id", field_id).execute()
-        
-
-    def deleteDataModel(self, data_model_id: str):
-        return self.client.table("data_models").delete().eq("id", data_model_id).execute()
-    
-
-    def createNewProject(self, project: Project): 
-        return self.client.table("projects").insert(project.model_dump(mode="json")).execute()
-    
-    def getAllProjects(self): 
-        projects = self.client.table("projects").select("*").execute()
-        projects = [Project(**obj) for obj in projects.data]
-        return projects
-    
-    def insertDataModel(self, data_model: DataModel):
-        return self.client.table("data_models").insert(data_model.model_dump(mode="json")).execute()
-
-
-    def getDataModelById(self, id: str) -> PopulatedDataModel:
-        response = self.client.table("data_models").select("*").eq("id", id).execute()
-        return PopulatedDataModel(**response.data[0], fields=self.getDataModelFields(id))
-
-
-    def getDataModelFields(self, data_model_id: str) -> typing.List[DataModel]: 
-        response = self.client.table("data_model_fields").select("*").eq("data_model_id", data_model_id).execute() 
-        return [DataModelField(**obj) for obj in response.data]
 
 
 
@@ -319,8 +199,10 @@ def get_workflows_by_project():
     decoded_jwt, user_info, jwt = ensure_supabase_auth(request)
 
     request_json = GetWorkflowsByProjectIdRequest(**request.get_json())
+
     dao = SupabaseApiData(os.environ.get("SUPABASE_URL"), os.environ.get("SUPABASE_ANON_KEY"), jwt=jwt)
     workflows = dao.getWorkflowsByProject(request_json.project_id)
+
     return jsonify({"workflows": [w.model_dump() for w in workflows]})
 
 
@@ -363,9 +245,13 @@ def check_registration_status():
 def create_workflow():
     decoded_jwt, user_info, jwt = ensure_supabase_auth(request)
 
-    data = CreateWorkflowRequest(**request.get_json())
-    workflow_id = dao.create_workflow(user_info.id, data.project_id, data.llm, data.input_data_model, data.output_data_model, data.active, data.name)
-    
+    request_json = CreateWorkflowRequest(**request.get_json())
+
+    dao = SupabaseApiData(os.environ.get("SUPABASE_URL"), os.environ.get("SUPABASE_ANON_KEY"), jwt=jwt)
+
+    created_workflow = dao.createNewWorkflow(workflow=Workflow(user_id=user_info.id, project_id=request_json.project_id, name=request_json.name, input_data_model=request_json.input_data_model, output_data_model=request_json.output_data_model, active=request_json.active, llm=request_json.llm))
+
+    workflow_id = created_workflow["id"]
     return jsonify({"msg": "Workflow created", "id": workflow_id})
 
 
@@ -374,10 +260,13 @@ def create_workflow():
 def get_workflow_by_id(): 
     decoded_jwt, user_info, jwt = ensure_supabase_auth(request)
 
-    data = GetWorkflowByIdRequest(**request.get_json())
-    workflow = dao.get_workflow_by_id(user_info.id, data.workflow_id)
+    request_json = GetWorkflowByIdRequest(**request.get_json())
+    
+    dao = SupabaseApiData(os.environ.get("SUPABASE_URL"), os.environ.get("SUPABASE_ANON_KEY"), jwt=jwt)
+    workflow = dao.getWorkflowById(request_json.workflow_id)
     
     return jsonify({"workflow": workflow.model_dump()})
+
 
 
 @app.post("/api/workflows/security/create_access_token")
@@ -385,10 +274,14 @@ def get_workflow_by_id():
 def create_workflow_access_token():
     decoded_jwt, user_info, jwt = ensure_supabase_auth(request)
     
-    data = CreateWorkflowApiKeyRequest(**request.get_json())
-    api_key = dao.create_workflow_api_key(user_info.id, data.workflow_id, data.key_name)
+    request_json = CreateWorkflowApiKeyRequest(**request.get_json())
+    
+    dao = SupabaseApiData(os.environ.get("SUPABASE_URL"), os.environ.get("SUPABASE_ANON_KEY"), jwt=jwt)
+    
+    api_key = dao.createWorkflowApiKey(workflow_id=request_json.workflow_id, user_id=user_info.id, name=request_json.key_name)
 
     return jsonify({"api_key": api_key})
+
 
 
 @app.post("/api/workflows/security/access_tokens_preview")
@@ -396,8 +289,9 @@ def create_workflow_access_token():
 def get_workflow_access_tokens_preview():
     decoded_jwt, user_info, jwt = ensure_supabase_auth(request)
     
-    data = GetWorkflowAccessTokensPreviewApiKeyRequest(**request.get_json())
-    api_keys = dao.get_workflow_api_key_previews(user_info.id, data.workflow_id)
+    request_json = GetWorkflowAccessTokensPreviewApiKeyRequest(**request.get_json())
+    dao = SupabaseApiData(os.environ.get("SUPABASE_URL"), os.environ.get("SUPABASE_ANON_KEY"), jwt=jwt)
+    api_keys = dao.getWorkflowApiKeyPreview(request_json.workflow_id)
 
     return jsonify({"api_keys": [obj.model_dump() for obj in api_keys]})
 
@@ -407,9 +301,10 @@ def get_workflow_access_tokens_preview():
 def delete_workflow_access_token():
     decoded_jwt, user_info, jwt = ensure_supabase_auth(request)
     
-    data = DeleteWorkflowAccessTokenRequest(**request.get_json())
-    dao.delete_workflow_api_key(user_info.id, data.key_id)
+    request_json = DeleteWorkflowAccessTokenRequest(**request.get_json())
+    dao = SupabaseApiData(os.environ.get("SUPABASE_URL"), os.environ.get("SUPABASE_ANON_KEY"), jwt=jwt)
 
+    dao.deleteWorkflowApiKey(request_json.key_id)
     return jsonify({"msg": "Access Token deleted"})
 
 
@@ -418,10 +313,16 @@ def delete_workflow_access_token():
 def refresh_workflow_access_token():
     decoded_jwt, user_info, jwt = ensure_supabase_auth(request)
     
-    data = RefreshWorkflowAccessTokenRequest(**request.get_json())
-    api_key = dao.refresh_workflow_api_key(user_info.id, data.key_id)
+    request_json = RefreshWorkflowAccessTokenRequest(**request.get_json())
+    
+    dao = SupabaseApiData(os.environ.get("SUPABASE_URL"), os.environ.get("SUPABASE_ANON_KEY"), jwt=jwt)
+    api_key = dao.refreshWorkflowApiKey(request_json.key_id)
 
     return jsonify({"api_key": api_key})
+
+
+
+
 
 
 
@@ -437,7 +338,6 @@ def predict(workflow_id):
 
     workflow = dao.get_workflow_no_authentication(workflow_id=workflow_id)
 
-    
     input_data_model = dao.get_data_model_no_authentication(workflow.input_data_model)
     input_data_model_fields = dao.get_data_model_fields_no_authentication(workflow.input_data_model)
 

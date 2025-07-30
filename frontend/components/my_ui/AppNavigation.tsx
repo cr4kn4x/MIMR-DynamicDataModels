@@ -7,20 +7,13 @@ import Link from "next/link"
 import { useRouter, usePathname } from "next/navigation"
 import { LogOutIcon, WorkflowIcon, DatabaseIcon } from "lucide-react"
 import { getAuth, signOut } from "firebase/auth"
-import firebaseApp from "@/lib/firebase"
 import { cn } from "@/lib/utils"
 import { ProjectSelectorCombobox } from "./ProjectSelectorCombobox"
 import { Project } from "@/lib/interfaces/DataModelInterfaces"
 
 
-async function handleLogout(router: any) {
-  try {
-    const auth = getAuth(firebaseApp)
-    await signOut(auth)
-    router.push("/Login")
-  } catch (error) {
-    console.error("Logout error:", error)
-  }
+async function handleLogout() {
+
 }
 
 interface AppNavigationProps {
@@ -88,7 +81,7 @@ export function AppNavigation({children, selected_project_id, projects, refresh_
           <Button
             variant="outline"
             size="sm"
-            onClick={() => handleLogout(router)}
+            onClick={()=>{}}
           >
             <LogOutIcon className="w-4 h-4 mr-2" />
             Logout

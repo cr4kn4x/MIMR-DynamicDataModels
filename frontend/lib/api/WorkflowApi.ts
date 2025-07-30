@@ -1,6 +1,6 @@
 import { LLM } from "../interfaces/LlmInterfaces"
 import { Workflow, WorkflowApiKey } from "../interfaces/WorkflowInteraces"
-import { getFirebaseBearer, raiseErrorFromApiResponse } from "./utils"
+import { getSupabaseBearer, raiseErrorFromApiResponse } from "./utils"
 
 const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_BASE
 
@@ -17,7 +17,7 @@ export async function getWorkflowsByProjectId(project_id: string): Promise<getWo
     const response = await fetch(url, {
         method: "POST",
         headers: {
-            "Authorization": await getFirebaseBearer(),
+            "Authorization": await getSupabaseBearer(),
             "Content-Type": "application/json"
         },
         body: JSON.stringify({
@@ -45,7 +45,7 @@ export async function getWorkflowById(workflow_id: string): Promise<getWorkflowB
     const response = await fetch(url, {
         method: "POST",
         headers: {
-            "Authorization": await getFirebaseBearer(),
+            "Authorization": await getSupabaseBearer(),
             "Content-Type": "application/json"
         },
         body: JSON.stringify({
@@ -73,7 +73,7 @@ export async function addLlm(alias: string, model_name: string, base_url: string
     const response = await fetch(url, {
         method: "POST",
         headers: {
-            "Authorization": await getFirebaseBearer(),
+            "Authorization": await getSupabaseBearer(),
             "Content-Type": "application/json"
         },
         body: JSON.stringify({
@@ -104,7 +104,7 @@ export async function getLlms(): Promise<getLlmsResponse> {
     const response = await fetch(url, {
         method: "POST",
         headers: {
-            "Authorization": await getFirebaseBearer(),
+            "Authorization": await getSupabaseBearer(),
             "Content-Type": "application/json"
         },
         body: JSON.stringify({
@@ -132,7 +132,7 @@ export async function createWorkflow(project_id: string, llm: string, input_data
     const response = await fetch(url, {
         method: "POST",
         headers: {
-            "Authorization": await getFirebaseBearer(),
+            "Authorization": await getSupabaseBearer(),
             "Content-Type": "application/json"
         },
         body: JSON.stringify({
@@ -164,7 +164,7 @@ export async function createWorkflowAccessToken(workflow_id: string, key_name: s
     const response = await fetch(url, {
         method: "POST",
         headers: {
-            "Authorization": await getFirebaseBearer(),
+            "Authorization": await getSupabaseBearer(),
             "Content-Type": "application/json"
         },
         body: JSON.stringify({
@@ -193,7 +193,7 @@ export async function getWorkflowAccessTokensPreview(workflow_id: string): Promi
     const response = await fetch(url, {
         method: "POST",
         headers: {
-            "Authorization": await getFirebaseBearer(),
+            "Authorization": await getSupabaseBearer(),
             "Content-Type": "application/json"
         },
         body: JSON.stringify({
@@ -217,7 +217,7 @@ export async function refreshWorkflowAccessToken(key_id: string): Promise<Create
     const response = await fetch(url, {
         method: "POST",
         headers: {
-            "Authorization": await getFirebaseBearer(),
+            "Authorization": await getSupabaseBearer(),
             "Content-Type": "application/json"
         },
         body: JSON.stringify({
@@ -240,7 +240,7 @@ export async function deleteWorkflowAccessToken(key_id: string) {
     const response = await fetch(url, {
         method: "POST",
         headers: {
-            "Authorization": await getFirebaseBearer(),
+            "Authorization": await getSupabaseBearer(),
             "Content-Type": "application/json"
         },
         body: JSON.stringify({
