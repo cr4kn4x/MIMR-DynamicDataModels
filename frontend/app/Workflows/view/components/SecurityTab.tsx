@@ -112,7 +112,7 @@ export default function SecurityTab() {
                                             <TableCell>{h.last_used_at ? new Date(h.last_used_at).toLocaleString() : "-"}</TableCell>
                                             <TableCell>
                                                 <Popover>
-                                                    <PopoverTrigger>
+                                                    <PopoverTrigger asChild>
                                                         <Button size={"sm"}>
                                                             <DotsVerticalIcon />
                                                         </Button>
