@@ -138,7 +138,7 @@ export function EditableDataModelField({ field, data_model_id, data_model_fields
     return (
         <div className="group">
             {!is_edit &&
-                <div className="grid grid-cols-[160px_30px_1fr_auto] gap-3 items-center text-xs rounded px-2 py-1 hover:bg-gray-100 cursor-pointer transition-colors">
+                <div className="grid grid-cols-[160px_30px_1fr_auto] gap-3 items-center text-xs rounded px-2 py-1 hover:bg-gray-800 cursor-pointer transition-colors">
 
                     {/* 160px */}
                     <div className="truncate">
@@ -194,7 +194,7 @@ export function EditableDataModelField({ field, data_model_id, data_model_fields
             }
 
             {is_edit &&
-                <div className="space-y-2 p-2 bg-white rounded border border-blue-200 shadow">
+                <div className="space-y-2 p-2 rounded border border-blue-200 shadow">
                     <div className="flex gap-1">
                         <div className="flex flex-col w-full">
                             <Input 
