@@ -48,11 +48,7 @@
         "input-otp": "^1.4.2",
         "lucide-react": "^0.511.0",
 <<<<<<< HEAD
-<<<<<<< HEAD
         "next": "^15.4.5",
-=======
-        "next": "^15.3.5",
->>>>>>> 1123c7f99214788364f0f8639d7d322ea4ffee58
 =======
         "next": "^15.3.5",
 >>>>>>> 1123c7f99214788364f0f8639d7d322ea4ffee58
@@ -1458,15 +1454,9 @@
     },
     "node_modules/@next/env": {
 <<<<<<< HEAD
-<<<<<<< HEAD
       "version": "15.4.5",
       "resolved": "https://registry.npmjs.org/@next/env/-/env-15.4.5.tgz",
       "integrity": "sha512-ruM+q2SCOVCepUiERoxOmZY9ZVoecR3gcXNwCYZRvQQWRjhOiPJGmQ2fAiLR6YKWXcSAh7G79KEFxN3rwhs4LQ=="
-=======
-      "version": "15.3.5",
-      "resolved": "https://registry.npmjs.org/@next/env/-/env-15.3.5.tgz",
-      "integrity": "sha512-7g06v8BUVtN2njAX/r8gheoVffhiKFVt4nx74Tt6G4Hqw9HCLYQVx/GkH2qHvPtAHZaUNZ0VXAa0pQP6v1wk7g=="
->>>>>>> 1123c7f99214788364f0f8639d7d322ea4ffee58
 =======
       "version": "15.3.5",
       "resolved": "https://registry.npmjs.org/@next/env/-/env-15.3.5.tgz",
@@ -1484,15 +1474,9 @@
     },
     "node_modules/@next/swc-darwin-arm64": {
 <<<<<<< HEAD
-<<<<<<< HEAD
       "version": "15.4.5",
       "resolved": "https://registry.npmjs.org/@next/swc-darwin-arm64/-/swc-darwin-arm64-15.4.5.tgz",
       "integrity": "sha512-84dAN4fkfdC7nX6udDLz9GzQlMUwEMKD7zsseXrl7FTeIItF8vpk1lhLEnsotiiDt+QFu3O1FVWnqwcRD2U3KA==",
-=======
-      "version": "15.3.5",
-      "resolved": "https://registry.npmjs.org/@next/swc-darwin-arm64/-/swc-darwin-arm64-15.3.5.tgz",
-      "integrity": "sha512-lM/8tilIsqBq+2nq9kbTW19vfwFve0NR7MxfkuSUbRSgXlMQoJYg+31+++XwKVSXk4uT23G2eF/7BRIKdn8t8w==",
->>>>>>> 1123c7f99214788364f0f8639d7d322ea4ffee58
 =======
       "version": "15.3.5",
       "resolved": "https://registry.npmjs.org/@next/swc-darwin-arm64/-/swc-darwin-arm64-15.3.5.tgz",
@@ -1511,15 +1495,9 @@
     },
     "node_modules/@next/swc-darwin-x64": {
 <<<<<<< HEAD
-<<<<<<< HEAD
       "version": "15.4.5",
       "resolved": "https://registry.npmjs.org/@next/swc-darwin-x64/-/swc-darwin-x64-15.4.5.tgz",
       "integrity": "sha512-CL6mfGsKuFSyQjx36p2ftwMNSb8PQog8y0HO/ONLdQqDql7x3aJb/wB+LA651r4we2pp/Ck+qoRVUeZZEvSurA==",
-=======
-      "version": "15.3.5",
-      "resolved": "https://registry.npmjs.org/@next/swc-darwin-x64/-/swc-darwin-x64-15.3.5.tgz",
-      "integrity": "sha512-WhwegPQJ5IfoUNZUVsI9TRAlKpjGVK0tpJTL6KeiC4cux9774NYE9Wu/iCfIkL/5J8rPAkqZpG7n+EfiAfidXA==",
->>>>>>> 1123c7f99214788364f0f8639d7d322ea4ffee58
 =======
       "version": "15.3.5",
       "resolved": "https://registry.npmjs.org/@next/swc-darwin-x64/-/swc-darwin-x64-15.3.5.tgz",
@@ -1538,15 +1516,9 @@
     },
     "node_modules/@next/swc-linux-arm64-gnu": {
 <<<<<<< HEAD
-<<<<<<< HEAD
       "version": "15.4.5",
       "resolved": "https://registry.npmjs.org/@next/swc-linux-arm64-gnu/-/swc-linux-arm64-gnu-15.4.5.tgz",
       "integrity": "sha512-1hTVd9n6jpM/thnDc5kYHD1OjjWYpUJrJxY4DlEacT7L5SEOXIifIdTye6SQNNn8JDZrcN+n8AWOmeJ8u3KlvQ==",
-=======
-      "version": "15.3.5",
-      "resolved": "https://registry.npmjs.org/@next/swc-linux-arm64-gnu/-/swc-linux-arm64-gnu-15.3.5.tgz",
-      "integrity": "sha512-LVD6uMOZ7XePg3KWYdGuzuvVboxujGjbcuP2jsPAN3MnLdLoZUXKRc6ixxfs03RH7qBdEHCZjyLP/jBdCJVRJQ==",
->>>>>>> 1123c7f99214788364f0f8639d7d322ea4ffee58
 =======
       "version": "15.3.5",
       "resolved": "https://registry.npmjs.org/@next/swc-linux-arm64-gnu/-/swc-linux-arm64-gnu-15.3.5.tgz",
@@ -1565,15 +1537,9 @@
     },
     "node_modules/@next/swc-linux-arm64-musl": {
 <<<<<<< HEAD
-<<<<<<< HEAD
       "version": "15.4.5",
       "resolved": "https://registry.npmjs.org/@next/swc-linux-arm64-musl/-/swc-linux-arm64-musl-15.4.5.tgz",
       "integrity": "sha512-4W+D/nw3RpIwGrqpFi7greZ0hjrCaioGErI7XHgkcTeWdZd146NNu1s4HnaHonLeNTguKnL2Urqvj28UJj6Gqw==",
-=======
-      "version": "15.3.5",
-      "resolved": "https://registry.npmjs.org/@next/swc-linux-arm64-musl/-/swc-linux-arm64-musl-15.3.5.tgz",
-      "integrity": "sha512-k8aVScYZ++BnS2P69ClK7v4nOu702jcF9AIHKu6llhHEtBSmM2zkPGl9yoqbSU/657IIIb0QHpdxEr0iW9z53A==",
->>>>>>> 1123c7f99214788364f0f8639d7d322ea4ffee58
 =======
       "version": "15.3.5",
       "resolved": "https://registry.npmjs.org/@next/swc-linux-arm64-musl/-/swc-linux-arm64-musl-15.3.5.tgz",
@@ -1592,15 +1558,9 @@
     },
     "node_modules/@next/swc-linux-x64-gnu": {
 <<<<<<< HEAD
-<<<<<<< HEAD
       "version": "15.4.5",
       "resolved": "https://registry.npmjs.org/@next/swc-linux-x64-gnu/-/swc-linux-x64-gnu-15.4.5.tgz",
       "integrity": "sha512-N6Mgdxe/Cn2K1yMHge6pclffkxzbSGOydXVKYOjYqQXZYjLCfN/CuFkaYDeDHY2VBwSHyM2fUjYBiQCIlxIKDA==",
-=======
-      "version": "15.3.5",
-      "resolved": "https://registry.npmjs.org/@next/swc-linux-x64-gnu/-/swc-linux-x64-gnu-15.3.5.tgz",
-      "integrity": "sha512-2xYU0DI9DGN/bAHzVwADid22ba5d/xrbrQlr2U+/Q5WkFUzeL0TDR963BdrtLS/4bMmKZGptLeg6282H/S2i8A==",
->>>>>>> 1123c7f99214788364f0f8639d7d322ea4ffee58
 =======
       "version": "15.3.5",
       "resolved": "https://registry.npmjs.org/@next/swc-linux-x64-gnu/-/swc-linux-x64-gnu-15.3.5.tgz",
@@ -1619,15 +1579,9 @@
     },
     "node_modules/@next/swc-linux-x64-musl": {
 <<<<<<< HEAD
-<<<<<<< HEAD
       "version": "15.4.5",
       "resolved": "https://registry.npmjs.org/@next/swc-linux-x64-musl/-/swc-linux-x64-musl-15.4.5.tgz",
       "integrity": "sha512-YZ3bNDrS8v5KiqgWE0xZQgtXgCTUacgFtnEgI4ccotAASwSvcMPDLua7BWLuTfucoRv6mPidXkITJLd8IdJplQ==",
-=======
-      "version": "15.3.5",
-      "resolved": "https://registry.npmjs.org/@next/swc-linux-x64-musl/-/swc-linux-x64-musl-15.3.5.tgz",
-      "integrity": "sha512-TRYIqAGf1KCbuAB0gjhdn5Ytd8fV+wJSM2Nh2is/xEqR8PZHxfQuaiNhoF50XfY90sNpaRMaGhF6E+qjV1b9Tg==",
->>>>>>> 1123c7f99214788364f0f8639d7d322ea4ffee58
 =======
       "version": "15.3.5",
       "resolved": "https://registry.npmjs.org/@next/swc-linux-x64-musl/-/swc-linux-x64-musl-15.3.5.tgz",
@@ -1646,15 +1600,9 @@
     },
     "node_modules/@next/swc-win32-arm64-msvc": {
 <<<<<<< HEAD
-<<<<<<< HEAD
       "version": "15.4.5",
       "resolved": "https://registry.npmjs.org/@next/swc-win32-arm64-msvc/-/swc-win32-arm64-msvc-15.4.5.tgz",
       "integrity": "sha512-9Wr4t9GkZmMNcTVvSloFtjzbH4vtT4a8+UHqDoVnxA5QyfWe6c5flTH1BIWPGNWSUlofc8dVJAE7j84FQgskvQ==",
-=======
-      "version": "15.3.5",
-      "resolved": "https://registry.npmjs.org/@next/swc-win32-arm64-msvc/-/swc-win32-arm64-msvc-15.3.5.tgz",
-      "integrity": "sha512-h04/7iMEUSMY6fDGCvdanKqlO1qYvzNxntZlCzfE8i5P0uqzVQWQquU1TIhlz0VqGQGXLrFDuTJVONpqGqjGKQ==",
->>>>>>> 1123c7f99214788364f0f8639d7d322ea4ffee58
 =======
       "version": "15.3.5",
       "resolved": "https://registry.npmjs.org/@next/swc-win32-arm64-msvc/-/swc-win32-arm64-msvc-15.3.5.tgz",
@@ -1673,15 +1621,9 @@
     },
     "node_modules/@next/swc-win32-x64-msvc": {
 <<<<<<< HEAD
-<<<<<<< HEAD
       "version": "15.4.5",
       "resolved": "https://registry.npmjs.org/@next/swc-win32-x64-msvc/-/swc-win32-x64-msvc-15.4.5.tgz",
       "integrity": "sha512-voWk7XtGvlsP+w8VBz7lqp8Y+dYw/MTI4KeS0gTVtfdhdJ5QwhXLmNrndFOin/MDoCvUaLWMkYKATaCoUkt2/A==",
-=======
-      "version": "15.3.5",
-      "resolved": "https://registry.npmjs.org/@next/swc-win32-x64-msvc/-/swc-win32-x64-msvc-15.3.5.tgz",
-      "integrity": "sha512-5fhH6fccXxnX2KhllnGhkYMndhOiLOLEiVGYjP2nizqeGWkN10sA9taATlXwake2E2XMvYZjjz0Uj7T0y+z1yw==",
->>>>>>> 1123c7f99214788364f0f8639d7d322ea4ffee58
 =======
       "version": "15.3.5",
       "resolved": "https://registry.npmjs.org/@next/swc-win32-x64-msvc/-/swc-win32-x64-msvc-15.3.5.tgz",
@@ -7236,7 +7178,6 @@
     },
     "node_modules/next": {
 <<<<<<< HEAD
-<<<<<<< HEAD
       "version": "15.4.5",
       "resolved": "https://registry.npmjs.org/next/-/next-15.4.5.tgz",
       "integrity": "sha512-nJ4v+IO9CPmbmcvsPebIoX3Q+S7f6Fu08/dEWu0Ttfa+wVwQRh9epcmsyCPjmL2b8MxC+CkBR97jgDhUUztI3g==",
@@ -7247,12 +7188,6 @@
       "resolved": "https://registry.npmjs.org/next/-/next-15.3.5.tgz",
       "integrity": "sha512-RkazLBMMDJSJ4XZQ81kolSpwiCt907l0xcgcpF4xC2Vml6QVcPNXW0NQRwQ80FFtSn7UM52XN0anaw8TEJXaiw==",
       "dependencies": {
-=======
-      "version": "15.3.5",
-      "resolved": "https://registry.npmjs.org/next/-/next-15.3.5.tgz",
-      "integrity": "sha512-RkazLBMMDJSJ4XZQ81kolSpwiCt907l0xcgcpF4xC2Vml6QVcPNXW0NQRwQ80FFtSn7UM52XN0anaw8TEJXaiw==",
-      "dependencies": {
->>>>>>> 1123c7f99214788364f0f8639d7d322ea4ffee58
         "@next/env": "15.3.5",
         "@swc/counter": "0.1.3",
 >>>>>>> 1123c7f99214788364f0f8639d7d322ea4ffee58
@@ -7269,7 +7204,6 @@
       },
       "optionalDependencies": {
 <<<<<<< HEAD
-<<<<<<< HEAD
         "@next/swc-darwin-arm64": "15.4.5",
         "@next/swc-darwin-x64": "15.4.5",
         "@next/swc-linux-arm64-gnu": "15.4.5",
@@ -7280,8 +7214,6 @@
         "@next/swc-win32-x64-msvc": "15.4.5",
         "sharp": "^0.34.3"
 =======
-=======
->>>>>>> 1123c7f99214788364f0f8639d7d322ea4ffee58
         "@next/swc-darwin-arm64": "15.3.5",
         "@next/swc-darwin-x64": "15.3.5",
         "@next/swc-linux-arm64-gnu": "15.3.5",
