@@ -8,10 +8,8 @@ from flask_cors import CORS
 import postgrest.exceptions
 
 from InputValidation import *
-
-from pydantic import create_model, Field, BaseModel
-
-from DAO.SupabaseDataAccess import SupabaseServiceDAO, SupabaseApiData, Project, Workflow, PopulatedDataModel, DataModel, DataModelField
+from pydantic import create_model
+from DAO.SupabaseDataAccess import SupabaseRegistrationStatusDAO, SupabaseDataApi, Project, Workflow, DataModel, DataModelField, SupabaseServiceLevelDataApi, PopulatedDataModel
 
 ############################################################
 ############################################################
@@ -29,10 +27,12 @@ CORS(app, origins="*")                                  ####
 ############################################################
 
 
+supabase_pg_dao = SupabaseRegistrationStatusDAO(os.environ.get("SUPABASE_POSTGRES_DSN"))
 
-supabaseServiceDao = SupabaseServiceDAO(os.environ.get("SUPABASE_POSTGRES_DSN"))
 
+supabase_service_dao = SupabaseServiceLevelDataApi(os.environ.get("SUPABASE_URL"), supabase_service_key_secret=os.environ.get("SUPABASE_SERVICE_KEY_SECRET"))
 
+__supabase_user_data_api_base_args = dict(supabase_url=os.environ.get("SUPABASE_URL"), supabase_key=os.environ.get("SUPABASE_ANON_KEY"))
 ############################################################
 ############################################################
 
@@ -56,7 +56,7 @@ def create_new_project():
     
     request_json = CreateNewProjectRequest(**request.get_json())
 
-    dao = SupabaseApiData(os.environ.get("SUPABASE_URL"), os.environ.get("SUPABASE_ANON_KEY"), jwt=jwt)
+    dao = SupabaseDataApi(**__supabase_user_data_api_base_args, jwt=jwt)
     _ = dao.createNewProject(project=Project(user_id=user_info.id, name=request_json.project_name))
 
     return jsonify({"msg": "Project created successfully"}), 200
@@ -70,7 +70,7 @@ def create_new_project():
 def get_all_projects(): 
     decoded_jwt, user_info, jwt = ensure_supabase_auth(request)
 
-    dao = SupabaseApiData(os.environ.get("SUPABASE_URL"), os.environ.get("SUPABASE_ANON_KEY"), jwt=jwt)
+    dao = SupabaseDataApi(**__supabase_user_data_api_base_args, jwt=jwt)
     projects = dao.getAllProjects()
 
     return jsonify({"projects": [obj.model_dump() for obj in projects]})
@@ -84,7 +84,7 @@ def create_data_model():
 
     request_json = CreateNewDataModelRequest(**request.get_json())
 
-    dao = SupabaseApiData(os.environ.get("SUPABASE_URL"), os.environ.get("SUPABASE_ANON_KEY"), jwt=jwt)
+    dao = SupabaseDataApi(**__supabase_user_data_api_base_args, jwt=jwt)
     dao.insertDataModel(data_model=DataModel(user_id=user_info.id, project_id=request_json.project_id, name=request_json.data_model_name))
     
     return jsonify({"msg": "Successfully created new data model"})
@@ -97,7 +97,7 @@ def get_data_model_by_id():
     decoded_jwt, user_info, jwt = ensure_supabase_auth(request)
 
     data = GetDataModelByIdRequest(**request.get_json())
-    dao = SupabaseApiData(os.environ.get("SUPABASE_URL"), os.environ.get("SUPABASE_ANON_KEY"), jwt=jwt)
+    dao = SupabaseDataApi(**__supabase_user_data_api_base_args, jwt=jwt)
 
     dm = dao.getDataModelById(data.data_model_id)
     return jsonify({"data_model": dm.model_dump()})
@@ -115,7 +115,7 @@ def get_data_models_by_project():
     # get json body
     request_json = GetDataModelsByProjectIdRequest(**request.get_json())
 
-    dao = SupabaseApiData(os.environ.get("SUPABASE_URL"), os.environ.get("SUPABASE_ANON_KEY"), jwt=jwt)
+    dao = SupabaseDataApi(**__supabase_user_data_api_base_args, jwt=jwt)
     data_models = dao.getDataModelsByProject(request_json.project_id)
 
     return jsonify({"data_models": [dm.model_dump() for dm in data_models]})
@@ -137,7 +137,7 @@ def create_data_model_field():
     field = request_json.new_field
 
 
-    dao = SupabaseApiData(os.environ.get("SUPABASE_URL"), os.environ.get("SUPABASE_ANON_KEY"), jwt=jwt)
+    dao = SupabaseDataApi(**__supabase_user_data_api_base_args, jwt=jwt)
     dao.insertDataModelField(DataModelField(user_id=user_info.id, data_model_id=request_json.data_model_id, name=field.name, type=field.type, description=field.description))
 
     return jsonify({"msg": "Successfully created new data model field"})
@@ -155,7 +155,7 @@ def change_data_model():
     request_json = ChangeDataModelFieldRequest(**request.get_json())
     field = request_json.new_field
     
-    dao = SupabaseApiData(os.environ.get("SUPABASE_URL"), os.environ.get("SUPABASE_ANON_KEY"), jwt=jwt)
+    dao = SupabaseDataApi(**__supabase_user_data_api_base_args, jwt=jwt)
     dao.changeDataModelField(data_model_field=DataModelField(user_id=user_info.id, id=field.id, data_model_id=request_json.data_model_id, name=field.name, type=field.type, description=field.description))
    
     return jsonify({"msg": "Successfully applied changes to data model field"})
@@ -171,7 +171,7 @@ def delete_data_model_field():
 
     request_json = DeleteDataModelFieldRequest(**request.get_json())
 
-    dao = SupabaseApiData(os.environ.get("SUPABASE_URL"), os.environ.get("SUPABASE_ANON_KEY"), jwt=jwt)
+    dao = SupabaseDataApi(**__supabase_user_data_api_base_args, jwt=jwt)
     dao.deleteDataModelField(request_json.field_id)
 
     return jsonify({"msg": "Successfully deleted data model field"})
@@ -184,7 +184,7 @@ def delete_data_model():
     decoded_jwt, user_info, jwt = ensure_supabase_auth(request)
 
     request_json = DeleteDataModelRequest(**request.get_json())
-    dao = SupabaseApiData(os.environ.get("SUPABASE_URL"), os.environ.get("SUPABASE_ANON_KEY"), jwt=jwt)
+    dao = SupabaseDataApi(**__supabase_user_data_api_base_args, jwt=jwt)
     dao.deleteDataModel(request_json.data_model_id)
     
     return jsonify({"msg": "Successfully deleted data model"})
@@ -200,7 +200,7 @@ def get_workflows_by_project():
 
     request_json = GetWorkflowsByProjectIdRequest(**request.get_json())
 
-    dao = SupabaseApiData(os.environ.get("SUPABASE_URL"), os.environ.get("SUPABASE_ANON_KEY"), jwt=jwt)
+    dao = SupabaseDataApi(**__supabase_user_data_api_base_args, jwt=jwt)
     workflows = dao.getWorkflowsByProject(request_json.project_id)
 
     return jsonify({"workflows": [w.model_dump() for w in workflows]})
@@ -227,7 +227,7 @@ def check_registration_status():
     if email == None: 
         return jsonify({"msg": "Please provide a valid email address"}), 404
     
-    registration_status = supabaseServiceDao.getRegistrationStatus(email)
+    registration_status = supabase_pg_dao.getRegistrationStatus(email)
 
     return jsonify(registration_status.model_dump(mode="json"))
 
@@ -247,7 +247,7 @@ def create_workflow():
 
     request_json = CreateWorkflowRequest(**request.get_json())
 
-    dao = SupabaseApiData(os.environ.get("SUPABASE_URL"), os.environ.get("SUPABASE_ANON_KEY"), jwt=jwt)
+    dao = SupabaseDataApi(**__supabase_user_data_api_base_args, jwt=jwt)
 
     created_workflow = dao.createNewWorkflow(workflow=Workflow(user_id=user_info.id, project_id=request_json.project_id, name=request_json.name, input_data_model=request_json.input_data_model, output_data_model=request_json.output_data_model, active=request_json.active, llm=request_json.llm))
 
@@ -262,7 +262,7 @@ def get_workflow_by_id():
 
     request_json = GetWorkflowByIdRequest(**request.get_json())
     
-    dao = SupabaseApiData(os.environ.get("SUPABASE_URL"), os.environ.get("SUPABASE_ANON_KEY"), jwt=jwt)
+    dao = SupabaseDataApi(**__supabase_user_data_api_base_args, jwt=jwt)
     workflow = dao.getWorkflowById(request_json.workflow_id)
     
     return jsonify({"workflow": workflow.model_dump()})
@@ -276,7 +276,7 @@ def create_workflow_access_token():
     
     request_json = CreateWorkflowApiKeyRequest(**request.get_json())
     
-    dao = SupabaseApiData(os.environ.get("SUPABASE_URL"), os.environ.get("SUPABASE_ANON_KEY"), jwt=jwt)
+    dao = SupabaseDataApi(**__supabase_user_data_api_base_args, jwt=jwt)
     
     api_key = dao.createWorkflowApiKey(workflow_id=request_json.workflow_id, user_id=user_info.id, name=request_json.key_name)
 
@@ -290,7 +290,7 @@ def get_workflow_access_tokens_preview():
     decoded_jwt, user_info, jwt = ensure_supabase_auth(request)
     
     request_json = GetWorkflowAccessTokensPreviewApiKeyRequest(**request.get_json())
-    dao = SupabaseApiData(os.environ.get("SUPABASE_URL"), os.environ.get("SUPABASE_ANON_KEY"), jwt=jwt)
+    dao = SupabaseDataApi(**__supabase_user_data_api_base_args, jwt=jwt)
     api_keys = dao.getWorkflowApiKeyPreview(request_json.workflow_id)
 
     return jsonify({"api_keys": [obj.model_dump() for obj in api_keys]})
@@ -302,7 +302,7 @@ def delete_workflow_access_token():
     decoded_jwt, user_info, jwt = ensure_supabase_auth(request)
     
     request_json = DeleteWorkflowAccessTokenRequest(**request.get_json())
-    dao = SupabaseApiData(os.environ.get("SUPABASE_URL"), os.environ.get("SUPABASE_ANON_KEY"), jwt=jwt)
+    dao = SupabaseDataApi(**__supabase_user_data_api_base_args, jwt=jwt)
 
     dao.deleteWorkflowApiKey(request_json.key_id)
     return jsonify({"msg": "Access Token deleted"})
@@ -315,7 +315,7 @@ def refresh_workflow_access_token():
     
     request_json = RefreshWorkflowAccessTokenRequest(**request.get_json())
     
-    dao = SupabaseApiData(os.environ.get("SUPABASE_URL"), os.environ.get("SUPABASE_ANON_KEY"), jwt=jwt)
+    dao = SupabaseDataApi(**__supabase_user_data_api_base_args, jwt=jwt)
     api_key = dao.refreshWorkflowApiKey(request_json.key_id)
 
     return jsonify({"api_key": api_key})
@@ -324,71 +324,63 @@ def refresh_workflow_access_token():
 
 
 
-
-
-
-
-@app.route("/api/predict/<workflow_id>", methods=["POST"])
-def predict(workflow_id):
-    logging.exception("THIS ROUTE IS NOT READY FOR PRODUCTION!")
-
-
-    data = request.get_json()
-    
-
-    workflow = dao.get_workflow_no_authentication(workflow_id=workflow_id)
-
-    input_data_model = dao.get_data_model_no_authentication(workflow.input_data_model)
-    input_data_model_fields = dao.get_data_model_fields_no_authentication(workflow.input_data_model)
-
-    output_data_model = dao.get_data_model_no_authentication(workflow.output_data_model)
-    output_data_model_fields = dao.get_data_model_fields_no_authentication(workflow.output_data_model)
-
-    
-    # 
+def pydantic_init(data_model_meta: PopulatedDataModel): 
     type_map = {
         "str": str, 
-        "int": int, 
-        "float": float, 
-        "boolean": bool,
+        "int": int,
     }
 
-    input_base_model_fields = {
-        f.name: (type_map[f.type], Field(description=f.description)) for f in input_data_model_fields
-    }
+    fields = dict()
+    for field_meta in data_model_meta.fields:
+        fields[field_meta.name] = (type_map[field_meta.type], Field(description=field_meta.description))
 
-    input_base_model = create_model(input_data_model.name, 
-        **input_base_model_fields
-    )
+    return create_model(data_model_meta.name, **fields)
 
+
+@app.post("/api/predict/<workflow_id>")
+def predict(workflow_id: str): 
+
+    api_key = request.headers.get("Authorization")
+
+    if api_key.startswith("Bearer "): 
+        api_key = api_key[7: ]
+    elif api_key.startswith("Bearer"): 
+        api_key = api_key[6:]
+
+    assert len(api_key) > 32
+
+
+    workflow = supabase_service_dao.getWorkflowAuthenticatedByApiKey(req_workflow_id=workflow_id, req_api_key=api_key)
+
+
+    input_data_model_t = pydantic_init(supabase_service_dao.getDataModelById(workflow.input_data_model, user_id = workflow.user_id))
+    
+    output_data_model_t = pydantic_init(supabase_service_dao.getDataModelById(workflow.output_data_model, user_id = workflow.user_id))
+
+    assert issubclass(input_data_model_t, BaseModel)
+    assert issubclass(output_data_model_t, BaseModel)
     
 
-    output_base_model_fields = {
-        f.name: (type_map[f.type], Field(description=f.description)) for f in output_data_model_fields
-    }
+    request_json = request.get_json() 
 
-    output_base_model = create_model(output_data_model.name, 
-        **output_base_model_fields
-    )
+    # check input structure 
+    input_data = input_data_model_t(**request_json["data"])
 
 
-    llm = dspy.LM(model="openai/mistralai/Mistral-Nemo-Instruct-2407", base_url="https://api.deepinfra.com/v1/openai", api_key=os.environ.get("DEEPINFRA_API"), max_tokens=1024, temperature=0.3)
+    llm = dspy.LM(model="openai/meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo", api_key=os.environ.get("DEEPINFRA_API"), base_url="https://api.deepinfra.com/v1/openai", max_tokens=1024, cache=False)
 
-    dspy.configure(lm=llm)
+    class Signature(dspy.Signature): 
+        input: input_data_model_t = dspy.InputField() 
+        output: output_data_model_t = dspy.OutputField() 
 
-    class Signature(dspy.Signature):
-        input: input_base_model = dspy.InputField()
-        prediction: output_base_model = dspy.OutputField()
-    
     program = dspy.Predict(Signature)
+
+    with dspy.settings.context(lm=llm): 
+        pred = program(input=input_data.model_dump())
+
+    pred = output_data_model_t(**pred.output.model_dump())
     
-
-    pred = program(input=input_base_model(**data["data"]))
-    
-
-    return jsonify({"workflow_id": workflow_id, "pred": pred.prediction.model_dump()})
-
-
+    return jsonify({"msg": "", "pred": pred.model_dump(mode="json")}), 200
 
 # app.run(debug=True, host="0.0.0.0")
 # flask --app app.py run --debug

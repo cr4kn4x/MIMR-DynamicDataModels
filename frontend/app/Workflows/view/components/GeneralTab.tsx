@@ -134,7 +134,7 @@ export default function GeneralTab() {
                             {/* Request Preview */}
                             <div className="flex-1 min-w-0">
                                 <div className="font-semibold mb-1 text-blue-700">Request (HTTP POST)</div>
-                                <div className="mb-1 text-sm font-semibold flex items-center">http://localhost:3000/api/predict/{selected_workflow?.id} <CopyButton value={`http://localhost:3000/api/predict/${selected_workflow?.id}`} toaster={toast} value_name="API-URL"/></div>
+                                <div className="mb-1 text-sm font-semibold flex items-center">http://localhost:5000/api/predict/{selected_workflow?.id} <CopyButton value={`http://localhost:5000/api/predict/${selected_workflow?.id}`} toaster={toast} value_name="API-URL"/></div>
                                 <div className="mb-1">
                                     <span className="font-semibold text-xs">Headers:</span>
                                     <pre className="rounded p-2 text-xs overflow-x-auto border mt-1 mb-2"><code>{`Authorization: Bearer xyz\nContent-Type: application/json`}</code></pre>

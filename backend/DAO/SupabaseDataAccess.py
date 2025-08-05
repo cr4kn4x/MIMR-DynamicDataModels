@@ -67,7 +67,8 @@ class RegistrationStatus(BaseModel):
     registered: bool = Field()
     email_confirmed: bool = Field()
 
-class SupabaseServiceDAO: 
+
+class SupabaseRegistrationStatusDAO: 
     def __init__(self, dsn: str):
         self.dsn = dsn 
 
@@ -93,7 +94,7 @@ class SupabaseServiceDAO:
 
             
 
-class SupabaseApiData: 
+class SupabaseDataApi: 
     def __init__(self, supabase_url: str, supabase_key: str, jwt: str):
         self.client: Client = create_client(supabase_url=supabase_url, supabase_key=supabase_key, options=ClientOptions(headers={"Authorization": f"Bearer {jwt}"}))
 
@@ -142,7 +143,7 @@ class SupabaseApiData:
         return PopulatedDataModel(**res.data[0], fields=self.getDataModelFields(id))
 
 
-    def getDataModelFields(self, data_model_id: str) -> typing.List[DataModel]: 
+    def getDataModelFields(self, data_model_id: str) -> typing.List[DataModelField]: 
         res = self.client.table("data_model_fields").select("*").eq("data_model_id", data_model_id).execute() 
         return [DataModelField(**obj) for obj in res.data]
 
@@ -192,3 +193,42 @@ class SupabaseApiData:
 
         res = WorkflowApiKey(**res.data[0])
         return res.api_key
+    
+
+
+class SupabaseServiceLevelDataApi: 
+    def __init__(self, supabase_url: str, supabase_service_key_secret: str):
+        self.client: Client = create_client(supabase_url=supabase_url, supabase_key=supabase_service_key_secret)
+
+
+    def _getWorkflowById(self, workflow_id: str, user_id: str):        
+        res = self.client.table("workflows").select("*").eq("user_id", user_id).eq("id", workflow_id).single().execute()
+        return Workflow(**res.data)
+    
+
+    def _getWorkflowApiKey(self, workflow_id: str, api_key: str): 
+        res = self.client.table("workflow_api_keys").select("*").eq("workflow_id", workflow_id).eq("api_key", api_key).single().execute()
+        return WorkflowApiKey(**res.data)
+    
+    def getDataModelFields(self, data_model_id: str, user_id: str) -> typing.List[DataModelField]: 
+        res = self.client.table("data_model_fields").select("*").eq("data_model_id", data_model_id).eq("user_id", user_id).execute()
+        return [DataModelField(**obj) for obj in res.data]
+
+    def getDataModelById(self, id: str, user_id: str) -> PopulatedDataModel:
+        res = self.client.table("data_models").select("*").eq("id", id).eq("user_id", user_id).single().execute()
+        return PopulatedDataModel(**res.data, fields=self.getDataModelFields(id, user_id))
+    
+
+    def getWorkflowAuthenticatedByApiKey(self, req_workflow_id: str, req_api_key: str): 
+
+        workflow_api_key = self._getWorkflowApiKey(req_workflow_id, req_api_key)
+        internal_user_id = workflow_api_key.user_id
+        workflow = self._getWorkflowById(workflow_id=req_workflow_id, user_id=internal_user_id)
+
+        # some assertions
+        assert str(workflow.id) == req_workflow_id
+        assert isinstance(workflow_api_key, WorkflowApiKey) and workflow_api_key.api_key == req_api_key and len(req_api_key) > 10 and len(workflow_api_key.api_key) > 10
+        assert isinstance(workflow, Workflow) and workflow.id == workflow_api_key.workflow_id and str(workflow.id) == req_workflow_id
+        assert workflow.user_id == internal_user_id and workflow_api_key.user_id == internal_user_id
+
+        return workflow
