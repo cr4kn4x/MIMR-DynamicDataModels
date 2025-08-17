@@ -29,6 +29,7 @@ class DataModelField(BaseModel):
 class PopulatedDataModel(DataModel): 
     fields: typing.List[DataModelField] = Field(default=[])
 
+
 class Workflow(BaseModel):
     user_id: UUID = Field()
     project_id: UUID = Field()
@@ -37,7 +38,12 @@ class Workflow(BaseModel):
     input_data_model: UUID = Field()
     output_data_model: UUID = Field()
     active: bool = Field()
-    llm: str = Field()
+
+class WorkflowVariant(BaseModel): 
+    id: UUID = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: UUID = Field()
+    workflow_id: UUID = Field()
+
 
 
 class WorkflowApiKey(BaseModel): 
@@ -155,7 +161,7 @@ class SupabaseDataApi:
 
     def createNewWorkflow(self, workflow: Workflow) -> Workflow: 
         res = self.client.table("workflows").insert(workflow.model_dump(mode="json")).execute()
-        return res.data[0]
+        return Workflow(**res.data[0])
     
     def getWorkflowById(self, workflow_id: str) -> Workflow:
         res = self.client.table("workflows").select("*").eq("id", workflow_id).execute()
