@@ -13,6 +13,15 @@ import { atomDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
 
 function renderJsWithTypeComments(obj: any, indent = 2): string {
@@ -126,7 +135,28 @@ export default function GeneralTab() {
                             </div>
                         </Card>
                     </div>
+                    
 
+
+
+                    {/*
+                    <div className="my-4 rounded border p-4">
+                        <Label htmlFor="variant_llm">Select LLM</Label>
+                        <Select key="variant_llm">
+                            <SelectTrigger className="w-56">
+                                <SelectValue placeholder="Select LLM"/>
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectGroup>
+                                    <SelectLabel>Qwen-Model-Series</SelectLabel>
+                                    <SelectItem value="deault">Qwen 3.1 235B</SelectItem>
+                                    <SelectItem value="ne">Qwen 3.1 14B</SelectItem>
+                                </SelectGroup>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    */}
+                    
 
                     <div className="my-2">
                         {/* API Preview Section */}
@@ -153,7 +183,8 @@ export default function GeneralTab() {
                             </div>
                         </div>
                     </div>
-
+                    
+                    {/*
                     <Collapsible open={is_open} onOpenChange={set_is_open}>
                         <CollapsibleTrigger asChild>
                             <Button variant="ghost">
@@ -162,10 +193,11 @@ export default function GeneralTab() {
                         </CollapsibleTrigger>
                         <CollapsibleContent className="w-full">
                             <Card>
-                                {/* Content for the collapsible card can go here */}
+
                             </Card>
                         </CollapsibleContent>
                     </Collapsible>
+                    */}
                 </div>
             ) : (
                 <div>

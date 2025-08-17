@@ -1,21 +1,17 @@
 import { useProject } from "@/app/ProjectContext";
 import InputValidationStatus from "@/components/my_ui/InputValidationStatus";
-import LLMSelctor from "@/components/my_ui/LLMSelector";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { useWorkflowNameValidation, useWorkflowValidation } from "@/lib/hooks/input-validation/useWorkflowValidation";
-import React, { useState } from "react";
+import { useWorkflowNameValidation } from "@/lib/hooks/input-validation/useWorkflowValidation";
+import React from "react";
 import { useWorkflowPageContext } from "../PageContext";
 import { DataModelSelectorCombobox } from "@/components/my_ui/DataModelSelectorCombobox";
 import { DataModelCard } from "@/components/my_ui/DataModelCard";
 import { toast } from "sonner";
 import { apiCallWrapper } from "@/lib/api/ApiCallWrapper";
 import { createWorkflow } from "@/lib/api/WorkflowApi";
-import { routeros } from "react-syntax-highlighter/dist/esm/styles/hljs";
-import { Router } from "next/router";
 import { useRouter } from "next/navigation";
 
 // Angepasste Props für Steps
@@ -25,8 +21,6 @@ interface GeneralStepProps {
     setActive: (v: boolean) => void
     name: string
     setName: (v: string) => void
-    selected_llm_id: string
-    setSelectedLlmId: (v: string) => void
 }
 
 interface GeneralSettingsStepProps {
@@ -42,14 +36,12 @@ interface SummaryStepProps {
     onBack: () => void
     active: boolean
     name: string
-    selected_llm_id: string
     selected_input_data_model_id: string | null
     selected_output_data_model_id: string | null
     set_dialog_open: (v: boolean) => void
 }
 
-export function GeneralStep({ onNext, active, setActive, name, setName, selected_llm_id, setSelectedLlmId: set_selected_llm_id }: GeneralStepProps) {
-    const { llms, data_models } = useProject();
+export function GeneralStep({ onNext, active, setActive, name, setName}: GeneralStepProps) {
     const { workflows } = useWorkflowPageContext();
     const { input_valid_status: name_valid_msg, input_valid: name_valid } = useWorkflowNameValidation(name, workflows);
     return (
@@ -64,10 +56,6 @@ export function GeneralStep({ onNext, active, setActive, name, setName, selected
                     <Label className="text-sm font-semibold">Workflow Name</Label>
                     <Input value={name} onChange={(e) => { setName(e.target.value) }} placeholder="sentiment_extractor" required />
                     <InputValidationStatus input_valid={name_valid} status={name_valid_msg} />
-                </div>
-                <div>
-                    <Label className="text-sm font-semibold">Artifical Intelligence</Label>
-                    <LLMSelctor llms={llms} set_selected_llm_id={set_selected_llm_id} selected_llm_id={selected_llm_id} />
                 </div>
                 <div className="flex justify-center">
                     <Button onClick={onNext} className="min-w-fit w-[50%]">Next</Button>
@@ -137,10 +125,9 @@ export function GeneralSettingsStep({ onBack, onNext, selected_input_data_model_
 }
 
 
-export function SummaryStep({ onBack, active, name, selected_llm_id, selected_input_data_model_id, selected_output_data_model_id, set_dialog_open}: SummaryStepProps) {
+export function SummaryStep({ onBack, active, name, selected_input_data_model_id, selected_output_data_model_id, set_dialog_open}: SummaryStepProps) {
     
     const { llms, data_models, native_input_data_models, selected_project_id} = useProject()
-    const llm = llms.find((l) => l.id === selected_llm_id)
     const input_model = data_models.concat(native_input_data_models).find((m) => m.id === selected_input_data_model_id)
     const output_model = data_models.find((m) => m.id === selected_output_data_model_id)
     
@@ -149,9 +136,9 @@ export function SummaryStep({ onBack, active, name, selected_llm_id, selected_in
     
 
     async function handle_create_workflow() {
-        if(selected_project_id == null || llm == null || input_model == null || output_model == null || name == null || name.length == 0){toast.error("Invalid Inputs", {richColors: true}); return;}
+        if(selected_project_id == null || input_model == null || output_model == null || name == null || name.length == 0){toast.error("Invalid Inputs", {richColors: true}); return;}
 
-        const res = await apiCallWrapper(createWorkflow(selected_project_id, llm.id, input_model?.id, output_model?.id, active, name), toast, "Failed to create Workflow")
+        const res = await apiCallWrapper(createWorkflow(selected_project_id, input_model.id, output_model.id, active, name), toast, "Failed to create Workflow")
         
         if(res){
             toast.success("Workflow created...", {richColors: true})
@@ -171,9 +158,6 @@ export function SummaryStep({ onBack, active, name, selected_llm_id, selected_in
 
                 <Label>Active</Label>
                 <Input className="col-span-3" value={active ? "Yes": "No"} disabled={true} />
-
-                <Label>LLM</Label>
-                <Input className="col-span-3" value={llm?.name} disabled={true}/>
 
                 <Label>Input Data Model</Label>
                 <Input className="col-span-3" value={input_model?.name} disabled={true}></Input>

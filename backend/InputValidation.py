@@ -93,7 +93,6 @@ class GetWorkflowsByProjectIdRequest(BaseModel):
 
 class CreateWorkflowRequest(BaseModel):
     name: str_striped = Field() 
-    llm: str = Field(min_length=3, max_length=UUID_LENGTH)
     input_data_model: str = Field(min_length=UUID_LENGTH, max_length=UUID_LENGTH)
     output_data_model: str = Field(min_length=UUID_LENGTH, max_length=UUID_LENGTH) 
     active: bool = Field() 

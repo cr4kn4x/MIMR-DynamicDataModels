@@ -33,3 +33,9 @@ export interface WorkflowApiKey {
     last_used_at: string, 
     last_refreshed_at: string,
 }
+
+
+export interface WorkflowVariant {
+    id: string 
+    workflow_id: string, 
+}

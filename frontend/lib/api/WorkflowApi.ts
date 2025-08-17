@@ -125,7 +125,7 @@ interface CreateWorkflowResponse {
     id: string
 }
 
-export async function createWorkflow(project_id: string, llm: string, input_data_model: string, output_data_model: string, active: boolean, name: string): Promise<CreateWorkflowResponse> {
+export async function createWorkflow(project_id: string, input_data_model: string, output_data_model: string, active: boolean, name: string): Promise<CreateWorkflowResponse> {
 
     const url = `${BASE_URL}/api/workflows/create`
 
@@ -137,7 +137,6 @@ export async function createWorkflow(project_id: string, llm: string, input_data
         },
         body: JSON.stringify({
             project_id: project_id,
-            llm: llm, 
             input_data_model: input_data_model, 
             output_data_model: output_data_model, 
             active: active, 

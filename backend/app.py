@@ -21,7 +21,7 @@ app = Flask(__name__)                                   ####
 CORS(app, origins="*")                                  ####
 #                                                       ####
 #  initialize DAO                                       ####
-# dao = DAO(dsn=os.environ.get("SUPABASE_POSTGRES_DSN"))  ####
+# dao = DAO(dsn=os.environ.get("SUPABASE_POSTGRES_DSN"))####
 #                                                       ####
 ############################################################
 ############################################################
@@ -249,10 +249,10 @@ def create_workflow():
 
     dao = SupabaseDataApi(**__supabase_user_data_api_base_args, jwt=jwt)
 
-    created_workflow = dao.createNewWorkflow(workflow=Workflow(user_id=user_info.id, project_id=request_json.project_id, name=request_json.name, input_data_model=request_json.input_data_model, output_data_model=request_json.output_data_model, active=request_json.active, llm=request_json.llm))
+    created_workflow = dao.createNewWorkflow(workflow=Workflow(user_id=user_info.id, project_id=request_json.project_id, name=request_json.name, input_data_model=request_json.input_data_model, output_data_model=request_json.output_data_model, active=request_json.active))
 
-    workflow_id = created_workflow["id"]
-    return jsonify({"msg": "Workflow created", "id": workflow_id})
+
+    return jsonify({"msg": "Workflow created", "id": created_workflow.id})
 
 
 @app.post("/api/workflows/get_by_id")
@@ -338,7 +338,7 @@ def pydantic_init(data_model_meta: PopulatedDataModel):
 
 
 @app.post("/api/predict/<workflow_id>")
-def predict(workflow_id: str): 
+def predict(workflow_id: str):
 
     api_key = request.headers.get("Authorization")
 
@@ -354,7 +354,6 @@ def predict(workflow_id: str):
 
 
     input_data_model_t = pydantic_init(supabase_service_dao.getDataModelById(workflow.input_data_model, user_id = workflow.user_id))
-    
     output_data_model_t = pydantic_init(supabase_service_dao.getDataModelById(workflow.output_data_model, user_id = workflow.user_id))
 
     assert issubclass(input_data_model_t, BaseModel)

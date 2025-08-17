@@ -64,7 +64,7 @@ export async function updateSession(request: NextRequest) {
 
     // If user is not logged in, redirect to /Login for protected routes
     if (!user) {
-        const protectedRoutes = ['/DataModels', '/Workflows'];
+        const protectedRoutes = ['/DataModels', '/Workflows', "/Annotation"];
         const isProtected = protectedRoutes.some((route) => request.nextUrl.pathname.startsWith(route));
         if (isProtected) {
             const url = request.nextUrl.clone();
@@ -86,7 +86,7 @@ export async function updateSession(request: NextRequest) {
     }
 
     // If user is logged in, allow access to protected routes
-    const protectedRoutes = ['/DataModels', '/Workflows'];
+    const protectedRoutes = ['/DataModels', '/Workflows', "/Annotation"];
     const isProtected = protectedRoutes.some((route) => request.nextUrl.pathname.startsWith(route));
     if (isProtected) {
         return supabaseResponse;

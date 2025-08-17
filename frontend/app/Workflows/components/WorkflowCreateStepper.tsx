@@ -12,7 +12,6 @@ export default function WorkflowCreateStepper({set_dialog_open}: WorkflowCreateS
     const [step, setStep] = useState(0);
     const [active, setActive] = useState(true);
     const [name, setName] = useState("");
-    const [selected_llm_id, setSelectedLlmId] = useState("");
     const [selected_input_data_model_id, setSelectedInputDataModelId] = useState<string | null>(null);
     const [selected_output_data_model_id, setSelectedOutputDataModelId] = useState<string | null>(null);
 
@@ -28,8 +27,6 @@ export default function WorkflowCreateStepper({set_dialog_open}: WorkflowCreateS
                     setActive={setActive}
                     name={name}
                     setName={setName}
-                    selected_llm_id={selected_llm_id}
-                    setSelectedLlmId={setSelectedLlmId}
                 />
             )}
             {step === 1 && (
@@ -47,7 +44,6 @@ export default function WorkflowCreateStepper({set_dialog_open}: WorkflowCreateS
                     onBack={back}
                     active={active}
                     name={name}
-                    selected_llm_id={selected_llm_id}
                     selected_input_data_model_id={selected_input_data_model_id}
                     selected_output_data_model_id={selected_output_data_model_id}
                     set_dialog_open={set_dialog_open}

@@ -5,7 +5,7 @@ import { toast } from "sonner"
 import { useProject } from "@/app/ProjectContext"
 import { getWorkflowAccessTokensPreview, getWorkflowById } from "@/lib/api/WorkflowApi"
 import { apiCallWrapper } from "@/lib/api/ApiCallWrapper"
-import { Workflow, WorkflowApiKey, WorkflowPopulated } from "@/lib/interfaces/WorkflowInteraces"
+import { Workflow, WorkflowApiKey, WorkflowPopulated, WorkflowVariant } from "@/lib/interfaces/WorkflowInteraces"
 import { useWorkflowPageContext } from "../PageContext"
 import { getDataModelById } from "@/lib/api/DataModelApi"
 
@@ -43,7 +43,7 @@ export function ViewWorkflowContextProvider({ children }: { children: ReactNode 
     const [workflow_api_keys, set_workflow_api_keys] = useState<WorkflowApiKey[]>([])
 
 
-
+    const [workflow_versions, set_workflow_versions] = useState<WorkflowVariant[]>([])
 
 
     const refresh_workflow_api_keys = async () => {
