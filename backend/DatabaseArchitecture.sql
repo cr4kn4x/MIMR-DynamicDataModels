@@ -38,7 +38,6 @@ CREATE TABLE public.workflows (
     project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
     id UUID PRIMARY KEY,
     name TEXT NOT NULL,
-    llm TEXT NOT NULL,
     input_data_model UUID NOT NULL REFERENCES data_models(id),
     output_data_model UUID NOT NULL REFERENCES data_models(id),
     active BOOLEAN NOT NULL,
